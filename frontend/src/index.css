@@ -13,6 +13,10 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+body {
+  background-color: #fffff0;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
