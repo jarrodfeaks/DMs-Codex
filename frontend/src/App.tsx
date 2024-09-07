@@ -8,7 +8,7 @@ function App() {
 
     const callBackend = async () => {
         try {
-            const res = await fetch('http://localhost:5000/api/test');
+            const res = await fetch('/api/test');
             const data = await res.json();
             console.log(data.message);
         } catch (err) {
@@ -18,7 +18,7 @@ function App() {
 
     const readDatabase = async () => {
         try {
-            const res = await fetch('http://localhost:5000/api/test/db');
+            const res = await fetch('/api/test/db');
             const data = await res.json();
             console.log(data);
         } catch (err) {

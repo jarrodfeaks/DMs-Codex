@@ -1,21 +1,22 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import db from "./db";
 import mongoose from "mongoose";
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
 db.connect();
 
-app.get("/api/test", (req, res) => {
+app.get("/test", (req, res) => {
     res.json({ message: "Hello :)" });
 });
 
-app.get("/api/test/db", async (req, res) => {
+app.get("/test/db", async (req, res) => {
     try {
         const data = await mongoose.connection.db?.listCollections().toArray();
         res.json(data);
