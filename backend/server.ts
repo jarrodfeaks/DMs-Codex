@@ -3,18 +3,54 @@ import express from "express";
 import cors from "cors";
 import db from "./db";
 import mongoose from "mongoose";
+import { auth } from "express-openid-connect";
+
+const PORT = process.env.PORT || 5000;
+const BACKEND_URL = `http://localhost:${PORT}`;
+const FRONTEND_URL = `http://localhost:${process.env.FRONTEND_PORT || 5173}`;
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(cors({ credentials: true }));
+
+// Auth0 config
+const config = {
+    authRequired: false,
+    auth0Logout: true,
+    secret: process.env.AUTH0_SECRET,
+    baseURL: BACKEND_URL,
+    clientID: process.env.AUTH0_CLIENT_ID,
+    issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
+    routes: {
+        login: false,
+        postLogoutRedirect: '/redirect'
+    }
+} as const;
+
+app.use(auth(config));
+
 app.use(express.json());
 
-db.connect();
-
-app.get("/test", (req, res) => {
-    res.json({ message: "Hello :)" });
+app.get('/', (req, res) => {
+    res.send(req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out');
 });
+
+app.get('/login', (req, res) => {
+    res.oidc.login({ returnTo: '/redirect' });
+});
+
+app.get('/redirect', (req, res) => {
+    res.redirect(FRONTEND_URL);
+});
+
+app.get('/profile', (req, res) => {
+    if (!req.oidc.isAuthenticated()) {
+        res.status(401).json({ message: "User not authenticated" });
+    }
+    res.json(req.oidc.user);
+});
+
+db.connect();
 
 app.get("/test/db", async (req, res) => {
     try {
