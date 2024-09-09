@@ -14,6 +14,23 @@ const getAllPlayers = async (req: Request, res: Response) => {
     }
 };
 
+// @desc Get a specific player
+// @route GET /api/players/:id
+// @access Public
+const getPlayerById = async (req: Request, res: Response) => {
+    try {
+        const playerId = req.params.id;
+        const player = await Player.findById(playerId);
+        if (player) {
+            res.status(200).json(player);
+        } else {
+            res.status(404).json({ message: 'Player not found' });
+        }
+    } catch (error: any) {
+        res.status(500).send(error.message);
+    }
+};
+
 // @desc Create a new player
 // @route POST /api/players
 // @access Public
@@ -34,9 +51,7 @@ const updatePlayer = async (req: Request, res: Response) => {
     try {
         const playerId = req.params.id;
         const updatedData = req.body as Partial<IPlayer>;
-
         const updatedPlayer = await Player.findByIdAndUpdate(playerId, updatedData, { new: true });
-
         if (updatedPlayer) {
             res.status(200).json(updatedPlayer);
         } else {
@@ -47,4 +62,22 @@ const updatePlayer = async (req: Request, res: Response) => {
     }
 };
 
-export { getAllPlayers, createPlayer, updatePlayer };
+// @desc Delete a player
+// @route DELETE /api/players/:id
+// @access Public
+const deletePlayer = async (req: Request, res: Response) => {
+    try {
+        const playerId = req.params.id;
+        const deletedPlayer = await Player.findByIdAndDelete(playerId);
+        if (deletedPlayer) {
+            res.status(200).json({ message: 'Player deleted successfully' });
+        } else {
+            res.status(404).json({ message: 'Player not found' });
+        }
+    } catch (error: any) {
+        res.status(500).send(error.message);
+    }
+};
+
+
+export { getAllPlayers, getPlayerById, createPlayer, updatePlayer, deletePlayer};
