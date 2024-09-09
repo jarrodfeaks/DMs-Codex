@@ -1,25 +1,34 @@
-import { PlayerModel } from '../schema/playerSchema';
-import { Status }from '../enums';
+import { Schema, model, Document } from 'mongoose';
+import { ICharacter, characterSchema } from './characterModel';
 
-const createPlayer = async () => {
-    const player = new PlayerModel({
-        name: 'Player 1',
-        hitpoints: 10,
-        armor: 3,
-        strength: 10,
-        dexterity: 10,
-        intelligence: 10,
-        charisma: 10,
-        savingThrowsModifier: 0,
-        // vulnerabilities?: object;
-        // resistances?: object;
-        // immunities?: object;
-        conditions: Status.charmed,
-        // createdAt?: Date;
-    });
+interface IPlayer extends ICharacter {
+    level: number;
+    experience: number;
+    // race: object;
+    // class: object;
+    // armor: object[];
+    // weapons: object[];
+    // tools: object[];
+    // languages: object[];
+}
 
-    await player.save();
-    console.log('Player created:', player);
-};
+const playerSchema = new Schema<IPlayer>(
+    {
+        level: { 
+            type: Number, 
+            required: true, 
+            default: 1 
+        },
+        experience: { 
+            type: Number, 
+            required: true, 
+            default: 0 
+        },
+    }
+);
 
-export default createPlayer;
+playerSchema.add(characterSchema.obj);
+
+const Player = model('Player', playerSchema);
+
+export { IPlayer, Player };

@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import db from "./db";
 import mongoose from "mongoose";
+import playerRoutes from './routes/playerRoutes';
 
 const app = express();
 const PORT = 5000;
@@ -14,6 +15,8 @@ db.connect();
 app.get("/api/test", (req, res) => {
     res.json({ message: "Hello :)" });
 });
+
+app.use("/api/players", playerRoutes);
 
 app.get("/api/test/db", async (req, res) => {
     try {

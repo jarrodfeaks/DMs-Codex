@@ -1,14 +1,14 @@
 import { Schema, model } from 'mongoose';
-import { ICharacter, characterSchema } from './characterSchema';
+import { ICharacter, characterSchema } from './characterModel';
 
 interface IEnemy extends ICharacter {
     difficulty: string;
     CR: number;
-    type: object[];
-    size: object[];
-    alignment: object[];
-    environment: object[];
-    tags?: object[];
+    // type: object[];
+    // size: object[];
+    // alignment: object[];
+    // environment: object[];
+    // tags?: object[];
 }
 
 const enemySchema = new Schema<IEnemy>({
@@ -28,3 +28,4 @@ enemySchema.add(characterSchema);
 const EnemyModel = model<IEnemy>('Enemy', enemySchema);
 
 export { IEnemy, EnemyModel };
+
