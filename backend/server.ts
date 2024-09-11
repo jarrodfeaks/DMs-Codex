@@ -3,8 +3,8 @@ import express from "express";
 import cors from "cors";
 import db from "./db";
 import mongoose from "mongoose";
+import playerRoutes from './routes/playerRoutes';
 import { auth } from "express-openid-connect";
-
 const PORT = process.env.PORT || 5000;
 const BACKEND_URL = `http://localhost:${PORT}`;
 const FRONTEND_URL = `http://localhost:${process.env.FRONTEND_PORT || 5173}`;
@@ -52,7 +52,13 @@ app.get('/profile', (req, res) => {
 
 db.connect();
 
-app.get("/test/db", async (req, res) => {
+app.get("/api/test", (req, res) => {
+    res.json({ message: "Hello :)" });
+});
+
+app.use("/api/players", playerRoutes);
+
+app.get("/api/test/db", async (req, res) => {
     try {
         const data = await mongoose.connection.db?.listCollections().toArray();
         res.json(data);
