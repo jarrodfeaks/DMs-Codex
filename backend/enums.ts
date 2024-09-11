@@ -1,3 +1,21 @@
+enum Activity {
+    Action = "Action",
+    BonusAction = "Bonus Action",
+    Reaction = "Reaction",
+}
+
+enum Alignment {
+    lawfulGood = "Lawful Good",
+    neutralGood = "Neutral Good",
+    chaoticGood = "Chaotic Good",
+    lawfulNeutral = "Lawful Neutral",
+    trueNeutral = "True Neutral",
+    chaoticNeutral = "Chaotic Neutral",
+    lawfulEvil = "Lawful Evil",
+    neutralEvil = "Neutral Evil",
+    chaoticEvil = "Chaotic Evil",
+}
+
 enum Status {
     blinded = "Blinded",
     charmed = "Charmed",
@@ -41,4 +59,4 @@ enum Dices {
     D20 = "D20",
 }
 
-export { DamageType, Dices, Status, };
+export { Activity, Alignment, DamageType, Dices, Status, };
