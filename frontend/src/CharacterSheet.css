@@ -1,0 +1,8 @@
+.characterName .MuiOutlinedInput-root{
+  background-color: #FFFDD0 !important; 
+  border-radius: 10px !important;
+}
+
+.characterName .MuiInputLabel-root.Mui-focused {
+  color: #FF1B1C;
+}
