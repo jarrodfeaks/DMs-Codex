@@ -1,0 +1,56 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.9);
+    opacity: 1;
+    transition: opacity 1s ease;
+    z-index: 10;
+}
+
+.background-page {
+    background-image: url(./assets/cartoon-dragon-character.jpg);
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+}
+
+.background-page.loaded .overlay {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.landing-page {
+    display: flex;    
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    height: 80vh;
+    width: 60vw;
+}
+
+.landing-page h1 {
+    font-family: Luminari;    
+    margin-bottom: 2rem;
+    color: white;
+    font-size: 60px;
+}
+
+.login-button button {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    background-color: #560e2f;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.login-button button:hover {
+    background-color: #451131;
+}
