@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { ObjectId } from 'mongoose';
 import { IPlayer, Player } from '../models/playerModel';
 
 // @desc Get all players
@@ -38,7 +37,7 @@ const createPlayer = async (req: Request, res: Response) => {
     try {
         const newPlayer = req.body as IPlayer;
         const savedPlayer = await Player.create(newPlayer);
-        res.status(201).json(savedPlayer);
+        res.status(201).json(savedPlayer._id);
     } catch (error: any) {
         res.status(400).json({ message: error.message });
     }
@@ -53,7 +52,7 @@ const updatePlayer = async (req: Request, res: Response) => {
         const updatedData = req.body as Partial<IPlayer>;
         const updatedPlayer = await Player.findByIdAndUpdate(playerId, updatedData, { new: true });
         if (updatedPlayer) {
-            res.status(200).json(updatedPlayer);
+            res.status(200).json(updatedPlayer._id);
         } else {
             res.status(404).json({ message: 'Player not found' });
         }
@@ -79,5 +78,22 @@ const deletePlayer = async (req: Request, res: Response) => {
     }
 };
 
+// @desc Get all effects of a player
+// @route GET /api/players/:id/effects
+// @access Public
+const getPlayerEffects = async (req: Request, res: Response) => {
+    try {
+        const playerId = req.params.id;
+        const player = await Player.findById(playerId);
+        if (player) {
+            res.status(200).json(player.effects);
+        } else {
+            res.status(404).json({ message: 'Player not found' });
+        }
+    } catch (error: any) {
+        res.status(500).send(error.message);
+    }
+}
 
-export { getAllPlayers, getPlayerById, createPlayer, updatePlayer, deletePlayer};
+
+export { getAllPlayers, getPlayerById, createPlayer, getPlayerEffects, updatePlayer, deletePlayer};

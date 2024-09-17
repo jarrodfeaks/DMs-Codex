@@ -14,7 +14,7 @@ const createPlayer = async () => {
         // vulnerabilities?: object;
         // resistances?: object;
         // immunities?: object;
-        conditions: Status.charmed,
+        conditions: Status.Charmed,
         // createdAt?: Date;
     });
 

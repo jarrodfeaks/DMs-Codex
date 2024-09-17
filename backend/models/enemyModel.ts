@@ -1,31 +1,26 @@
 import { Schema, model } from 'mongoose';
 import { ICharacter, characterSchema } from './characterModel';
+import { MonsterType, MovementType } from '../enums';
 
 interface IEnemy extends ICharacter {
-    difficulty: string;
-    CR: number;
-    // type: object[];
-    // size: object[];
-    // alignment: object[];
-    // environment: object[];
-    // tags?: object[];
+    challengeRating: number;
+    creatureType: MonsterType[];
+    speed: number;
+    movementType: MovementType[];
+    proficiencyBonus: number;
 }
 
 const enemySchema = new Schema<IEnemy>({
-    difficulty: { type: String, required: true },
-    CR: { type: Number, required: true },
-    /*
-    type: { type: Array, required: true },
-    size: { type: Array, required: true },
-    alignment: { type: Array, required: true },
-    environment: { type: Array, required: true },
-    tags: { type: Array, required: true }
-    */
+    challengeRating: { type: Number, required: true },
+    creatureType: { type: [String], enum: Object.values(MonsterType), required: true },
+    speed: { type: Number, required: true },
+    movementType: { type: [String], enum: Object.values(MovementType), default: [] },
+    proficiencyBonus: { type: Number, required: true, default: 0}
 });
 
 enemySchema.add(characterSchema);
 
-const EnemyModel = model<IEnemy>('Enemy', enemySchema);
+const Enemy = model<IEnemy>('Enemy', enemySchema);
 
-export { IEnemy, EnemyModel };
+export { IEnemy, Enemy };
 

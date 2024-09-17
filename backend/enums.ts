@@ -1,56 +1,69 @@
+enum Action {
+    Attack = "Attack",
+    Dash = "Dash",
+    Disengage = "Disengage",
+    Dodge = "Dodge",
+    Grapple = "Grapple",
+    Help = "Help",
+    Hide = "Hide",
+    Improvise = "Improvise",
+    Influence = "Influence",
+    Magic = "Magic",
+    Ready = "Ready",
+    Search = "Search",
+    Shove = "Shove",
+    Study = "Study",
+    Utilize = "Utilize",
+}
+
 enum Activity {
     Action = "Action",
     BonusAction = "Bonus Action",
     Reaction = "Reaction",
 }
 
-enum Alignment {
-    lawfulGood = "Lawful Good",
-    neutralGood = "Neutral Good",
-    chaoticGood = "Chaotic Good",
-    lawfulNeutral = "Lawful Neutral",
-    trueNeutral = "True Neutral",
-    chaoticNeutral = "Chaotic Neutral",
-    lawfulEvil = "Lawful Evil",
-    neutralEvil = "Neutral Evil",
-    chaoticEvil = "Chaotic Evil",
+enum Attribute {
+    Strength = "Strength",
+    Dexterity = "Dexterity",
+    Constitution = "Constitution",
+    Intelligence = "Intelligence",
+    Wisdom = "Wisdom",
+    Charisma = "Charisma",
 }
 
-enum Status {
-    blinded = "Blinded",
-    charmed = "Charmed",
-    deafened = "Deafened",
-    frightened = "Frightened",
-    grappled = "Grappled",
-    incapacitated = "Incapacitated",
-    invisible = "Invisible",
-    paralyzed = "Paralyzed",
-    poisoned = "Poisoned",
-    petrified = "Petrified",
-    prone = "Prone",
-    restrained = "Restrained",
-    stunned = "Stunned",
-    unconscious = "Unconscious",
-    exhaustion = "Exhaustion",
+enum Class {
+    Artificer = "Artificer",
+    Barbarian = "Barbarian",
+    Bard = "Bard",
+    Cleric = "Cleric",
+    Druid = "Druid",
+    Fighter = "Fighter",
+    Monk = "Monk",
+    Paladin = "Paladin",
+    Ranger = "Ranger",
+    Rogue = "Rogue",
+    Sorcerer = "Sorcerer",
+    Warlock = "Warlock",
+    Wizard = "Wizard",
 }
 
 enum DamageType {
-    acid = "Acid",
-    bludgeoning = "Bludgeoning",
-    cold = "Cold",
-    fire = "Fire",
-    force = "Force",
-    lightning = "Lightning",
-    necrotic = "Necrotic",
-    piercing = "Piercing",
-    poison = "Poison",
-    psychic = "Psychic",
-    radiant = "Radiant",
-    slashing = "Slashing",
-    thunder = "Thunder",
+    Acid = "Acid",
+    Bludgeoning = "Bludgeoning",
+    Cold = "Cold",
+    Fire = "Fire",
+    Force = "Force",
+    Lightning = "Lightning",
+    Necrotic = "Necrotic",
+    Piercing = "Piercing",
+    Poison = "Poison",
+    Psychic = "Psychic",
+    Radiant = "Radiant",
+    Slashing = "Slashing",
+    Thunder = "Thunder",
 }
 
-enum Dices {
+enum Dice {
     D4 = "D4",
     D6 = "D6",
     D8 = "D8",
@@ -59,4 +72,79 @@ enum Dices {
     D20 = "D20",
 }
 
-export { Activity, Alignment, DamageType, Dices, Status, };
+enum MonsterType {
+    Aberration = "Aberration",
+    Beast = "Beast",
+    Celestial = "Celestial",
+    Construct = "Construct",
+    Dragon = "Dragon",
+    Elemental = "Elemental",
+    Fey = "Fey",
+    Fiend = "Fiend",
+    Giant = "Giant",
+    Humanoid = "Humanoid",
+    Monstrosity = "Monstrosity",
+    Ooze = "Ooze",
+    Plant = "Plant",
+    Undead = "Undead",
+}
+
+enum MovementType {
+    Burrow = "Burrow",
+    Climb = "Climb",
+    Fly = "Fly",
+    Swim = "Swim",
+}
+
+enum Race {
+    Dragonborn = "Dragonborn",
+    Dwarf = "Dwarf",
+    Elf = "Elf",
+    Gnome = "Gnome",
+    HalfElf = "Half-Elf",
+    HalfOrc = "Half-Orc",
+    Halfling = "Halfling",
+    Human = "Human",
+    Tiefling = "Tiefling",
+}
+
+enum Skill {
+    Athletics = "Athletics",
+    Acrobatics = "Acrobatics",
+    SleightOfHand = "Sleight of Hand",
+    Stealth = "Stealth",
+    Arcana = "Arcana",
+    History = "History",
+    Investigation = "Investigation",
+    Nature = "Nature",
+    Religion = "Religion",
+    AnimalHandling = "Animal Handling",
+    Insight = "Insight",
+    Medicine = "Medicine",
+    Perception = "Perception",
+    Survival = "Survival",
+    Deception = "Deception",
+    Intimidation = "Intimidation",
+    Performance = "Performance",
+    Persuasion = "Persuasion",
+}
+
+enum Status {
+    Blinded = "Blinded",
+    Charmed = "Charmed",
+    Deafened = "Deafened",
+    Frightened = "Frightened",
+    Grappled = "Grappled",
+    Incapacitated = "Incapacitated",
+    Invisible = "Invisible",
+    Paralyzed = "Paralyzed",
+    Poisoned = "Poisoned",
+    Petrified = "Petrified",
+    Prone = "Prone",
+    Restrained = "Restrained",
+    Stunned = "Stunned",
+    Unconscious = "Unconscious",
+    Exhaustion = "Exhaustion",
+}
+
+export { Action, Activity, Attribute, Class, DamageType, Dice, MonsterType, MovementType, Race, Skill, Status, };
