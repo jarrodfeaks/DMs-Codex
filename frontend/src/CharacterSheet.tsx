@@ -1,53 +1,30 @@
 import React, {FC} from 'react';
-import {TextField, Box, Typography} from "@mui/material";
+import {TextField, Box, Typography, FormControlLabel, Switch, Button} from "@mui/material";
+import Skill from './Skill';
 
 const CharacterSheet: FC = () => {
 
   return (
+    //main container for all elements
     <Box sx={{display:'flex', flexDirection: 'column'}}>
-      {/* <Container sx={{bgcolor:'#262626', borderRadius: 5, margin: 2, padding: 2}}>
-          <Box sx={{marginTop: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', bgcolor:'#262626'}}>
-            <Avatar sx={{bgcolor: 'red'}}></Avatar>
-            <Typography variant='h5' sx={{fontFamily: 'Copperplate Gothic Bold, serif'}}>
-              Sign In
-            </Typography>
-            <TextField sx={{
-              marginBottom: 2, 
-              marginTop: 2, 
-              backgroundColor: '#FFFDD0', 
-              borderRadius: '10px', 
-              '& .MuiInputLabel-root.Mui-focused': {color: '#FF1B1C'}
-            }} id='email' label='Email Address' autoComplete='email' autoFocus/>
-              
-            <TextField sx={{
-              marginBottom: 2, 
-              backgroundColor: '#FFFDD0', 
-              borderRadius: '10px', 
-              '& .MuiInputLabel-root.Mui-focused': {color: '#FF1B1C'},
-              '&.Mui-focused fieldset': {borderColor: '#FF1B1C'}
-            }} variant="outlined" id='password' label='Password' type='password'/>
-            <Button sx={{backgroundColor: '#FF1B1C !important', fontFamily: 'Copperplate Gothic Bold, serif'}} variant='contained'>
-              Sign In
-            </Button>
-        </Box>
-      </Container> */}
+      {/* container for basic character info */}
       <Box sx={{display:'flex', flexDirection: 'column', border: '2px solid', borderColor: '#FFFFF0', borderRadius: '10px'}}>
         <Typography sx={{color: '#FF1B1C'}}>Character</Typography>
-        <TextField id='characterName' className='characterName' label='Character Name' sx={{
+        <TextField id='characterName' className='characterText' label='Character Name' sx={{
                 marginBottom: 2, 
                 marginTop: 2, 
                 backgroundColor: '#FFFDD0', 
                 borderRadius: '10px', 
                 '& .MuiInputLabel-root.Mui-focused': {color: '#FF1B1C'}
               }}/>
-        <TextField id='characterRace' className='characterRace' label='Character Race' sx={{
+        <TextField id='characterRace' className='characterText' label='Character Race' sx={{
                 marginBottom: 2, 
                 marginTop: 2, 
                 backgroundColor: '#FFFDD0', 
                 borderRadius: '10px', 
                 '& .MuiInputLabel-root.Mui-focused': {color: '#FF1B1C'}
               }}/>
-        <TextField id='characterLevel' className='characterLevel' label='Character Level' type='number' sx={{
+        <TextField id='characterLevel' className='characterNumber' label='Character Level' type='number' sx={{
           marginBottom: 2, 
           marginTop: 2, 
           backgroundColor: '#FFFDD0', 
@@ -55,39 +32,45 @@ const CharacterSheet: FC = () => {
           '& .MuiInputLabel-root.Mui-focused': {color: '#FF1B1C'}
         }}/>
       </Box>
+      {/* Container for ability scores */}
       <Box sx={{display:'flex', flexDirection: 'row', border: '2px solid', borderColor: '#FFFFF0', borderRadius: '10px'}}>
-      <Typography sx={{color: '#FF1B1C'}}>Ability Scores</Typography>
-      <TextField id='characterLevel' className='characterLevel' label='Character Level' type='number' sx={{
+        <Typography sx={{color: '#FF1B1C'}}>Ability Scores</Typography>
+        <TextField id='abilityScoresStrength' className='characterNumber' label='Strength (STR)' type='number' sx={{
+            marginBottom: 2, 
+            marginTop: 2, 
+            backgroundColor: '#FFFDD0', 
+            borderRadius: '10px', 
+            '& .MuiInputLabel-root.Mui-focused': {color: '#FF1B1C'}
+        }}/>
+        <TextField id='abilityScoresDexterity' className='characterNumber' label='Dexterity (DEX)' type='number' sx={{
           marginBottom: 2, 
           marginTop: 2, 
           backgroundColor: '#FFFDD0', 
           borderRadius: '10px', 
           '& .MuiInputLabel-root.Mui-focused': {color: '#FF1B1C'}
-        }}/><TextField id='characterLevel' className='characterLevel' label='Character Level' type='number' sx={{
+        }}/>
+        <TextField id='abilityScoresConstitution' className='characterNumber' label='Constitution (CON)' type='number' sx={{
           marginBottom: 2, 
           marginTop: 2, 
           backgroundColor: '#FFFDD0', 
           borderRadius: '10px', 
           '& .MuiInputLabel-root.Mui-focused': {color: '#FF1B1C'}
-        }}/><TextField id='characterLevel' className='characterLevel' label='Character Level' type='number' sx={{
+        }}/>
+        <TextField id='abilityScoresIntelligence' className='characterNumber' label='Intelligence (INT)' type='number' sx={{
           marginBottom: 2, 
           marginTop: 2, 
           backgroundColor: '#FFFDD0', 
           borderRadius: '10px', 
           '& .MuiInputLabel-root.Mui-focused': {color: '#FF1B1C'}
-        }}/><TextField id='characterLevel' className='characterLevel' label='Character Level' type='number' sx={{
+        }}/>
+        <TextField id='abilityScoresWisdom' className='characterNumber' label='Wisdom (WIS)' type='number' sx={{
           marginBottom: 2, 
           marginTop: 2, 
           backgroundColor: '#FFFDD0', 
           borderRadius: '10px', 
           '& .MuiInputLabel-root.Mui-focused': {color: '#FF1B1C'}
-        }}/><TextField id='characterLevel' className='characterLevel' label='Character Level' type='number' sx={{
-          marginBottom: 2, 
-          marginTop: 2, 
-          backgroundColor: '#FFFDD0', 
-          borderRadius: '10px', 
-          '& .MuiInputLabel-root.Mui-focused': {color: '#FF1B1C'}
-        }}/><TextField id='characterLevel' className='characterLevel' label='Character Level' type='number' sx={{
+        }}/>
+        <TextField id='abilityScoresCharisma' className='characterNumber' label='Charisma (CHA)' type='number' sx={{
           marginBottom: 2, 
           marginTop: 2, 
           backgroundColor: '#FFFDD0', 
@@ -95,6 +78,7 @@ const CharacterSheet: FC = () => {
           '& .MuiInputLabel-root.Mui-focused': {color: '#FF1B1C'}
         }}/>
       </Box>
+      {/* Container for ability modifiers */}
       <Box sx={{display:'flex', flexDirection: 'row', border: '2px solid', borderColor: '#FFFFF0', borderRadius: '10px'}}>
       <Typography sx={{color: '#FF1B1C'}}>Ability Modifiers</Typography>
       <TextField id='characterLevel' className='characterLevel' label='Character Level' type='number' sx={{
@@ -175,7 +159,46 @@ const CharacterSheet: FC = () => {
           '& .MuiInputLabel-root.Mui-focused': {color: '#FF1B1C'}
         }}/>
       </Box>
-      <Typography sx={{color: '#FF1B1C'}}>Skills go here</Typography>
+      
+      <Box sx={{display:'flex', flexDirection: 'column', border: '2px solid', borderColor: '#FFFFF0', borderRadius: '10px'}}>
+      <Typography sx={{color: '#FF1B1C'}}>Skills</Typography>
+      <Skill skillName="Acrobatics (DEX)" />
+      <Skill skillName="Animal Handling (WIS)" />
+      <Skill skillName="Arcana (INT)" />
+      <Skill skillName="Athletics (STR)" />
+      <Skill skillName="Deception (CHA)" />
+      <Skill skillName="History (INT)" />
+      <Skill skillName="Insight (WIS)" />
+      <Skill skillName="Intimidation (CHA)" />
+      <Skill skillName="Investigation (INT)" />
+      <Skill skillName="Medicine (WIS)" />
+      <Skill skillName="Nature (INT)" />
+      <Skill skillName="Perception (WIS)" />
+      <Skill skillName="Performance (CHA)" />
+      <Skill skillName="Persuasion (CHA)" />
+      <Skill skillName="Religion (INT)" />
+      <Skill skillName="Sleight of Hand (DEX)" />
+      <Skill skillName="Stealth (DEX)" />
+      <Skill skillName="Survival (WIS)" />
+      </Box>
+
+      <Box sx={{display:'flex', flexDirection: 'row', border: '2px solid', borderColor: '#FFFFF0', borderRadius: '10px'}}>
+        <TextField id='Initiative' className='Initiative' label='Initiative' type='number' sx={{
+          marginBottom: 2, 
+          marginTop: 2, 
+          backgroundColor: '#FFFDD0', 
+          borderRadius: '10px', 
+          '& .MuiInputLabel-root.Mui-focused': {color: '#FF1B1C'}
+        }}/>
+        <TextField id='Armor' className='Armor' label='Armor Class (AC)' type='number' sx={{
+          marginBottom: 2, 
+          marginTop: 2, 
+          backgroundColor: '#FFFDD0', 
+          borderRadius: '10px', 
+          '& .MuiInputLabel-root.Mui-focused': {color: '#FF1B1C'}
+        }}/>
+      </Box>
+
       <Box sx={{display:'flex', flexDirection: 'row', border: '2px solid', borderColor: '#FFFFF0', borderRadius: '10px'}}>
       <Typography sx={{color: '#FF1B1C'}}>Life</Typography>
       <TextField id='characterLevel' className='characterLevel' label='Character Level' type='number' sx={{
@@ -215,6 +238,112 @@ const CharacterSheet: FC = () => {
           borderRadius: '10px', 
           '& .MuiInputLabel-root.Mui-focused': {color: '#FF1B1C'}
         }}/>
+      </Box>
+      <Box sx={{display:'flex', flexDirection: 'row', border: '2px solid', borderColor: '#FFFFF0', borderRadius: '10px'}}>
+      <Typography sx={{color: '#FF1B1C'}}>Conditions</Typography>
+      <FormControlLabel control={<Switch />} label="Blinded" />
+      <FormControlLabel control={<Switch />} label="Charmed" />
+      <FormControlLabel control={<Switch />} label="Deafened" />
+      <FormControlLabel control={<Switch />} label="Frightened" />
+      <FormControlLabel control={<Switch />} label="Grappled" />
+      <FormControlLabel control={<Switch />} label="Incapacitated" />
+      <FormControlLabel control={<Switch />} label="Invisible" />
+      <FormControlLabel control={<Switch />} label="Paralyzed" />
+      <FormControlLabel control={<Switch />} label="Petrified" />
+      <FormControlLabel control={<Switch />} label="Poisoned" />
+      <FormControlLabel control={<Switch />} label="Prone" />
+      <FormControlLabel control={<Switch />} label="Restrained" />
+      <FormControlLabel control={<Switch />} label="Stunned" />
+      <FormControlLabel control={<Switch />} label="Unconscious" />
+      </Box>
+      <Box sx={{display:'flex', flexDirection: 'column', border: '2px solid', borderColor: '#FFFFF0', borderRadius: '10px'}}>
+      <Typography sx={{color: '#FF1B1C'}}>Defenses</Typography>
+      <Box sx={{display:'flex', flexDirection: 'row', border: '2px solid', borderColor: '#FFFFF0', borderRadius: '10px'}}>
+      <Typography sx={{color: '#FF1B1C'}}>Resistances</Typography>
+      <FormControlLabel control={<Switch />} label="Acid" />
+      <FormControlLabel control={<Switch />} label="Bludgeoning" />
+      <FormControlLabel control={<Switch />} label="Cold" />
+      <FormControlLabel control={<Switch />} label="Fire" />
+      <FormControlLabel control={<Switch />} label="Force" />
+      <FormControlLabel control={<Switch />} label="Lightning" />
+      <FormControlLabel control={<Switch />} label="Necrotic" />
+      <FormControlLabel control={<Switch />} label="Piercing" />
+      <FormControlLabel control={<Switch />} label="Poison" />
+      <FormControlLabel control={<Switch />} label="Psychic" />
+      <FormControlLabel control={<Switch />} label="Radiant" />
+      <FormControlLabel control={<Switch />} label="Ranged" />
+      <FormControlLabel control={<Switch />} label="Slashing" />
+      <FormControlLabel control={<Switch />} label="Spells" />
+      <FormControlLabel control={<Switch />} label="Thunder" />
+      <FormControlLabel control={<Switch />} label="Traps" />
+      </Box>
+      <Box sx={{display:'flex', flexDirection: 'row', border: '2px solid', borderColor: '#FFFFF0', borderRadius: '10px'}}>
+      <Typography sx={{color: '#FF1B1C'}}>Immunities</Typography>
+      <FormControlLabel control={<Switch />} label="Bludgeoning" />
+      <FormControlLabel control={<Switch />} label="Piercing" />
+      <FormControlLabel control={<Switch />} label="Slashing" />
+      <FormControlLabel control={<Switch />} label="Lightning" />
+      <FormControlLabel control={<Switch />} label="Thunder" />
+      <FormControlLabel control={<Switch />} label="Poison" />
+      <FormControlLabel control={<Switch />} label="Cold" />
+      <FormControlLabel control={<Switch />} label="Radiant" />
+      <FormControlLabel control={<Switch />} label="Fire" />
+      <FormControlLabel control={<Switch />} label="Necrotic" />
+      <FormControlLabel control={<Switch />} label="Acid" />
+      <FormControlLabel control={<Switch />} label="Psychic" />
+      <FormControlLabel control={<Switch />} label="Force" />
+      <FormControlLabel control={<Switch />} label="Blinded" />
+      <FormControlLabel control={<Switch />} label="Charmed" />
+      <FormControlLabel control={<Switch />} label="Deafened" />
+      <FormControlLabel control={<Switch />} label="Frightened" />
+      <FormControlLabel control={<Switch />} label="Grappled" />
+      <FormControlLabel control={<Switch />} label="Incapacitated" />
+      <FormControlLabel control={<Switch />} label="Invisible" />
+      <FormControlLabel control={<Switch />} label="Paralyzed" />
+      <FormControlLabel control={<Switch />} label="Petrified" />
+      <FormControlLabel control={<Switch />} label="Poisoned" />
+      <FormControlLabel control={<Switch />} label="Prone" />
+      <FormControlLabel control={<Switch />} label="Restrained" />
+      <FormControlLabel control={<Switch />} label="Stunned" />
+      <FormControlLabel control={<Switch />} label="Unconscious" />
+      <FormControlLabel control={<Switch />} label="Exhaustion" />
+      </Box>
+      <Box sx={{display:'flex', flexDirection: 'row', border: '2px solid', borderColor: '#FFFFF0', borderRadius: '10px'}}>
+      <Typography sx={{color: '#FF1B1C'}}>Vulnerability</Typography>
+      <FormControlLabel control={<Switch />} label="Bludgeoning" />
+      <FormControlLabel control={<Switch />} label="Piercing" />
+      <FormControlLabel control={<Switch />} label="Slashing" />
+      <FormControlLabel control={<Switch />} label="Lightning" />
+      <FormControlLabel control={<Switch />} label="Thunder" />
+      <FormControlLabel control={<Switch />} label="Poison" />
+      <FormControlLabel control={<Switch />} label="Cold" />
+      <FormControlLabel control={<Switch />} label="Radiant" />
+      <FormControlLabel control={<Switch />} label="Fire" />
+      <FormControlLabel control={<Switch />} label="Necrotic" />
+      <FormControlLabel control={<Switch />} label="Acid" />
+      <FormControlLabel control={<Switch />} label="Psychic" />
+      <FormControlLabel control={<Switch />} label="Force" />
+      </Box>
+      </Box>
+      <Box sx={{display:'flex', flexDirection: 'row', border: '2px solid', borderColor: '#FFFFF0', borderRadius: '10px'}}>
+      <Typography sx={{color: '#FF1B1C'}}>Weapons</Typography>
+      <TextField/>
+      </Box>
+      <Box sx={{display:'flex', flexDirection: 'row', border: '2px solid', borderColor: '#FFFFF0', borderRadius: '10px'}}>
+      <Typography sx={{color: '#FF1B1C'}}>Notes</Typography>
+      <TextField/>
+      </Box>
+      <Box sx={{display:'flex', flexDirection: 'row', border: '2px solid', borderColor: '#FFFFF0', borderRadius: '10px'}}>
+      <Typography sx={{color: '#FF1B1C'}}>Equipment</Typography>
+      <TextField/>
+      </Box>
+      <Box sx={{display:'flex', flexDirection: 'row', border: '2px solid', borderColor: '#FFFFF0', borderRadius: '10px'}}>
+      <Button>
+        Save
+      </Button>
+      <Button>
+        Cancel
+      </Button>
       </Box>
     </Box>
   );
