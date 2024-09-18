@@ -1,8 +1,46 @@
-.characterName .MuiOutlinedInput-root{
+.mainContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.characterText .MuiOutlinedInput-root{
   background-color: #FFFDD0 !important; 
   border-radius: 10px !important;
 }
 
-.characterName .MuiInputLabel-root.Mui-focused {
+.characterText .MuiInputLabel-root.Mui-focused {
   color: #FF1B1C;
+}
+
+.characterNumber {
+  margin-bottom: 2;
+  margin-top: 2; 
+  background-color: #FFFDD0; 
+  border-radius: 10px;
+}
+
+.containerTitle {
+  color: #FF1B1C;
+}
+
+.titleContainer {
+  display:flex; 
+  flex-direction: column;
+  border: 2px solid;
+  border-color: #FFFFF0;
+  border-radius: 10px;
+}
+
+.horizontaltitleContainer {
+  display: flex; 
+  flex-direction: row; 
+  border: 2px solid;
+  border-color: #FFFFF0;
+  border-radius: 10px;
+}
+
+.subContainer {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
 }
