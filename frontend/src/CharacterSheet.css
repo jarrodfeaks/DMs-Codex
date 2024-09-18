@@ -21,6 +21,7 @@
 
 .containerTitle {
   color: #FF1B1C;
+  font-family: 'Copperplate', 'Copperplate Gothic Light', serif;
 }
 
 .titleContainer {
@@ -44,3 +45,4 @@
   flex-direction: row;
   flex-wrap: wrap;
 }
+
