@@ -30,6 +30,8 @@
   border: 2px solid;
   border-color: #FFFFF0;
   border-radius: 10px;
+  align-items: center;
+  margin-bottom: 1em;
 }
 
 .horizontaltitleContainer {
@@ -38,11 +40,18 @@
   border: 2px solid;
   border-color: #FFFFF0;
   border-radius: 10px;
+  align-items: center;
+  margin-bottom: 1em;
 }
 
 .subContainer {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+}
+
+.switchContainer {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
 }
 

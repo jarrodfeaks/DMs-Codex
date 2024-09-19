@@ -1,9 +1,60 @@
-import React, {FC} from 'react';
-import {TextField, Box, Typography, FormControlLabel, Switch, Button} from "@mui/material";
+import React, {FC, useState} from 'react';
+import {TextField, Box, Typography, FormControlLabel, Switch, Button, List, ListItem, ListItemText, Table, TableRow, TableHead, TableCell, TableBody} from "@mui/material";
 import Skill from './Skill';
 import './CharacterSheet.css';
 
+interface Weapon {
+  name: string;
+  hit: number;
+  diceAmount: number;
+  diceType: number;
+  damageModifier: number;
+  damageType: string;
+}
+
+//const damageTypes = ["None", "Bludgeoning", "Piercing", "Slashing", "Lightning", "Thunder", "Poison", "Cold", "Radiant", "Fire", "Necrotic", "Acid", "Psychic", "Force"];
+
 const CharacterSheet: FC = () => {
+
+  const [equipment, setEquipment] = useState<string[]>([]);
+  const [newEquipment, setNewEquipment] = useState('');
+
+  const [weapons, setWeapons] = useState<Weapon[]>([]);
+  const [newWeapon, setNewWeapon] = useState<Weapon>({
+    name: '',
+    hit: 0,
+    diceAmount: 1,
+    diceType: 6,
+    damageModifier: 0,
+    damageType: 'None'
+  });
+
+  const handleAddEquipment = () => {
+    if (newEquipment.trim() !== '') {
+      setEquipment([...equipment, newEquipment]);
+      setNewEquipment('');
+    }
+  }
+
+  const handleAddWeapon = () => {
+    setNewWeapon({
+      name: 'Massive Sword',
+      hit: 5,
+      diceAmount: 1,
+      diceType: 6,
+      damageModifier: 3,
+      damageType: 'Thunder'
+    });
+    setWeapons([...weapons, newWeapon]);
+    setNewWeapon({
+      name: '',
+      hit: 0,
+      diceAmount: 1,
+      diceType: 6,
+      damageModifier: 0,
+      damageType: 'None'
+    });
+  };
 
   return (
     //main container for all elements
@@ -21,38 +72,44 @@ const CharacterSheet: FC = () => {
       <Box className='titleContainer'>
         <Typography className='containerTitle'>Ability Scores</Typography>
         <Box className='subContainer'>
-        <TextField id='abilityScoresStrength' className='characterNumber' label='Strength (STR)' type='number'/>
-        <TextField id='abilityScoresDexterity' className='characterNumber' label='Dexterity (DEX)' type='number'/>
-        <TextField id='abilityScoresConstitution' className='characterNumber' label='Constitution (CON)' type='number'/>
-        <TextField id='abilityScoresIntelligence' className='characterNumber' label='Intelligence (INT)' type='number'/>
-        <TextField id='abilityScoresWisdom' className='characterNumber' label='Wisdom (WIS)' type='number'/>
-        <TextField id='abilityScoresCharisma' className='characterNumber' label='Charisma (CHA)' type='number'/>
+          <Box>
+            <TextField id='abilityScoresStrength' className='characterNumber' label='Strength (STR)' type='number'/>
+            <TextField id='abilityScoresDexterity' className='characterNumber' label='Dexterity (DEX)' type='number'/>
+            <TextField id='abilityScoresConstitution' className='characterNumber' label='Constitution (CON)' type='number'/>
+            <TextField id='abilityScoresIntelligence' className='characterNumber' label='Intelligence (INT)' type='number'/>
+            <TextField id='abilityScoresWisdom' className='characterNumber' label='Wisdom (WIS)' type='number'/>
+            <TextField id='abilityScoresCharisma' className='characterNumber' label='Charisma (CHA)' type='number'/>
+          </Box>
         </Box>
       </Box>
 
       {/* Ability modifiers */}
       <Box className='titleContainer'>
-      <Typography className='containerTitle'>Ability Modifiers</Typography>
-      <Box className='subContainer'>
-        <TextField id='abilityModifiersStrength' className='characterNumber' label='Strength (STR)' type='number'/>
-        <TextField id='abilityModifiersDexterity' className='characterNumber' label='Dexterity (DEX)' type='number'/>
-        <TextField id='abilityModifiersConstitution' className='characterNumber' label='Constitution (CON)' type='number'/>
-        <TextField id='abilityModifiersIntelligence' className='characterNumber' label='Intelligence (INT)' type='number'/>
-        <TextField id='abilityModifiersWisdom' className='characterNumber' label='Wisdom (WIS)' type='number'/>
-        <TextField id='abilityModifiersCharisma' className='characterNumber' label='Charisma (CHA)' type='number'/>
+        <Typography className='containerTitle'>Ability Modifiers</Typography>
+        <Box className='subContainer'>
+          <Box>
+            <TextField id='abilityModifiersStrength' className='characterNumber' label='Strength (STR)' type='number'/>
+            <TextField id='abilityModifiersDexterity' className='characterNumber' label='Dexterity (DEX)' type='number'/>
+            <TextField id='abilityModifiersConstitution' className='characterNumber' label='Constitution (CON)' type='number'/>
+            <TextField id='abilityModifiersIntelligence' className='characterNumber' label='Intelligence (INT)' type='number'/>
+            <TextField id='abilityModifiersWisdom' className='characterNumber' label='Wisdom (WIS)' type='number'/>
+            <TextField id='abilityModifiersCharisma' className='characterNumber' label='Charisma (CHA)' type='number'/>
+          </Box>
         </Box>
       </Box>
 
       {/* Saving throws */}
       <Box className='titleContainer'>
-      <Typography className='containerTitle'>Saving Throws</Typography>
-      <Box className='subContainer'>
-        <TextField id='savingThrowsStrength' className='characterNumber' label='Strength (STR)' type='number'/>
-        <TextField id='savingThrowsDexterity' className='characterNumber' label='Dexterity (DEX)' type='number'/>
-        <TextField id='savingThrowsConstitution' className='characterNumber' label='Constitution (CON)' type='number'/>
-        <TextField id='savingThrowsIntelligence' className='characterNumber' label='Intelligence (INT)' type='number'/>
-        <TextField id='savingThrowsWisdom' className='characterNumber' label='Wisdom (WIS)' type='number'/>
-        <TextField id='savingThrowsCharisma' className='characterNumber' label='Charisma (CHA)' type='number'/>
+        <Typography className='containerTitle'>Saving Throws</Typography>
+        <Box className='subContainer'>
+          <Box>
+            <TextField id='savingThrowsStrength' className='characterNumber' label='Strength (STR)' type='number'/>
+            <TextField id='savingThrowsDexterity' className='characterNumber' label='Dexterity (DEX)' type='number'/>
+            <TextField id='savingThrowsConstitution' className='characterNumber' label='Constitution (CON)' type='number'/>
+            <TextField id='savingThrowsIntelligence' className='characterNumber' label='Intelligence (INT)' type='number'/>
+            <TextField id='savingThrowsWisdom' className='characterNumber' label='Wisdom (WIS)' type='number'/>
+            <TextField id='savingThrowsCharisma' className='characterNumber' label='Charisma (CHA)' type='number'/>
+          </Box>
         </Box>
       </Box>
       
@@ -89,19 +146,21 @@ const CharacterSheet: FC = () => {
       <Box className='titleContainer'>
       <Typography className='containerTitle'>Life</Typography>
         <Box className='subContainer'>
-          <TextField id='lifeProficiencyBonus' className='characterNumber' label='Proficiency Bonus' type='number'/>
-          <TextField id='lifeMaxHP' className='characterNumber' label='Max HP' type='number' />
-          <TextField id='lifeCurrentHP' className='characterNumber' label='Current HP' type='number' />
-          <TextField id='lifeTempHP' className='characterNumber' label='Temp HP' type='number' />
-          <TextField id='lifeSuccessfulDeathSaves' className='characterNumber' label='Successful Death Saves' type='number' />
-          <TextField id='lifeFailedDeathSaves' className='characterNumber' label='Failed Death Saves' type='number' />
+          <Box>
+            <TextField id='lifeProficiencyBonus' className='characterNumber' label='Proficiency Bonus' type='number'/>
+            <TextField id='lifeMaxHP' className='characterNumber' label='Max HP' type='number' />
+            <TextField id='lifeCurrentHP' className='characterNumber' label='Current HP' type='number' />
+            <TextField id='lifeTempHP' className='characterNumber' label='Temp HP' type='number' />
+            <TextField id='lifeSuccessfulDeathSaves' className='characterNumber' label='Successful Death Saves' type='number' />
+            <TextField id='lifeFailedDeathSaves' className='characterNumber' label='Failed Death Saves' type='number' />
+          </Box>
         </Box>
       </Box>
 
       {/* Conditions */}
       <Box className='titleContainer'>
         <Typography className='containerTitle'>Conditions</Typography>
-        <Box className='subContainer'>
+        <Box className='switchContainer'>
           <FormControlLabel control={<Switch />} label="Blinded" />
           <FormControlLabel control={<Switch />} label="Charmed" />
           <FormControlLabel control={<Switch />} label="Deafened" />
@@ -125,7 +184,7 @@ const CharacterSheet: FC = () => {
         {/* Resistances */}
         <Box className='titleContainer'>
           <Typography className='containerTitle'>Resistances</Typography>
-          <Box className='subContainer'>
+          <Box className='switchContainer'>
             <FormControlLabel control={<Switch />} label="Acid" />
             <FormControlLabel control={<Switch />} label="Bludgeoning" />
             <FormControlLabel control={<Switch />} label="Cold" />
@@ -147,7 +206,7 @@ const CharacterSheet: FC = () => {
         {/* Immunities */}
         <Box className='titleContainer'>
           <Typography className='containerTitle'>Immunities</Typography>
-          <Box className='subContainer'>
+          <Box className='switchContainer'>
             <FormControlLabel control={<Switch />} label="Bludgeoning" />
             <FormControlLabel control={<Switch />} label="Piercing" />
             <FormControlLabel control={<Switch />} label="Slashing" />
@@ -181,7 +240,7 @@ const CharacterSheet: FC = () => {
         {/* Vulnerabilities */}
         <Box className='titleContainer'>
           <Typography className='containerTitle'>Vulnerability</Typography>
-          <Box className='subContainer'>
+          <Box className='switchContainer'>
             <FormControlLabel control={<Switch />} label="Bludgeoning" />
             <FormControlLabel control={<Switch />} label="Piercing" />
             <FormControlLabel control={<Switch />} label="Slashing" />
@@ -202,19 +261,52 @@ const CharacterSheet: FC = () => {
       {/* Weapons */}
       <Box className='titleContainer'>
         <Typography className='containerTitle'>Weapons</Typography>
-        <TextField/>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Weapon Name</TableCell>
+              <TableCell>Hit</TableCell>
+              <TableCell>Damage (Dice Amount)</TableCell>
+              <TableCell>Damage (Dice Type)</TableCell>
+              <TableCell>Damage Modifier</TableCell>
+              <TableCell>Damage Type</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {weapons.map((weapon, index) => (
+              <TableRow key={index}>
+                <TableCell>{weapon.name}</TableCell>
+                <TableCell>{weapon.hit}</TableCell>
+                <TableCell>{weapon.diceAmount}</TableCell>
+                <TableCell>{weapon.diceType}</TableCell>
+                <TableCell>{weapon.damageModifier}</TableCell>
+                <TableCell>{weapon.damageType}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+
+        <Button onClick={handleAddWeapon}>Add Weapon</Button>
       </Box>
 
       {/* Notes */}
       <Box className='titleContainer'>
         <Typography className='containerTitle'>Notes</Typography>
-        <TextField/>
+        <TextField className='characterText'/>
       </Box>
 
       {/* Equipment */}
       <Box className='titleContainer'>
         <Typography className='containerTitle'>Equipment</Typography>
-        <TextField/>
+        <TextField className='characterText' onChange={(e) => setNewEquipment(e.target.value)} label="Add Equipment"/>
+        <Button onClick={handleAddEquipment}>Add Equipment</Button>
+        <List>
+          {equipment.map((item, index) => (
+            <ListItem key={index}>
+              <ListItemText primary={item}/>
+            </ListItem>
+          ))}
+        </List>
       </Box>
 
       {/* Container for the save and cancel buttons */}
