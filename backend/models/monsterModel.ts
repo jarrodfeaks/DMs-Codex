@@ -2,7 +2,7 @@ import { Schema, model } from 'mongoose';
 import { ICharacter, characterSchema } from './characterModel';
 import { MonsterType, MovementType } from '../enums';
 
-interface IEnemy extends ICharacter {
+interface IMonster extends ICharacter {
     challengeRating: number;
     creatureType: MonsterType[];
     speed: number;
@@ -10,7 +10,7 @@ interface IEnemy extends ICharacter {
     proficiencyBonus: number;
 }
 
-const enemySchema = new Schema<IEnemy>({
+const monsterSchema = new Schema<IMonster>({
     challengeRating: { type: Number, required: true },
     creatureType: { type: [String], enum: Object.values(MonsterType), required: true },
     speed: { type: Number, required: true },
@@ -18,9 +18,9 @@ const enemySchema = new Schema<IEnemy>({
     proficiencyBonus: { type: Number, required: true, default: 0}
 });
 
-enemySchema.add(characterSchema);
+monsterSchema.add(characterSchema);
 
-const Enemy = model<IEnemy>('Enemy', enemySchema);
+const Monster = model<IMonster>('Monster', monsterSchema);
 
-export { IEnemy, Enemy };
+export { IMonster, Monster };
 

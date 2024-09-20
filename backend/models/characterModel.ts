@@ -16,10 +16,11 @@ interface ICharacter extends Document {
     initative: number;
     numBonusActions: number;
     numReactions: number;
-    effects: ObjectId[];
+    effectId: ObjectId;
     weapons: ObjectId[];
     notes?: string;
-    permanentModifiers: [Attribute | Skill, number][];
+    proficiencies: [Attribute | Skill];
+    permanentModifiers: Map<Attribute | Skill, number>;
 }
 
 const characterSchema = new Schema<ICharacter>({
@@ -37,10 +38,10 @@ const characterSchema = new Schema<ICharacter>({
     initative: { type: Number, required: true, default: 1 },
     numBonusActions: { type: Number, required: true, default: 1 },
     numReactions: { type: Number, required: true, default: 1 },
-    effects: [{ type: Schema.Types.ObjectId, ref: 'Effect', required: false, default: [] }],
+    effectId: { type: Schema.Types.ObjectId, ref: 'Effect', required: false, default: null },
     weapons: [{ type: Schema.Types.ObjectId, ref: 'Weapon', required: false, default: [] }],
     notes: { type: String, required: false },
-    permanentModifiers: { type: [[String, Number]], required: true, default: [] }
+    permanentModifiers: { type: Map, of: Number, required: true, default: {} }
 },
     {
         timestamps: true
