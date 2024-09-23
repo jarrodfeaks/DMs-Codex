@@ -41,23 +41,6 @@ const getPlayerInformation = async (req: Request, res: Response) => {
     }
 };
 
-// @desc Get a specific player
-// @route GET /players/:id/encounter/brief
-// @access Public
-const getPlayerEncounterBrief = async (req: Request, res: Response) => {
-    try {
-        const playerId = req.params.id;
-        const player = await Player.findById(playerId, 'name currentHitpoints maxHitpoints tempHitpoints armorClass deathSavingThrows');
-        if (player) {
-            res.status(200).json(player);
-        } else {
-            res.status(404).json({ message: 'Player not found' });
-        }
-    } catch (error: any) {
-        res.status(500).send(error.message);
-    }
-};
-
 // @desc Create a new player
 // @route POST /players/
 // @access Public
@@ -129,4 +112,4 @@ const getPlayerEffects = async (req: Request, res: Response) => {
     }
 }
 
-export { createPlayer, deletePlayer, getAllPlayers, getPlayerEncounterBrief, getPlayerEffects, getPlayerInformation, updatePlayer };
+export { createPlayer, deletePlayer, getAllPlayers, getPlayerEffects, getPlayerInformation, updatePlayer };

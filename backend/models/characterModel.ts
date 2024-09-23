@@ -20,7 +20,7 @@ interface ICharacter extends Document {
     weapons: ObjectId[];
     notes?: string;
     proficiencies: [Attribute | Skill];
-    permanentModifiers: Map<Attribute | Skill, number>;
+    customModifiers: Map<Attribute | Skill, number>;
 }
 
 const characterSchema = new Schema<ICharacter>({
@@ -41,7 +41,7 @@ const characterSchema = new Schema<ICharacter>({
     effectId: { type: Schema.Types.ObjectId, ref: 'Effect', required: false, default: null },
     weapons: [{ type: Schema.Types.ObjectId, ref: 'Weapon', required: false, default: [] }],
     notes: { type: String, required: false },
-    permanentModifiers: { type: Map, of: Number, required: true, default: {} }
+    customModifiers: { type: Map, of: Number, required: true, default: {} }
 },
     {
         timestamps: true

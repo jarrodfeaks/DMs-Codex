@@ -3,19 +3,27 @@ import { DamageType, Attribute, Dice } from '../enums';
 
 interface IWeapon {
     name: string;
-    damage: number;
+    baseDamage: number;
     damageType: DamageType;
     modification: Attribute;
-    damageDice: Dice;
+    damageDice: [Dice, number];
     notes: string;
 }
 
 const weaponSchema = new Schema<IWeapon>({
     name: { type: String, required: true },
-    damage: { type: Number, required: true, default: 1 },
+    baseDamage: { type: Number, required: true, default: 1 },
     damageType: { type: String, enum: Object.values(DamageType), required: true },
     modification: { type: String, enum: Object.values(Attribute), required: true },
-    damageDice: { type: String, enum: Object.values(Dice), required: true },
+    damageDice: {
+        type: [Schema.Types.Mixed],
+        validate: {
+            validator: function (value: any) {
+                return Array.isArray(value) && value.length === 2 && typeof value[1] === 'string' && typeof value[0] === 'number';
+            },
+            message: 'damageDice must be an array with [dice, amount]'
+        }
+    },
     notes: { type: String, required: false, default: '' }
 },
     {
