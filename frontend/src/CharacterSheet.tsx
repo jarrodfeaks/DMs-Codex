@@ -46,14 +46,14 @@ const CharacterSheet: FC = () => {
       damageType: 'Thunder'
     });
     setWeapons([...weapons, newWeapon]);
-    setNewWeapon({
-      name: '',
-      hit: 0,
-      diceAmount: 1,
-      diceType: 6,
-      damageModifier: 0,
-      damageType: 'None'
-    });
+    // setNewWeapon({
+    //   name: '',
+    //   hit: 0,
+    //   diceAmount: 1,
+    //   diceType: 6,
+    //   damageModifier: 0,
+    //   damageType: 'None'
+    // });
   };
 
   return (
@@ -116,28 +116,30 @@ const CharacterSheet: FC = () => {
       {/* Skills */}
       <Box className='titleContainer'>
         <Typography className='containerTitle'>Skills</Typography>
-        <Skill skillName="Acrobatics (DEX)" />
-        <Skill skillName="Animal Handling (WIS)" />
-        <Skill skillName="Arcana (INT)" />
-        <Skill skillName="Athletics (STR)" />
-        <Skill skillName="Deception (CHA)" />
-        <Skill skillName="History (INT)" />
-        <Skill skillName="Insight (WIS)" />
-        <Skill skillName="Intimidation (CHA)" />
-        <Skill skillName="Investigation (INT)" />
-        <Skill skillName="Medicine (WIS)" />
-        <Skill skillName="Nature (INT)" />
-        <Skill skillName="Perception (WIS)" />
-        <Skill skillName="Performance (CHA)" />
-        <Skill skillName="Persuasion (CHA)" />
-        <Skill skillName="Religion (INT)" />
-        <Skill skillName="Sleight of Hand (DEX)" />
-        <Skill skillName="Stealth (DEX)" />
-        <Skill skillName="Survival (WIS)" />
+        <Box className='skillsColumn'>
+          <Skill skillName="Acrobatics (DEX)" />
+          <Skill skillName="Animal Handling (WIS)" />
+          <Skill skillName="Arcana (INT)" />
+          <Skill skillName="Athletics (STR)" />
+          <Skill skillName="Deception (CHA)" />
+          <Skill skillName="History (INT)" />
+          <Skill skillName="Insight (WIS)" />
+          <Skill skillName="Intimidation (CHA)" />
+          <Skill skillName="Investigation (INT)" />
+          <Skill skillName="Medicine (WIS)" />
+          <Skill skillName="Nature (INT)" />
+          <Skill skillName="Perception (WIS)" />
+          <Skill skillName="Performance (CHA)" />
+          <Skill skillName="Persuasion (CHA)" />
+          <Skill skillName="Religion (INT)" />
+          <Skill skillName="Sleight of Hand (DEX)" />
+          <Skill skillName="Stealth (DEX)" />
+          <Skill skillName="Survival (WIS)" />
+        </Box>
       </Box>
 
       {/* initiative and armor */}
-      <Box className='horizontaltitleContainer'>
+      <Box className='initiativeArmorContainer'>
         <TextField id='initiative' className='characterNumber' label='Initiative' type='number'/>
         <TextField id='armor' className='characterNumber' label='Armor Class (AC)' type='number'/>
       </Box>
@@ -261,8 +263,8 @@ const CharacterSheet: FC = () => {
       {/* Weapons */}
       <Box className='titleContainer'>
         <Typography className='containerTitle'>Weapons</Typography>
-        <Table>
-          <TableHead>
+        <Table className='weaponTable'>
+          <TableHead className='weaponTableHeader'>
             <TableRow>
               <TableCell>Weapon Name</TableCell>
               <TableCell>Hit</TableCell>
@@ -274,7 +276,7 @@ const CharacterSheet: FC = () => {
           </TableHead>
           <TableBody>
             {weapons.map((weapon, index) => (
-              <TableRow key={index}>
+              <TableRow className='' key={index}>
                 <TableCell>{weapon.name}</TableCell>
                 <TableCell>{weapon.hit}</TableCell>
                 <TableCell>{weapon.diceAmount}</TableCell>
@@ -292,21 +294,22 @@ const CharacterSheet: FC = () => {
       {/* Notes */}
       <Box className='titleContainer'>
         <Typography className='containerTitle'>Notes</Typography>
-        <TextField className='characterText'/>
+        <TextField className='characterText notesText'/>
       </Box>
 
       {/* Equipment */}
       <Box className='titleContainer'>
         <Typography className='containerTitle'>Equipment</Typography>
-        <TextField className='characterText' onChange={(e) => setNewEquipment(e.target.value)} label="Add Equipment"/>
-        <Button onClick={handleAddEquipment}>Add Equipment</Button>
-        <List>
+        <List className='equipmentList'>
           {equipment.map((item, index) => (
             <ListItem key={index}>
               <ListItemText primary={item}/>
             </ListItem>
           ))}
         </List>
+        <TextField className='characterText' onChange={(e) => setNewEquipment(e.target.value)} label="Add Equipment"/>
+        <Button onClick={handleAddEquipment}>Add Equipment</Button>
+        
       </Box>
 
       {/* Container for the save and cancel buttons */}

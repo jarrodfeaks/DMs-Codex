@@ -1,3 +1,11 @@
+body {
+  font-family: 'Candara', sans-serif !important;
+}
+
+.MuiInputLabel-root {
+  font-family: 'Candara', sans-serif !important;
+}
+
 .mainContainer {
   display: flex;
   flex-direction: column;
@@ -21,7 +29,8 @@
 
 .containerTitle {
   color: #FF1B1C;
-  font-family: 'Copperplate', 'Copperplate Gothic Light', serif;
+  font-size: 150% !important;
+  font-family: 'Copperplate', 'Copperplate Gothic Light', serif !important;
 }
 
 .titleContainer {
@@ -32,6 +41,7 @@
   border-radius: 10px;
   align-items: center;
   margin-bottom: 1em;
+  padding-bottom: 1em;
 }
 
 .horizontaltitleContainer {
@@ -42,6 +52,7 @@
   border-radius: 10px;
   align-items: center;
   margin-bottom: 1em;
+  padding-bottom: 1em;
 }
 
 .subContainer {
@@ -55,3 +66,45 @@
   grid-template-columns: repeat(4, 1fr);
 }
 
+.weaponTable {
+  background-color: #FFFDD0;
+}
+
+.weaponTableHeader {
+  background-color: #A6977C;
+}
+
+.weaponTableRow {
+  background-color: black;
+  border: black;
+  border-width: 3px;
+}
+
+.equipmentList {
+  background-color: #FFFDD0; 
+  color: black;
+}
+
+.skillsColumn {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  column-gap: 1em;
+  margin: 1em;
+}
+
+.initiativeArmorContainer {
+  display: flex; 
+  justify-content: center; 
+  border: 2px solid;
+  border-color: #FFFFF0;
+  border-radius: 10px;
+  align-items: center;
+  margin-bottom: 1em;
+  gap: 20%;
+  padding-bottom: 1em;
+  padding-top: 1em;
+}
+
+.notesText {
+  width: 95%;
+}
