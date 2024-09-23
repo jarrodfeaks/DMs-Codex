@@ -17,7 +17,7 @@ declare module 'pdf2json' {
 
 const pdfPath = path.join(__dirname, '../../sample.pdf');
 
-const extractDataFromPDF = async (): Promise<FieldData[]> => {
+const extractFieldsFromPDF = async (): Promise<FieldData[]> => {
     return new Promise((resolve, reject) => {
         const pdfParser = new PDFParser();
 
@@ -31,4 +31,4 @@ const extractDataFromPDF = async (): Promise<FieldData[]> => {
     })
 }
 
-export { extractDataFromPDF };
+export default { extractFieldsFromPDF };
