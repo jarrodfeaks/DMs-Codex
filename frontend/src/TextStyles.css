@@ -1,0 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Balthazar&display=swap');
+
+.title {
+  font-family: 'Balthazar', serif;
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #FF1B1C;
+  margin-bottom: 1.5rem;
+}
+
+.h1 {
+  font-family: 'Balthazar', serif;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #34495e;
+  margin-bottom: 1.25rem;
+}
+
+.h2 {
+  font-family: 'Arial', sans-serif;
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #566573;
+  margin-bottom: 1rem;
+}
+
+.h3 {
+  font-family: 'Arial', sans-serif;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #7f8c8d;
+  margin-bottom: 0.75rem;
+}
+
+.normal {
+  font-family: 'Arial', sans-serif;
+  font-size: 1rem;
+  font-weight: normal;
+  color: #2d3436;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
