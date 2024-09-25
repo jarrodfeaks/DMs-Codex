@@ -18,6 +18,7 @@ function SkillsCalc() {
         wis: '',
         cha: ''
     });
+
     const [proficiencies, setProficiencies] = useState({
         Acrobatics: false,
         AnimalHandling: false,
@@ -38,7 +39,7 @@ function SkillsCalc() {
         Stealth: false,
         Survival: false
     });
-    
+
     const [output, setOutput] = useState([]);
 
     function calculateSkills() {
@@ -77,9 +78,8 @@ function SkillsCalc() {
     }
 
     return (
-        <div style={{marginLeft: 30}}>
-            <h2>D&D Skills Calculator</h2>
-            
+        <div style={{marginLeft: 40, display: 'flex', gap: 50, marginTop: 30 }}>
+            <div>
             <label>
                 Level:
                 <input 
@@ -126,15 +126,18 @@ function SkillsCalc() {
                     </label>
                 </div>
             ))}
+            </div>
 
-            <button onClick={calculateSkills}>Calculate Skills</button>
+            <div>
+                <button style={{backgroundColor: 'green', color: 'white'}} onClick={calculateSkills}>Calculate Skills</button>
 
-            <h3>Skill Modifiers</h3>
-            <ul>
-                {output.map((line, index) => (
-                    <li key={index}>{line}</li>
-                ))}
-            </ul>
+                <h3>Skill Modifiers</h3>
+                <ul>
+                    {output.map((line, index) => (
+                        <li key={index}>{line}</li>
+                    ))}
+                </ul>
+            </div>
         </div>
     );
 }
