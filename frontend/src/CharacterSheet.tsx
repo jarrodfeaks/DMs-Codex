@@ -1,5 +1,5 @@
 import React, {FC, useState} from 'react';
-import {TextField, Box, Typography, FormControlLabel, Switch, Button, List, ListItem, ListItemText, Table, TableRow, TableHead, TableCell, TableBody} from "@mui/material";
+import {TextField, Box, Typography, FormControlLabel, Switch, Button, List, ListItem, ListItemText, Table, TableRow, TableHead, TableCell, TableBody, Modal} from "@mui/material";
 import Skill from './Skill';
 import './CharacterSheet.css';
 
@@ -28,6 +28,22 @@ const CharacterSheet: FC = () => {
     damageModifier: 0,
     damageType: 'None'
   });
+
+  const [conditionsModalOpen, setConditionsModalOpen] = useState(false);
+  const handleConditionsOpen = () => setConditionsModalOpen(true);
+  const handleConditionsClose = () => setConditionsModalOpen(false);
+
+  const [resistancesModalOpen, setResistancesModalOpen] = useState(false);
+  const handleResistancesOpen = () => setResistancesModalOpen(true);
+  const handleResistancesClose = () => setResistancesModalOpen(false);
+
+  const [vulnerabilitiesModalOpen, setVulnerabilitiesModalOpen] = useState(false);
+  const handleVulnerabilitiesOpen = () => setVulnerabilitiesModalOpen(true);
+  const handleVulnerabilitiesClose = () => setVulnerabilitiesModalOpen(false);
+
+  const [immunitiesModalOpen, setImmunitiesModalOpen] = useState(false);
+  const handleImmunitiesOpen = () => setImmunitiesModalOpen(true);
+  const handleImmunitiesClose = () => setImmunitiesModalOpen(false);
 
   const handleAddEquipment = () => {
     if (newEquipment.trim() !== '') {
@@ -142,18 +158,27 @@ const CharacterSheet: FC = () => {
       <Box className='initiativeArmorContainer'>
         <TextField id='initiative' className='characterNumber' label='Initiative' type='number'/>
         <TextField id='armor' className='characterNumber' label='Armor Class (AC)' type='number'/>
+        <TextField id='proficiencyBonus' className='characterNumber' label='Proficiency Bonus' type='number'/>
       </Box>
 
-      {/* Life and death stats */}
+      {/* Life stats */}
       <Box className='titleContainer'>
       <Typography className='containerTitle'>Life</Typography>
         <Box className='subContainer'>
           <Box>
-            <TextField id='lifeProficiencyBonus' className='characterNumber' label='Proficiency Bonus' type='number'/>
             <TextField id='lifeMaxHP' className='characterNumber' label='Max HP' type='number' />
             <TextField id='lifeCurrentHP' className='characterNumber' label='Current HP' type='number' />
             <TextField id='lifeTempHP' className='characterNumber' label='Temp HP' type='number' />
-            <TextField id='lifeSuccessfulDeathSaves' className='characterNumber' label='Successful Death Saves' type='number' />
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Death throws */}
+      <Box className='titleContainer'>
+      <Typography className='containerTitle'>Death Throws</Typography>
+        <Box className='subContainer'>
+          <Box>
+            <TextField id='SuccessfulDeathSaves' className='characterNumber' label='Successful Death Saves' type='number' />
             <TextField id='lifeFailedDeathSaves' className='characterNumber' label='Failed Death Saves' type='number' />
           </Box>
         </Box>
@@ -162,22 +187,25 @@ const CharacterSheet: FC = () => {
       {/* Conditions */}
       <Box className='titleContainer'>
         <Typography className='containerTitle'>Conditions</Typography>
-        <Box className='switchContainer'>
-          <FormControlLabel control={<Switch />} label="Blinded" />
-          <FormControlLabel control={<Switch />} label="Charmed" />
-          <FormControlLabel control={<Switch />} label="Deafened" />
-          <FormControlLabel control={<Switch />} label="Frightened" />
-          <FormControlLabel control={<Switch />} label="Grappled" />
-          <FormControlLabel control={<Switch />} label="Incapacitated" />
-          <FormControlLabel control={<Switch />} label="Invisible" />
-          <FormControlLabel control={<Switch />} label="Paralyzed" />
-          <FormControlLabel control={<Switch />} label="Petrified" />
-          <FormControlLabel control={<Switch />} label="Poisoned" />
-          <FormControlLabel control={<Switch />} label="Prone" />
-          <FormControlLabel control={<Switch />} label="Restrained" />
-          <FormControlLabel control={<Switch />} label="Stunned" />
-          <FormControlLabel control={<Switch />} label="Unconscious" />
-        </Box>
+        <Button onClick={handleConditionsOpen}>Edit Conditions</Button>
+        <Modal open={conditionsModalOpen} onClose={handleConditionsClose}>
+          <Box className='switchContainer'>
+            <FormControlLabel control={<Switch />} label="Blinded" />
+            <FormControlLabel control={<Switch />} label="Charmed" />
+            <FormControlLabel control={<Switch />} label="Deafened" />
+            <FormControlLabel control={<Switch />} label="Frightened" />
+            <FormControlLabel control={<Switch />} label="Grappled" />
+            <FormControlLabel control={<Switch />} label="Incapacitated" />
+            <FormControlLabel control={<Switch />} label="Invisible" />
+            <FormControlLabel control={<Switch />} label="Paralyzed" />
+            <FormControlLabel control={<Switch />} label="Petrified" />
+            <FormControlLabel control={<Switch />} label="Poisoned" />
+            <FormControlLabel control={<Switch />} label="Prone" />
+            <FormControlLabel control={<Switch />} label="Restrained" />
+            <FormControlLabel control={<Switch />} label="Stunned" />
+            <FormControlLabel control={<Switch />} label="Unconscious" />
+          </Box>
+        </Modal>
       </Box>
 
       {/* Container for all conditions containers */}
@@ -186,6 +214,8 @@ const CharacterSheet: FC = () => {
         {/* Resistances */}
         <Box className='titleContainer'>
           <Typography className='containerTitle'>Resistances</Typography>
+          <Button onClick={handleResistancesOpen}>Edit Resistances</Button>
+        <Modal open={resistancesModalOpen} onClose={handleResistancesClose}>
           <Box className='switchContainer'>
             <FormControlLabel control={<Switch />} label="Acid" />
             <FormControlLabel control={<Switch />} label="Bludgeoning" />
@@ -204,10 +234,13 @@ const CharacterSheet: FC = () => {
             <FormControlLabel control={<Switch />} label="Thunder" />
             <FormControlLabel control={<Switch />} label="Traps" />
           </Box>
+          </Modal>
         </Box>
         {/* Immunities */}
         <Box className='titleContainer'>
           <Typography className='containerTitle'>Immunities</Typography>
+          <Button onClick={handleImmunitiesOpen}>Edit Immunities</Button>
+        <Modal open={immunitiesModalOpen} onClose={handleImmunitiesClose}>
           <Box className='switchContainer'>
             <FormControlLabel control={<Switch />} label="Bludgeoning" />
             <FormControlLabel control={<Switch />} label="Piercing" />
@@ -238,10 +271,13 @@ const CharacterSheet: FC = () => {
             <FormControlLabel control={<Switch />} label="Unconscious" />
             <FormControlLabel control={<Switch />} label="Exhaustion" />
           </Box>
+          </Modal>
         </Box>
         {/* Vulnerabilities */}
         <Box className='titleContainer'>
           <Typography className='containerTitle'>Vulnerability</Typography>
+          <Button onClick={handleVulnerabilitiesOpen}>Edit Vulnerabilities</Button>
+        <Modal open={vulnerabilitiesModalOpen} onClose={handleVulnerabilitiesClose}>
           <Box className='switchContainer'>
             <FormControlLabel control={<Switch />} label="Bludgeoning" />
             <FormControlLabel control={<Switch />} label="Piercing" />
@@ -257,6 +293,7 @@ const CharacterSheet: FC = () => {
             <FormControlLabel control={<Switch />} label="Psychic" />
             <FormControlLabel control={<Switch />} label="Force" />
           </Box>
+          </Modal>
         </Box>
       </Box>
 
@@ -267,9 +304,9 @@ const CharacterSheet: FC = () => {
           <TableHead className='weaponTableHeader'>
             <TableRow>
               <TableCell>Weapon Name</TableCell>
-              <TableCell>Hit</TableCell>
-              <TableCell>Damage (Dice Amount)</TableCell>
-              <TableCell>Damage (Dice Type)</TableCell>
+              {/* <TableCell>Hit</TableCell> */}
+              <TableCell>Damage</TableCell>
+              {/* <TableCell>Damage (Dice Type)</TableCell> */}
               <TableCell>Damage Modifier</TableCell>
               <TableCell>Damage Type</TableCell>
             </TableRow>
@@ -278,9 +315,9 @@ const CharacterSheet: FC = () => {
             {weapons.map((weapon, index) => (
               <TableRow className='' key={index}>
                 <TableCell>{weapon.name}</TableCell>
-                <TableCell>{weapon.hit}</TableCell>
-                <TableCell>{weapon.diceAmount}</TableCell>
-                <TableCell>{weapon.diceType}</TableCell>
+                {/* <TableCell>{weapon.hit}</TableCell> */}
+                <TableCell>{weapon.diceAmount}D{weapon.diceType} + {weapon.hit}</TableCell>
+                {/* <TableCell>{weapon.diceType}</TableCell> */}
                 <TableCell>{weapon.damageModifier}</TableCell>
                 <TableCell>{weapon.damageType}</TableCell>
               </TableRow>

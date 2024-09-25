@@ -100,11 +100,15 @@ body {
   border-radius: 10px;
   align-items: center;
   margin-bottom: 1em;
-  gap: 20%;
+  gap: 10%;
   padding-bottom: 1em;
   padding-top: 1em;
 }
 
 .notesText {
   width: 95%;
+}
+
+.normalButton {
+  
 }
