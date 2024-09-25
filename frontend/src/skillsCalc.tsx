@@ -19,25 +19,26 @@ function SkillsCalc() {
         cha: ''
     });
     const [proficiencies, setProficiencies] = useState({
-        Athletics: false,
         Acrobatics: false,
+        AnimalHandling: false,
+        Arcana: false,
+        Athletics: false,
+        Deception: false,
+        History: false,
+        Insight: false,
+        Intimidation: false,
+        Investigation: false,
+        Medicine: false,
+        Nature: false,
+        Perception: false,
+        Performance: false,
+        Persuasion: false,
+        Religion: false,
         SleightOfHand: false,
         Stealth: false,
-        Arcana: false,
-        History: false,
-        Investigation: false,
-        Nature: false,
-        Religion: false,
-        AnimalHandling: false,
-        Insight: false,
-        Medicine: false,
-        Perception: false,
-        Survival: false,
-        Deception: false,
-        Intimidation: false,
-        Performance: false,
-        Persuasion: false
+        Survival: false
     });
+    
     const [output, setOutput] = useState([]);
 
     function calculateSkills() {
