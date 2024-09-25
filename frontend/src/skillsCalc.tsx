@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
+import {Box, Typography, Modal} from '@mui/material';
 
 function calculateModifier(abilityScore) {
     return Math.floor((abilityScore - 10) / 2);
@@ -41,6 +42,10 @@ function SkillsCalc() {
     });
 
     const [output, setOutput] = useState([]);
+    
+    const [open, setOpen] = React.useState(false);
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
 
     function calculateSkills() {
         const proficiencyBonus = getProficiencyBonus(level);
@@ -130,6 +135,14 @@ function SkillsCalc() {
 
             <div>
                 <button style={{backgroundColor: 'green', color: 'white'}} onClick={calculateSkills}>Calculate Skills</button>
+                <button style={{backgroundColor: 'blue', color: 'white'}} onClick={handleOpen}>Open Modal</button>
+                    <Modal open={open} onClose={handleClose}>
+                        <Box sx={{position: 'absolute', top: '50%', left: '60%', transform: 'translate(-50%, -50%)', width: 1000, height: 700, bgcolor: 'background.paper', border: '2px solid #000', boxShadow: 24, p: 4,}}>
+                            <Typography>
+                                Peepee Poopoo
+                            </Typography>
+                        </Box>
+                    </Modal>
 
                 <h3>Skill Modifiers</h3>
                 <ul>
