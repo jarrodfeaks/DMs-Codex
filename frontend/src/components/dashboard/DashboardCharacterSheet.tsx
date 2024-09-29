@@ -1,7 +1,7 @@
 import React, {FC, useState} from 'react';
 import {TextField, Box, Typography, FormControlLabel, Switch, Button, List, ListItem, ListItemText, Table, TableRow, TableHead, TableCell, TableBody, Modal} from "@mui/material";
-import Skill from './Skill';
-import './CharacterSheet.css';
+import DashboardCharacterSheetSkill from './DashboardCharacterSheetSkill.tsx';
+import './DashboardCharacterSheet.css';
 
 interface Weapon {
   name: string;
@@ -14,7 +14,7 @@ interface Weapon {
 
 //const damageTypes = ["None", "Bludgeoning", "Piercing", "Slashing", "Lightning", "Thunder", "Poison", "Cold", "Radiant", "Fire", "Necrotic", "Acid", "Psychic", "Force"];
 
-const CharacterSheet: FC = () => {
+const DashboardCharacterSheet: FC = () => {
 
   const [equipment, setEquipment] = useState<string[]>([]);
   const [newEquipment, setNewEquipment] = useState('');
@@ -128,29 +128,29 @@ const CharacterSheet: FC = () => {
           </Box>
         </Box>
       </Box>
-      
+
       {/* Skills */}
       <Box className='titleContainer'>
         <Typography className='containerTitle'>Skills</Typography>
         <Box className='skillsColumn'>
-          <Skill skillName="Acrobatics (DEX)" />
-          <Skill skillName="Animal Handling (WIS)" />
-          <Skill skillName="Arcana (INT)" />
-          <Skill skillName="Athletics (STR)" />
-          <Skill skillName="Deception (CHA)" />
-          <Skill skillName="History (INT)" />
-          <Skill skillName="Insight (WIS)" />
-          <Skill skillName="Intimidation (CHA)" />
-          <Skill skillName="Investigation (INT)" />
-          <Skill skillName="Medicine (WIS)" />
-          <Skill skillName="Nature (INT)" />
-          <Skill skillName="Perception (WIS)" />
-          <Skill skillName="Performance (CHA)" />
-          <Skill skillName="Persuasion (CHA)" />
-          <Skill skillName="Religion (INT)" />
-          <Skill skillName="Sleight of Hand (DEX)" />
-          <Skill skillName="Stealth (DEX)" />
-          <Skill skillName="Survival (WIS)" />
+          <DashboardCharacterSheetSkill skillName="Acrobatics (DEX)" />
+          <DashboardCharacterSheetSkill skillName="Animal Handling (WIS)" />
+          <DashboardCharacterSheetSkill skillName="Arcana (INT)" />
+          <DashboardCharacterSheetSkill skillName="Athletics (STR)" />
+          <DashboardCharacterSheetSkill skillName="Deception (CHA)" />
+          <DashboardCharacterSheetSkill skillName="History (INT)" />
+          <DashboardCharacterSheetSkill skillName="Insight (WIS)" />
+          <DashboardCharacterSheetSkill skillName="Intimidation (CHA)" />
+          <DashboardCharacterSheetSkill skillName="Investigation (INT)" />
+          <DashboardCharacterSheetSkill skillName="Medicine (WIS)" />
+          <DashboardCharacterSheetSkill skillName="Nature (INT)" />
+          <DashboardCharacterSheetSkill skillName="Perception (WIS)" />
+          <DashboardCharacterSheetSkill skillName="Performance (CHA)" />
+          <DashboardCharacterSheetSkill skillName="Persuasion (CHA)" />
+          <DashboardCharacterSheetSkill skillName="Religion (INT)" />
+          <DashboardCharacterSheetSkill skillName="Sleight of Hand (DEX)" />
+          <DashboardCharacterSheetSkill skillName="Stealth (DEX)" />
+          <DashboardCharacterSheetSkill skillName="Survival (WIS)" />
         </Box>
       </Box>
 
@@ -346,7 +346,7 @@ const CharacterSheet: FC = () => {
         </List>
         <TextField className='characterText' onChange={(e) => setNewEquipment(e.target.value)} label="Add Equipment"/>
         <Button onClick={handleAddEquipment}>Add Equipment</Button>
-        
+
       </Box>
 
       {/* Container for the save and cancel buttons */}
@@ -362,4 +362,4 @@ const CharacterSheet: FC = () => {
   );
 };
 
-export default CharacterSheet;
+export default DashboardCharacterSheet;
