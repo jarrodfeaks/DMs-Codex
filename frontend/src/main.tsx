@@ -8,6 +8,7 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 import theme from "./assets/theme.ts";
 import Encounter from "./routes/encounter.tsx";
 import Assistant from "./routes/assistant.tsx";
+import "./index.css";
 
 const getUser = async () => {
     const res = await fetch('/api/profile');

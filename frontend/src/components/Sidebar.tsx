@@ -14,7 +14,7 @@ import { useState } from "react";
 import {Add, AutoStories, ExpandLess, ExpandMore, Logout} from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import SidebarCampaign from "./SidebarCampaign.tsx";
-import CreateCampaignModal from "./CreateCampaignModal.tsx";
+import CreateCampaignModal from "./modals/CreateCampaign.tsx";
 
 export default function Sidebar({ user, campaigns, currentCampaign }: { user: User, campaigns: Campaign[], currentCampaign: Campaign | undefined }) {
     const navigate = useNavigate();

@@ -4,6 +4,7 @@ import Sidebar from "../components/Sidebar.tsx";
 import { Outlet, useLoaderData, useMatch } from "react-router-dom";
 import Start from "./start.tsx";
 import {Campaign, User} from "../types.ts";
+import { DialogsProvider } from '@toolpad/core/useDialogs';
 
 export type ContextType = { currentCampaign: Campaign | undefined };
 
@@ -23,12 +24,14 @@ function App() {
 
     return (
         <>
-            <Box sx={{ display: 'flex' }}>
-                <Sidebar user={userData.user} campaigns={userData.campaigns} currentCampaign={currentCampaign} />
-                <Box sx={{ width: "100%", p: 2 }}>
-                    { atRoot ? <Start /> : <Outlet context={{ currentCampaign } satisfies ContextType} /> }
+            <DialogsProvider>
+                <Box sx={{ display: 'flex' }}>
+                    <Sidebar user={userData.user} campaigns={userData.campaigns} currentCampaign={currentCampaign} />
+                    <Box sx={{ width: "100%", p: 2 }}>
+                        { atRoot ? <Start /> : <Outlet context={{ currentCampaign } satisfies ContextType} /> }
+                    </Box>
                 </Box>
-            </Box>
+            </DialogsProvider>
         </>
     )
 }

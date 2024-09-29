@@ -1,6 +1,8 @@
 import {Box, Button, Modal, TextField, Typography} from "@mui/material";
 import {useState} from "react";
 
+// TODO: should update this to use the useDialog hook like the other modals
+
 export default function CreateCampaignModal({ open, onClose }: { open: boolean, onClose: () => void }) {
 
     const [ name, setName ] = useState<string>("");
