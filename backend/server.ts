@@ -52,13 +52,13 @@ app.get('/profile', (req, res) => {
 
 db.connect();
 
-app.get("/api/test", (req, res) => {
+app.get("/test", (req, res) => {
     res.json({ message: "Hello :)" });
 });
 
-app.use("/api/players", playerRoutes);
+app.use("/players", playerRoutes);
 
-app.get("/api/test/db", async (req, res) => {
+app.get("/test/db", async (req, res) => {
     try {
         const data = await mongoose.connection.db?.listCollections().toArray();
         res.json(data);
