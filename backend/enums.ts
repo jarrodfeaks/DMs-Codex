@@ -20,6 +20,8 @@ enum Activity {
     Action = "Action",
     BonusAction = "Bonus Action",
     Reaction = "Reaction",
+    DeathSaves = "Death Saves",
+    Dead = "Dead",
 }
 
 enum Attribute {
@@ -70,6 +72,10 @@ enum Dice {
     D10 = "D10",
     D12 = "D12",
     D20 = "D20",
+}
+
+enum Initative {
+    Initative = "Initative",
 }
 
 enum MonsterType {
@@ -147,4 +153,4 @@ enum Status {
     Exhaustion = "Exhaustion",
 }
 
-export { Action, Activity, Attribute, Class, DamageType, Dice, MonsterType, MovementType, Race, Skill, Status, };
+export { Action, Activity, Attribute, Class, DamageType, Dice, Initative, MonsterType, MovementType, Race, Skill, Status, };

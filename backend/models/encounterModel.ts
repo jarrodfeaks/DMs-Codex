@@ -19,8 +19,8 @@ const encounterSchema = new Schema<IEncounter>({
             entity_id: { type: Schema.Types.ObjectId, required: true },
             initiative_score: { type: Number, required: true }
         }
-    ]
-    
+    ],
+    combat_log: { type: String, required: false, default: '' }
 },
     {
         timestamps: true

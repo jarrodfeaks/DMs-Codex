@@ -1,4 +1,4 @@
-import { Schema, model, Document, ObjectId } from 'mongoose';
+import { Schema, model, ObjectId } from 'mongoose';
 
 interface ICampaign {
     dm_id: ObjectId;
@@ -12,7 +12,7 @@ interface ICampaign {
 const campaignSchema = new Schema<ICampaign>({
     dm_id: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
     name: { type: String, required: true },
-    description: { type: String, required: true },
+    description: { type: String },
     encounters: [{ type: Schema.Types.ObjectId, ref: 'Encounter' }],
     players: [{ type: Schema.Types.ObjectId, ref: 'Player' }],
     monsters: [{ type: Schema.Types.ObjectId, ref: 'Monster' }]

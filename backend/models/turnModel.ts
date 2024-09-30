@@ -1,6 +1,4 @@
 import { Schema, model, ObjectId } from 'mongoose';
-import { ICharacter } from './characterModel';
-import { IWeapon } from './weaponModel';
 
 interface ITurn {
     unitTurn: ObjectId;
