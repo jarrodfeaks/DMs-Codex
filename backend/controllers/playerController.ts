@@ -41,6 +41,41 @@ const getPlayerInformation = async (req: Request, res: Response) => {
     }
 };
 
+// @desc Get a specific player
+// @route GET /players/:id/brief
+// @access Public
+const getPlayerInformationBrief = async (req: Request, res: Response) => {
+    try {
+        const playerId = req.params.id;
+        const player = await Player.findById(playerId).select('_id name level class');
+        if (player) {
+            res.status(200).json(player);
+        } else {
+            res.status(404).json({ message: 'Player not found' });
+        }
+    } catch (error: any) {
+        res.status(500).send(error.message);
+    }
+};
+
+// @desc Get brief information for a list of players
+// @route POST /players/brief
+// @access Public
+const getPlayersInformationBrief = async (req: Request, res: Response) => {
+    try {
+        const { playerIds } = req.body;
+
+        if (!Array.isArray(playerIds) || playerIds.length === 0) {
+            return res.status(400).json({ message: 'playerIds must be a non-empty array' });
+        }
+
+        const players = await Player.find({ _id: { $in: playerIds } }).select('_id name level class');
+        res.status(200).json(players);
+    } catch (error: any) {
+        res.status(500).send(error.message);
+    }
+};
+
 // @desc Create a new player
 // @route POST /players/
 // @access Public
@@ -112,4 +147,4 @@ const getPlayerEffects = async (req: Request, res: Response) => {
     }
 }
 
-export { createPlayer, deletePlayer, getAllPlayers, getPlayerEffects, getPlayerInformation, updatePlayer };
+export { createPlayer, deletePlayer, getAllPlayers, getPlayerEffects, getPlayerInformation, getPlayerInformationBrief, getPlayersInformationBrief, updatePlayer };

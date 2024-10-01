@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { IEncounter, Encounter } from '../models/encounterModel';
+import { Turn } from '../models/turnModel';
 
 // @desc Get a specific encounter
 // @route GET /encounters/:id
@@ -52,6 +53,42 @@ const updateEncounter = async (req: Request, res: Response) => {
     }
 };
 
+// @desc Reset all turns in an encounter to default values
+// @route PUT /encounters/:id/reset-turns
+// @access Public
+const resetTurnsInEncounter = async (req: Request, res: Response) => {
+    try {
+        const encounterId = req.params.id;
+        const encounter = await Encounter.findById(encounterId).populate('turns');
+
+        if (!encounter) {
+            return res.status(404).json({ message: 'Encounter not found' });
+        }
+
+        const defaultValues = {
+            action: '',
+            weapon: null,
+            custom: '',
+            targetUnits: [],
+            hitDiceRoll: 0,
+            damageRoll: 0,
+            bonusAction: false,
+            reaction: false
+        };
+
+        const resetTurns = await Promise.all(
+            encounter.turns.map(async (turnId) => {
+                return await Turn.findByIdAndUpdate(turnId, defaultValues, { new: true, runValidators: true });
+            })
+        );
+
+        res.status(200).json(resetTurns);
+    } catch (error: any) {
+        console.error(error.stack);
+        res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
+    }
+};
+
 // @desc Delete an encounter
 // @route DELETE /encounters/:id
 // @access Public
@@ -70,4 +107,4 @@ const deleteEncounter = async (req: Request, res: Response) => {
     }
 };
 
-export {getEncounterInformation, createEncounter, updateEncounter, deleteEncounter };
+export {getEncounterInformation, createEncounter, resetTurnsInEncounter, updateEncounter, deleteEncounter };

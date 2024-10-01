@@ -6,7 +6,6 @@ const router = express.Router();
 router.route('/')
     .get(getAllEffects)
     .post(createEffect);
-
 router.route('/:id')
     .get(getEffectInformation)
     .put(updateEffect)

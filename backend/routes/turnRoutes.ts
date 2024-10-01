@@ -1,5 +1,5 @@
 import express from 'express';
-import { deleteTurn, getTurnInformation, createTurn, updateTurn } from '../controllers/turnController';
+import { deleteTurn, getTurnInformation, createTurn, resetTurnToDefault, updateTurn } from '../controllers/turnController';
 
 const router = express.Router();
 
@@ -9,5 +9,6 @@ router.route('/:id')
     .get(getTurnInformation)
     .post(updateTurn)
     .delete(deleteTurn);
-
+router.route('/:id/reset')
+    .put(resetTurnToDefault);
 export default router;

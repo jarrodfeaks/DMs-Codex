@@ -67,7 +67,6 @@ const createMonster = async (req: Request, res: Response) => {
         // Assign monster with new empty effect
         const effectId = await CreateEffect();
         newMonster.effectId = effectId as unknown as Schema.Types.ObjectId;
-
         const savedMonster = await Monster.create(newMonster);
         res.status(201).json(savedMonster._id);
     } catch (error: any) {

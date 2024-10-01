@@ -3,6 +3,7 @@ import { Schema, model, ObjectId } from 'mongoose';
 interface IEncounter {
     campaign_id: ObjectId;
     name: string;
+    turns: ObjectId[];
     players: ObjectId[];
     monsters: ObjectId[];
     initiative_order: { entity_id: ObjectId; initiative_score: number }[];
@@ -12,6 +13,7 @@ interface IEncounter {
 const encounterSchema = new Schema<IEncounter>({
     campaign_id: { type: Schema.Types.ObjectId, required: true },
     name: { type: String, required: true },
+    turns: [{ type: Schema.Types.ObjectId, ref: 'Turn' }],
     players: [{ type: Schema.Types.ObjectId, ref: 'Player' }],
     monsters: [{ type: Schema.Types.ObjectId, ref: 'Monster' }],
     initiative_order: [
