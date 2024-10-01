@@ -4,6 +4,7 @@ import cors from "cors";
 import db from "./db";
 import mongoose from "mongoose";
 import playerRoutes from './routes/playerRoutes';
+import monsterRoutes from './routes/monsterRoutes';
 import { auth } from "express-openid-connect";
 const PORT = process.env.PORT || 5000;
 const BACKEND_URL = `http://localhost:${PORT}`;
@@ -57,6 +58,7 @@ app.get("/test", (req, res) => {
 });
 
 app.use("/players", playerRoutes);
+app.use("/monsters", monsterRoutes);
 
 app.get("/test/db", async (req, res) => {
     try {
