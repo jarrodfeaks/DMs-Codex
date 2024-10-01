@@ -30,7 +30,16 @@ const getAllPlayers = async (req: Request, res: Response) => {
 const getPlayerInformation = async (req: Request, res: Response) => {
     try {
         const playerId = req.params.id;
-        const player = await Player.findById(playerId);
+        const player = await Player.findById(playerId)
+            .populate({
+                path: 'effects',
+                select: '-_id'
+            })
+            .populate({
+                path: 'weapons',
+                select: '-_id name type damage'
+            });
+
         if (player) {
             res.status(200).json(player);
         } else {

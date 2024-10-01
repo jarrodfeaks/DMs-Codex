@@ -30,7 +30,16 @@ const getAllMonsters = async (req: Request, res: Response) => {
 const getMonsterInformation = async (req: Request, res: Response) => {
     try {
         const monsterId = req.params.id;
-        const monster = await Monster.findById(monsterId);
+        const monster = await Monster.findById(monsterId)
+            .populate({
+                path: 'effects',
+                select: '-_id'
+            })
+            .populate({
+                path: 'weapons',
+                select: '_id name type damage'
+            });
+
         if (monster) {
             res.status(200).json(monster);
         } else {
