@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, FormControlLabel, Switch, Dialog } from '@mui/material';
+import { Box, Typography, FormControlLabel, Switch, Dialog, Paper} from '@mui/material';
 
 function CharacterConditions ({open, onClose}: {open: boolean, onClose: () => void}) {
 
@@ -12,7 +12,11 @@ function CharacterConditions ({open, onClose}: {open: boolean, onClose: () => vo
 
   return (
     <Dialog open={open} onClose={onClose}>
-        <Typography variant='h4'>Skills</Typography>
+      <Box sx={{ bgcolor: 'background.paper', p: 2 }}>
+        <Paper sx={{ p: 1, mb: 2 }}>
+          <Typography variant='h4'>Conditions</Typography>
+        </Paper>
+        <Paper sx={{ p: 1, mb: 2 }}>  
           <Box sx={sxProps.switchContainer}>
             <FormControlLabel control={<Switch />} label="Blinded" />
             <FormControlLabel control={<Switch />} label="Charmed" />
@@ -29,6 +33,8 @@ function CharacterConditions ({open, onClose}: {open: boolean, onClose: () => vo
             <FormControlLabel control={<Switch />} label="Stunned" />
             <FormControlLabel control={<Switch />} label="Unconscious" />
           </Box>
+        </Paper>
+      </Box>
     </Dialog>
   );
 };

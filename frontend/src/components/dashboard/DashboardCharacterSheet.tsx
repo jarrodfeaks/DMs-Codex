@@ -269,25 +269,6 @@ const DashboardCharacterSheet: FC = () => {
       {/* Conditions */}
       <Box sx={sxProps.titleContainer}>
         <Typography variant='h4'>Conditions</Typography>
-        {/* <Button onClick={handleConditionsOpen}>Edit Conditions</Button>
-        <Modal open={conditionsModalOpen} onClose={handleConditionsClose}>
-          <Box sx={sxProps.switchContainer}>
-            <FormControlLabel control={<Switch />} label="Blinded" />
-            <FormControlLabel control={<Switch />} label="Charmed" />
-            <FormControlLabel control={<Switch />} label="Deafened" />
-            <FormControlLabel control={<Switch />} label="Frightened" />
-            <FormControlLabel control={<Switch />} label="Grappled" />
-            <FormControlLabel control={<Switch />} label="Incapacitated" />
-            <FormControlLabel control={<Switch />} label="Invisible" />
-            <FormControlLabel control={<Switch />} label="Paralyzed" />
-            <FormControlLabel control={<Switch />} label="Petrified" />
-            <FormControlLabel control={<Switch />} label="Poisoned" />
-            <FormControlLabel control={<Switch />} label="Prone" />
-            <FormControlLabel control={<Switch />} label="Restrained" />
-            <FormControlLabel control={<Switch />} label="Stunned" />
-            <FormControlLabel control={<Switch />} label="Unconscious" />
-          </Box>
-        </Modal> */}
         <Button onClick={handleOpenConditions} variant='contained' color='primary'>Edit Conditions</Button>
       </Box>
 
@@ -297,88 +278,16 @@ const DashboardCharacterSheet: FC = () => {
         {/* Resistances */}
         <Box sx={sxProps.titleContainer}>
           <Typography variant='h6'>Resistances</Typography>
-          {/* <Button onClick={handleResistancesOpen}>Edit Resistances</Button>
-        <Modal open={resistancesModalOpen} onClose={handleResistancesClose}>
-          <Box sx={sxProps.switchContainer}>
-            <FormControlLabel control={<Switch />} label="Acid" />
-            <FormControlLabel control={<Switch />} label="Bludgeoning" />
-            <FormControlLabel control={<Switch />} label="Cold" />
-            <FormControlLabel control={<Switch />} label="Fire" />
-            <FormControlLabel control={<Switch />} label="Force" />
-            <FormControlLabel control={<Switch />} label="Lightning" />
-            <FormControlLabel control={<Switch />} label="Necrotic" />
-            <FormControlLabel control={<Switch />} label="Piercing" />
-            <FormControlLabel control={<Switch />} label="Poison" />
-            <FormControlLabel control={<Switch />} label="Psychic" />
-            <FormControlLabel control={<Switch />} label="Radiant" />
-            <FormControlLabel control={<Switch />} label="Ranged" />
-            <FormControlLabel control={<Switch />} label="Slashing" />
-            <FormControlLabel control={<Switch />} label="Spells" />
-            <FormControlLabel control={<Switch />} label="Thunder" />
-            <FormControlLabel control={<Switch />} label="Traps" />
-          </Box>
-          </Modal> */}
           <Button onClick={handleOpenResistances} variant='contained' color='primary'>Edit Resistances</Button>
         </Box>
         {/* Immunities */}
         <Box sx={sxProps.titleContainer}>
           <Typography variant='h6'>Immunities</Typography>
-          {/* <Button onClick={handleImmunitiesOpen}>Edit Immunities</Button>
-        <Modal open={immunitiesModalOpen} onClose={handleImmunitiesClose}>
-          <Box sx={sxProps.switchContainer}>
-            <FormControlLabel control={<Switch />} label="Bludgeoning" />
-            <FormControlLabel control={<Switch />} label="Piercing" />
-            <FormControlLabel control={<Switch />} label="Slashing" />
-            <FormControlLabel control={<Switch />} label="Lightning" />
-            <FormControlLabel control={<Switch />} label="Thunder" />
-            <FormControlLabel control={<Switch />} label="Poison" />
-            <FormControlLabel control={<Switch />} label="Cold" />
-            <FormControlLabel control={<Switch />} label="Radiant" />
-            <FormControlLabel control={<Switch />} label="Fire" />
-            <FormControlLabel control={<Switch />} label="Necrotic" />
-            <FormControlLabel control={<Switch />} label="Acid" />
-            <FormControlLabel control={<Switch />} label="Psychic" />
-            <FormControlLabel control={<Switch />} label="Force" />
-            <FormControlLabel control={<Switch />} label="Blinded" />
-            <FormControlLabel control={<Switch />} label="Charmed" />
-            <FormControlLabel control={<Switch />} label="Deafened" />
-            <FormControlLabel control={<Switch />} label="Frightened" />
-            <FormControlLabel control={<Switch />} label="Grappled" />
-            <FormControlLabel control={<Switch />} label="Incapacitated" />
-            <FormControlLabel control={<Switch />} label="Invisible" />
-            <FormControlLabel control={<Switch />} label="Paralyzed" />
-            <FormControlLabel control={<Switch />} label="Petrified" />
-            <FormControlLabel control={<Switch />} label="Poisoned" />
-            <FormControlLabel control={<Switch />} label="Prone" />
-            <FormControlLabel control={<Switch />} label="Restrained" />
-            <FormControlLabel control={<Switch />} label="Stunned" />
-            <FormControlLabel control={<Switch />} label="Unconscious" />
-            <FormControlLabel control={<Switch />} label="Exhaustion" />
-          </Box>
-          </Modal> */}
           <Button onClick={handleOpenImmunities} variant='contained' color='primary'>Edit Immunities</Button>
         </Box>
         {/* Vulnerabilities */}
         <Box sx={sxProps.titleContainer}>
           <Typography variant='h6'>Vulnerability</Typography>
-          {/* <Button onClick={handleVulnerabilitiesOpen}>Edit Vulnerabilities</Button>
-        <Modal open={vulnerabilitiesModalOpen} onClose={handleVulnerabilitiesClose}>
-          <Box sx={sxProps.switchContainer}>
-            <FormControlLabel control={<Switch />} label="Bludgeoning" />
-            <FormControlLabel control={<Switch />} label="Piercing" />
-            <FormControlLabel control={<Switch />} label="Slashing" />
-            <FormControlLabel control={<Switch />} label="Lightning" />
-            <FormControlLabel control={<Switch />} label="Thunder" />
-            <FormControlLabel control={<Switch />} label="Poison" />
-            <FormControlLabel control={<Switch />} label="Cold" />
-            <FormControlLabel control={<Switch />} label="Radiant" />
-            <FormControlLabel control={<Switch />} label="Fire" />
-            <FormControlLabel control={<Switch />} label="Necrotic" />
-            <FormControlLabel control={<Switch />} label="Acid" />
-            <FormControlLabel control={<Switch />} label="Psychic" />
-            <FormControlLabel control={<Switch />} label="Force" />
-          </Box>
-          </Modal> */}
           <Button onClick={handleOpenVulnerabilities} variant='contained' color='primary'>Edit Vulnerabilities</Button>
         </Box>
       </Box>
@@ -423,6 +332,8 @@ const DashboardCharacterSheet: FC = () => {
       {/* Equipment */}
       <Box sx={sxProps.titleContainer}>
         <Typography variant='h4'>Equipment</Typography>
+        <TextField onChange={(e) => setNewEquipment(e.target.value)} label="Add Equipment"/>
+        <Button onClick={handleAddEquipment}>Add Equipment</Button>
         <List sx={sxProps.equipmentList}>
           {equipment.map((item, index) => (
             <ListItem key={index}>
@@ -430,17 +341,14 @@ const DashboardCharacterSheet: FC = () => {
             </ListItem>
           ))}
         </List>
-        <TextField onChange={(e) => setNewEquipment(e.target.value)} label="Add Equipment"/>
-        <Button onClick={handleAddEquipment}>Add Equipment</Button>
-
       </Box>
 
       {/* Container for the save and cancel buttons */}
       <Box sx={sxProps.horizontaltitleContainer}>
-        <Button>
+        <Button variant='contained'>
           Save
         </Button>
-        <Button>
+        <Button variant='contained'>
           Cancel
         </Button>
       </Box>

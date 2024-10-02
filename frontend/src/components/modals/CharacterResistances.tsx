@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, FormControlLabel, Switch, Dialog } from '@mui/material';
+import { Box, Typography, FormControlLabel, Switch, Dialog, Paper } from '@mui/material';
 
 function CharacterResistances ({open, onClose}: {open: boolean, onClose: () => void}) {
 
@@ -12,7 +12,11 @@ function CharacterResistances ({open, onClose}: {open: boolean, onClose: () => v
 
   return (
     <Dialog open={open} onClose={onClose}>
-        <Typography variant='h4'>Skills</Typography>
+      <Box sx={{ bgcolor: 'background.paper', p: 2 }}>
+        <Paper sx={{ p: 1, mb: 2 }}>
+          <Typography variant='h4'>Resistances</Typography>
+        </Paper>
+        <Paper sx={{ p: 1, mb: 2 }}>
           <Box sx={sxProps.switchContainer}>
             <FormControlLabel control={<Switch />} label="Acid" />
             <FormControlLabel control={<Switch />} label="Bludgeoning" />
@@ -31,6 +35,8 @@ function CharacterResistances ({open, onClose}: {open: boolean, onClose: () => v
             <FormControlLabel control={<Switch />} label="Thunder" />
             <FormControlLabel control={<Switch />} label="Traps" />
           </Box>
+        </Paper>
+      </Box>
     </Dialog>
   );
 };

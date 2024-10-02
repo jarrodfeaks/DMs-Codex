@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, FormControlLabel, Switch, Dialog } from '@mui/material';
+import { Box, Typography, FormControlLabel, Switch, Dialog, Paper } from '@mui/material';
 
 function CharacterVulnerabilities ({open, onClose}: {open: boolean, onClose: () => void}) {
 
@@ -12,7 +12,11 @@ function CharacterVulnerabilities ({open, onClose}: {open: boolean, onClose: () 
 
   return (
     <Dialog open={open} onClose={onClose}>
-        <Typography variant='h4'>Vulnerabilities</Typography>
+      <Box sx={{ bgcolor: 'background.paper', p: 2 }}>
+        <Paper sx={{ p: 1, mb: 2 }}>
+          <Typography variant='h4'>Vulnerabilities</Typography>
+        </Paper>
+        <Paper sx={{ p: 1, mb: 2 }}>
           <Box sx={sxProps.switchContainer}>
           <FormControlLabel control={<Switch />} label="Bludgeoning" />
             <FormControlLabel control={<Switch />} label="Piercing" />
@@ -28,6 +32,8 @@ function CharacterVulnerabilities ({open, onClose}: {open: boolean, onClose: () 
             <FormControlLabel control={<Switch />} label="Psychic" />
             <FormControlLabel control={<Switch />} label="Force" />
           </Box>
+        </Paper>
+      </Box>
     </Dialog>
   );
 };

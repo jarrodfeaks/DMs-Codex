@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, FormControlLabel, Switch, Dialog } from '@mui/material';
+import { Box, Typography, FormControlLabel, Switch, Dialog, Paper } from '@mui/material';
 
 function CharacterImmunities ({open, onClose}: {open: boolean, onClose: () => void}) {
 
@@ -12,7 +12,11 @@ function CharacterImmunities ({open, onClose}: {open: boolean, onClose: () => vo
 
   return (
     <Dialog open={open} onClose={onClose}>
-        <Typography variant='h4'>Skills</Typography>
+      <Box sx={{ bgcolor: 'background.paper', p: 2 }}>
+        <Paper sx={{ p: 1, mb: 2 }}>
+          <Typography variant='h4'>Immunities</Typography>
+        </Paper>
+        <Paper sx={{ p: 1, mb: 2 }}>
           <Box sx={sxProps.switchContainer}>
             <FormControlLabel control={<Switch />} label="Bludgeoning" />
             <FormControlLabel control={<Switch />} label="Piercing" />
@@ -43,6 +47,8 @@ function CharacterImmunities ({open, onClose}: {open: boolean, onClose: () => vo
             <FormControlLabel control={<Switch />} label="Unconscious" />
             <FormControlLabel control={<Switch />} label="Exhaustion" />
           </Box>
+        </Paper>
+      </Box>
     </Dialog>
   );
 };
