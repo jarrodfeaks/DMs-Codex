@@ -1,14 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Typography, FormControlLabel, Switch, Dialog, Paper } from '@mui/material';
 
-function CharacterResistances ({open, onClose}: {open: boolean, onClose: () => void}) {
+interface CharacterResistancesProps {
+  open: boolean;
+  onClose: () => void;
+  onResistancesChange: (Resistances: string[]) => void; // Pass selected Resistances back to parent
+}
 
-  const sxProps = {
-    switchContainer: {
-      display: "grid",
-      gridTemplateColumns: "repeat(4, 1fr)"
-    }
-  }
+const CharacterResistances: React.FC<CharacterResistancesProps> = ({ open, onClose, onResistancesChange }) => {
+  const [activeResistances, setActiveResistances] = useState<string[]>([]);
+
+  const Resistances = [
+    "Acid","Bludgeoning","Cold","Fire","Force","Lightning","Necrotic","Piercing","Poison","Psychic","Radiant","Ranged","Slashing","Spells","Thunder","Traps"
+  ];
+
+  const handleSwitchChange = (condition: string, checked: boolean) => {
+    const updatedResistances = checked
+      ? [...activeResistances, condition]
+      : activeResistances.filter((c) => c !== condition);
+
+    setActiveResistances(updatedResistances);
+    onResistancesChange(updatedResistances); // Notify parent of change
+  };
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -17,23 +30,14 @@ function CharacterResistances ({open, onClose}: {open: boolean, onClose: () => v
           <Typography variant='h4'>Resistances</Typography>
         </Paper>
         <Paper sx={{ p: 1, mb: 2 }}>
-          <Box sx={sxProps.switchContainer}>
-            <FormControlLabel control={<Switch />} label="Acid" />
-            <FormControlLabel control={<Switch />} label="Bludgeoning" />
-            <FormControlLabel control={<Switch />} label="Cold" />
-            <FormControlLabel control={<Switch />} label="Fire" />
-            <FormControlLabel control={<Switch />} label="Force" />
-            <FormControlLabel control={<Switch />} label="Lightning" />
-            <FormControlLabel control={<Switch />} label="Necrotic" />
-            <FormControlLabel control={<Switch />} label="Piercing" />
-            <FormControlLabel control={<Switch />} label="Poison" />
-            <FormControlLabel control={<Switch />} label="Psychic" />
-            <FormControlLabel control={<Switch />} label="Radiant" />
-            <FormControlLabel control={<Switch />} label="Ranged" />
-            <FormControlLabel control={<Switch />} label="Slashing" />
-            <FormControlLabel control={<Switch />} label="Spells" />
-            <FormControlLabel control={<Switch />} label="Thunder" />
-            <FormControlLabel control={<Switch />} label="Traps" />
+          <Box sx={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}>
+            {Resistances.map((condition) => (
+              <FormControlLabel
+                key={condition}
+                control={<Switch checked={activeResistances.includes(condition)} onChange={(e) => handleSwitchChange(condition, e.target.checked)} />}
+                label={condition}
+              />
+            ))}
           </Box>
         </Paper>
       </Box>

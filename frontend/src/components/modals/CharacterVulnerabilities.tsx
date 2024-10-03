@@ -1,14 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Typography, FormControlLabel, Switch, Dialog, Paper } from '@mui/material';
 
-function CharacterVulnerabilities ({open, onClose}: {open: boolean, onClose: () => void}) {
+interface CharacterVulnerabilitiesProps {
+  open: boolean;
+  onClose: () => void;
+  onVulnerabilitiesChange: (Vulnerabilities: string[]) => void; // Pass selected Vulnerabilities back to parent
+}
 
-  const sxProps = {
-    switchContainer: {
-      display: "grid",
-      gridTemplateColumns: "repeat(4, 1fr)"
-    }
-  }
+const CharacterVulnerabilities: React.FC<CharacterVulnerabilitiesProps> = ({ open, onClose, onVulnerabilitiesChange }) => {
+  const [activeVulnerabilities, setActiveVulnerabilities] = useState<string[]>([]);
+
+  const Vulnerabilities = [
+    "Piercing","Slashing","Lightning","Thunder","Poison","Cold","Radiant","Fire","Necrotic","Acid","Psychic","Force"
+  ];
+
+  const handleSwitchChange = (condition: string, checked: boolean) => {
+    const updatedVulnerabilities = checked
+      ? [...activeVulnerabilities, condition]
+      : activeVulnerabilities.filter((c) => c !== condition);
+
+    setActiveVulnerabilities(updatedVulnerabilities);
+    onVulnerabilitiesChange(updatedVulnerabilities); // Notify parent of change
+  };
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -17,20 +30,14 @@ function CharacterVulnerabilities ({open, onClose}: {open: boolean, onClose: () 
           <Typography variant='h4'>Vulnerabilities</Typography>
         </Paper>
         <Paper sx={{ p: 1, mb: 2 }}>
-          <Box sx={sxProps.switchContainer}>
-          <FormControlLabel control={<Switch />} label="Bludgeoning" />
-            <FormControlLabel control={<Switch />} label="Piercing" />
-            <FormControlLabel control={<Switch />} label="Slashing" />
-            <FormControlLabel control={<Switch />} label="Lightning" />
-            <FormControlLabel control={<Switch />} label="Thunder" />
-            <FormControlLabel control={<Switch />} label="Poison" />
-            <FormControlLabel control={<Switch />} label="Cold" />
-            <FormControlLabel control={<Switch />} label="Radiant" />
-            <FormControlLabel control={<Switch />} label="Fire" />
-            <FormControlLabel control={<Switch />} label="Necrotic" />
-            <FormControlLabel control={<Switch />} label="Acid" />
-            <FormControlLabel control={<Switch />} label="Psychic" />
-            <FormControlLabel control={<Switch />} label="Force" />
+          <Box sx={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}>
+            {Vulnerabilities.map((condition) => (
+              <FormControlLabel
+                key={condition}
+                control={<Switch checked={activeVulnerabilities.includes(condition)} onChange={(e) => handleSwitchChange(condition, e.target.checked)} />}
+                label={condition}
+              />
+            ))}
           </Box>
         </Paper>
       </Box>

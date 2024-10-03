@@ -34,28 +34,43 @@ const DashboardCharacterSheet: FC = () => {
     damageType: 'None'
   });
 
-  // const [conditionsModalOpen, setConditionsModalOpen] = useState(false);
-  // const handleConditionsOpen = () => setConditionsModalOpen(true);
-  // const handleConditionsClose = () => setConditionsModalOpen(false);
+  const [conditionsModalOpen, setConditionsModalOpen] = useState(false);
+  const handleConditionsOpen = () => setConditionsModalOpen(true);
+  const handleConditionsClose = () => setConditionsModalOpen(false);
 
-  // const [resistancesModalOpen, setResistancesModalOpen] = useState(false);
-  // const handleResistancesOpen = () => setResistancesModalOpen(true);
-  // const handleResistancesClose = () => setResistancesModalOpen(false);
+  const [resistancesModalOpen, setResistancesModalOpen] = useState(false);
+  const handleResistancesOpen = () => setResistancesModalOpen(true);
+  const handleResistancesClose = () => setResistancesModalOpen(false);
 
-  // const [vulnerabilitiesModalOpen, setVulnerabilitiesModalOpen] = useState(false);
-  // const handleVulnerabilitiesOpen = () => setVulnerabilitiesModalOpen(true);
-  // const handleVulnerabilitiesClose = () => setVulnerabilitiesModalOpen(false);
+  const [vulnerabilitiesModalOpen, setVulnerabilitiesModalOpen] = useState(false);
+  const handleVulnerabilitiesOpen = () => setVulnerabilitiesModalOpen(true);
+  const handleVulnerabilitiesClose = () => setVulnerabilitiesModalOpen(false);
+
+  const [immunitiesModalOpen, setImmunitiesModalOpen] = useState(false);
+  const handleImmunitiesOpen = () => setImmunitiesModalOpen(true);
+  const handleImmunitiesClose = () => setImmunitiesModalOpen(false);
 
   const dialogs = useDialogs();
+  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+  const [selectedImmunities, setSelectedImmunities] = useState<string[]>([]);
+  const [selectedResistances, setSelectedResistances] = useState<string[]>([]);
+  const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>([]);
 
-  const handleOpenConditions = () => dialogs.open(CharacterConditions);
-  const handleOpenImmunities = () => dialogs.open(CharacterImmunities);
-  const handleOpenResistances = () => dialogs.open(CharacterResistances);
-  const handleOpenVulnerabilities = () => dialogs.open(CharacterVulnerabilities);
+  const handleConditionsChange = (conditions: string[]) => {
+    setSelectedConditions(conditions); 
+  };
 
-  // const [immunitiesModalOpen, setImmunitiesModalOpen] = useState(false);
-  // const handleImmunitiesOpen = () => setImmunitiesModalOpen(true);
-  // const handleImmunitiesClose = () => setImmunitiesModalOpen(false);
+  const handleImmunitiesChange = (conditions: string[]) => {
+    setSelectedImmunities(conditions);
+  };
+
+  const handleResistancesChange = (conditions: string[]) => {
+    setSelectedResistances(conditions);
+  };
+
+  const handleVulnerabilitiesChange = (conditions: string[]) => {
+    setSelectedVulnerabilities(conditions);
+  };
 
   const handleAddEquipment = () => {
     if (newEquipment.trim() !== '') {
@@ -131,6 +146,7 @@ const DashboardCharacterSheet: FC = () => {
     },
     equipmentList: {
       color: "black"
+
     },
     skillsColumn: {
       display: "grid",
@@ -149,6 +165,29 @@ const DashboardCharacterSheet: FC = () => {
       gap: "10%",
       paddingBottom: 2,
       paddingTop: 2
+    },
+    horizontalButtonsContainer: {
+      display: "flex", 
+      flexDirection: "row", 
+      justifyContent: "center",
+      gap: "30%",
+      paddingTop: 2,
+      border: "2px solid",
+      borderColor: "#FFFFF0",
+      borderRadius: "10px",
+      alignItems: "center",
+      marginBottom: 2,
+      paddingBottom: 2
+    },
+    modalContainer: {
+      display: "flex", 
+      flexDirection: "column",
+      //border: "2px solid",
+      //borderColor: "#FFFFF0",
+      borderRadius: "10px",
+      alignItems: "center",
+      marginBottom: 2,
+      paddingBottom: 2
     }
   }
 
@@ -269,26 +308,34 @@ const DashboardCharacterSheet: FC = () => {
       {/* Conditions */}
       <Box sx={sxProps.titleContainer}>
         <Typography variant='h4'>Conditions</Typography>
-        <Button onClick={handleOpenConditions} variant='contained' color='primary'>Edit Conditions</Button>
+        <Typography>{selectedConditions.length > 0 ? selectedConditions.join(', ') : 'No conditions selected.'}</Typography>
+        <Button onClick={handleConditionsOpen} variant='contained' color='primary'>Edit Conditions</Button>
+        <CharacterConditions open={conditionsModalOpen} onClose={handleConditionsClose} onConditionsChange={handleConditionsChange}></CharacterConditions>
       </Box>
 
       {/* Container for all conditions containers */}
       <Box sx={sxProps.titleContainer}>
         <Typography variant='h4'>Defenses</Typography>
         {/* Resistances */}
-        <Box sx={sxProps.titleContainer}>
+        <Box sx={sxProps.modalContainer}>
           <Typography variant='h6'>Resistances</Typography>
-          <Button onClick={handleOpenResistances} variant='contained' color='primary'>Edit Resistances</Button>
+          <Typography>{selectedResistances.length > 0 ? selectedResistances.join(', ') : 'No resistances selected.'}</Typography>
+          <Button onClick={handleResistancesOpen} variant='contained' color='primary'>Edit Resistances</Button>
+          <CharacterResistances open={resistancesModalOpen} onClose={handleResistancesClose} onResistancesChange={handleResistancesChange}></CharacterResistances>
         </Box>
         {/* Immunities */}
-        <Box sx={sxProps.titleContainer}>
+        <Box sx={sxProps.modalContainer}>
           <Typography variant='h6'>Immunities</Typography>
-          <Button onClick={handleOpenImmunities} variant='contained' color='primary'>Edit Immunities</Button>
+          <Typography>{selectedImmunities.length > 0 ? selectedImmunities.join(', ') : 'No immunities selected.'}</Typography>
+          <Button onClick={handleImmunitiesOpen} variant='contained' color='primary'>Edit Immunities</Button>
+          <CharacterImmunities open={immunitiesModalOpen} onClose={handleImmunitiesClose} onImmunitiesChange={handleImmunitiesChange}></CharacterImmunities>
         </Box>
         {/* Vulnerabilities */}
-        <Box sx={sxProps.titleContainer}>
+        <Box sx={sxProps.modalContainer}>
           <Typography variant='h6'>Vulnerability</Typography>
-          <Button onClick={handleOpenVulnerabilities} variant='contained' color='primary'>Edit Vulnerabilities</Button>
+          <Typography>{selectedVulnerabilities.length > 0 ? selectedVulnerabilities.join(', ') : 'No Vulnerabilities selected.'}</Typography>
+          <Button onClick={handleVulnerabilitiesOpen} variant='contained' color='primary'>Edit Vulnerabilities</Button>
+          <CharacterVulnerabilities open={vulnerabilitiesModalOpen} onClose={handleVulnerabilitiesClose} onVulnerabilitiesChange={handleVulnerabilitiesChange}></CharacterVulnerabilities>
         </Box>
       </Box>
 
@@ -331,7 +378,7 @@ const DashboardCharacterSheet: FC = () => {
 
       {/* Equipment */}
       <Box sx={sxProps.titleContainer}>
-        <Typography variant='h4'>Equipment</Typography>
+        <Typography sx={{pb: 1}} variant='h4'>Equipment</Typography>
         <TextField onChange={(e) => setNewEquipment(e.target.value)} label="Add Equipment"/>
         <Button onClick={handleAddEquipment}>Add Equipment</Button>
         <List sx={sxProps.equipmentList}>
@@ -344,7 +391,7 @@ const DashboardCharacterSheet: FC = () => {
       </Box>
 
       {/* Container for the save and cancel buttons */}
-      <Box sx={sxProps.horizontaltitleContainer}>
+      <Box sx={sxProps.horizontalButtonsContainer}>
         <Button variant='contained'>
           Save
         </Button>

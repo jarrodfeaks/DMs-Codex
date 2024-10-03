@@ -1,14 +1,29 @@
-import React from 'react';
-import { Box, Typography, FormControlLabel, Switch, Dialog, Paper} from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Typography, FormControlLabel, Switch, Dialog, Paper } from '@mui/material';
 
-function CharacterConditions ({open, onClose}: {open: boolean, onClose: () => void}) {
+interface CharacterConditionsProps {
+  open: boolean;
+  onClose: () => void;
+  onConditionsChange: (conditions: string[]) => void; // Pass selected conditions back to parent
+}
 
-  const sxProps = {
-    switchContainer: {
-      display: "grid",
-      gridTemplateColumns: "repeat(4, 1fr)"
-    }
-  }
+const CharacterConditions: React.FC<CharacterConditionsProps> = ({ open, onClose, onConditionsChange }) => {
+  const [activeConditions, setActiveConditions] = useState<string[]>([]);
+
+  const conditions = [
+    "Blinded", "Charmed", "Deafened", "Frightened", "Grappled", "Incapacitated",
+    "Invisible", "Paralyzed", "Petrified", "Poisoned", "Prone", "Restrained",
+    "Stunned", "Unconscious"
+  ];
+
+  const handleSwitchChange = (condition: string, checked: boolean) => {
+    const updatedConditions = checked
+      ? [...activeConditions, condition]
+      : activeConditions.filter((c) => c !== condition);
+
+    setActiveConditions(updatedConditions);
+    onConditionsChange(updatedConditions); // Notify parent of change
+  };
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -16,22 +31,15 @@ function CharacterConditions ({open, onClose}: {open: boolean, onClose: () => vo
         <Paper sx={{ p: 1, mb: 2 }}>
           <Typography variant='h4'>Conditions</Typography>
         </Paper>
-        <Paper sx={{ p: 1, mb: 2 }}>  
-          <Box sx={sxProps.switchContainer}>
-            <FormControlLabel control={<Switch />} label="Blinded" />
-            <FormControlLabel control={<Switch />} label="Charmed" />
-            <FormControlLabel control={<Switch />} label="Deafened" />
-            <FormControlLabel control={<Switch />} label="Frightened" />
-            <FormControlLabel control={<Switch />} label="Grappled" />
-            <FormControlLabel control={<Switch />} label="Incapacitated" />
-            <FormControlLabel control={<Switch />} label="Invisible" />
-            <FormControlLabel control={<Switch />} label="Paralyzed" />
-            <FormControlLabel control={<Switch />} label="Petrified" />
-            <FormControlLabel control={<Switch />} label="Poisoned" />
-            <FormControlLabel control={<Switch />} label="Prone" />
-            <FormControlLabel control={<Switch />} label="Restrained" />
-            <FormControlLabel control={<Switch />} label="Stunned" />
-            <FormControlLabel control={<Switch />} label="Unconscious" />
+        <Paper sx={{ p: 1, mb: 2 }}>
+          <Box sx={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}>
+            {conditions.map((condition) => (
+              <FormControlLabel
+                key={condition}
+                control={<Switch checked={activeConditions.includes(condition)} onChange={(e) => handleSwitchChange(condition, e.target.checked)} />}
+                label={condition}
+              />
+            ))}
           </Box>
         </Paper>
       </Box>
