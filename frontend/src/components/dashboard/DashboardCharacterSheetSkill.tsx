@@ -1,6 +1,5 @@
 import React, {FC} from 'react';
 import {TextField, Box, FormControlLabel, Switch} from "@mui/material";
-import './DashboardCharacterSheet.css';
 
 const DashboardCharacterSheetSkill: FC<{ skillName: string}> = ({skillName}) => {
 
@@ -10,9 +9,7 @@ const DashboardCharacterSheetSkill: FC<{ skillName: string}> = ({skillName}) => 
       <TextField id={skillName} className='' type='number' sx={{
           marginBottom: 2,
           marginTop: 2,
-          backgroundColor: '#FFFDD0',
           borderRadius: '10px',
-          '& .MuiInputLabel-root.Mui-focused': {color: '#FF1B1C'}
         }}/>
     </Box>
   );

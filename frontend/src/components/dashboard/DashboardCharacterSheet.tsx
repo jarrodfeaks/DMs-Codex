@@ -1,7 +1,12 @@
 import React, {FC, useState} from 'react';
-import {TextField, Box, Typography, FormControlLabel, Switch, Button, List, ListItem, ListItemText, Table, TableRow, TableHead, TableCell, TableBody, Modal} from "@mui/material";
+import {TextField, Box, Typography, Button, List, ListItem, ListItemText, Table, TableRow, TableHead, TableCell, TableBody} from "@mui/material";
 import DashboardCharacterSheetSkill from './DashboardCharacterSheetSkill.tsx';
-import './DashboardCharacterSheet.css';
+import { useDialogs } from '@toolpad/core/useDialogs';
+import theme from '../../assets/theme.ts';
+import CharacterConditions from '../modals/CharacterConditions.tsx';
+import CharacterImmunities from '../modals/CharacterImmunities.tsx';
+import CharacterResistances from '../modals/CharacterResistances.tsx';
+import CharacterVulnerabilities from '../modals/CharacterVulnerabilities.tsx';
 
 interface Weapon {
   name: string;
@@ -45,6 +50,28 @@ const DashboardCharacterSheet: FC = () => {
   const handleImmunitiesOpen = () => setImmunitiesModalOpen(true);
   const handleImmunitiesClose = () => setImmunitiesModalOpen(false);
 
+  const dialogs = useDialogs();
+  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+  const [selectedImmunities, setSelectedImmunities] = useState<string[]>([]);
+  const [selectedResistances, setSelectedResistances] = useState<string[]>([]);
+  const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>([]);
+
+  const handleConditionsChange = (conditions: string[]) => {
+    setSelectedConditions(conditions); 
+  };
+
+  const handleImmunitiesChange = (conditions: string[]) => {
+    setSelectedImmunities(conditions);
+  };
+
+  const handleResistancesChange = (conditions: string[]) => {
+    setSelectedResistances(conditions);
+  };
+
+  const handleVulnerabilitiesChange = (conditions: string[]) => {
+    setSelectedVulnerabilities(conditions);
+  };
+
   const handleAddEquipment = () => {
     if (newEquipment.trim() !== '') {
       setEquipment([...equipment, newEquipment]);
@@ -72,67 +99,161 @@ const DashboardCharacterSheet: FC = () => {
     // });
   };
 
+  const sxProps = {
+    mainContainer: {
+      display: "flex",
+      flexDirection: "column"
+    },
+    titleContainer: {
+      display: "flex", 
+      flexDirection: "column",
+      border: "2px solid",
+      borderColor: "#FFFFF0",
+      borderRadius: "10px",
+      alignItems: "center",
+      marginBottom: 2,
+      paddingBottom: 2
+    },
+    horizontaltitleContainer: {
+      display: "flex", 
+      flexDirection: "row", 
+      border: "2px solid",
+      borderColor: "#FFFFF0",
+      borderRadius: "10px",
+      alignItems: "center",
+      marginBottom: 2,
+      paddingBottom: 2
+    },    
+    subContainer: {
+      display: "flex",
+      flexDirection: "row",
+      flexWrap: "wrap"
+    },
+    switchContainer: {
+      display: "grid",
+      gridTemplateColumns: "repeat(4, 1fr)"
+    },
+    weaponTable: {
+      width: "95%",
+    },
+    weaponTableHeader: {
+      backgroundColor: theme.palette.primary.dark
+    },
+    weaponTableRow: {
+      backgroundColor: "black",
+      border: "black",
+      borderWidth: "3px"
+    },
+    equipmentList: {
+      color: "black"
+
+    },
+    skillsColumn: {
+      display: "grid",
+      gridTemplateColumns: "repeat(2, 1fr)",
+      columnGap: 2,
+      margin: 2
+    },
+    initiativeArmorContainer: {
+      display: "flex", 
+      justifyContent: "center", 
+      border: "2px solid",
+      borderColor: "#FFFFF0",
+      borderRadius: "10px",
+      alignItems: "center",
+      marginBottom: 2,
+      gap: "10%",
+      paddingBottom: 2,
+      paddingTop: 2
+    },
+    horizontalButtonsContainer: {
+      display: "flex", 
+      flexDirection: "row", 
+      justifyContent: "center",
+      gap: "30%",
+      paddingTop: 2,
+      border: "2px solid",
+      borderColor: "#FFFFF0",
+      borderRadius: "10px",
+      alignItems: "center",
+      marginBottom: 2,
+      paddingBottom: 2
+    },
+    modalContainer: {
+      display: "flex", 
+      flexDirection: "column",
+      //border: "2px solid",
+      //borderColor: "#FFFFF0",
+      borderRadius: "10px",
+      alignItems: "center",
+      marginBottom: 2,
+      paddingBottom: 2
+    }
+  }
+
   return (
     //main container for all elements
-    <Box className='mainContainer'>
+    <Box sx={sxProps.mainContainer}>
 
       {/* Basic character info */}
-      <Box className='titleContainer'>
-        <Typography className='containerTitle'>Character</Typography>
-        <TextField id='characterName' className='characterText' label='Character Name'/>
-        <TextField id='characterRace' className='characterText' label='Character Race'/>
-        <TextField id='characterLevel' className='characterNumber' label='Character Level' type='number'/>
+      <Box sx={sxProps.titleContainer}>
+        <Typography variant='h4'>Character</Typography>
+        <Box sx={sxProps.subContainer}>
+          <TextField id='characterName' label='Character Name'/>
+          <TextField id='characterRace' label='Character Race'/>
+          <TextField id='characterLevel' label='Character Level' type='number'/>
+        </Box>
       </Box>
 
       {/* Ability scores */}
-      <Box className='titleContainer'>
-        <Typography className='containerTitle'>Ability Scores</Typography>
-        <Box className='subContainer'>
+      <Box sx={sxProps.titleContainer}>
+        <Typography variant='h4'>Ability Scores</Typography>
+        <Box sx={sxProps.subContainer}>
           <Box>
-            <TextField id='abilityScoresStrength' className='characterNumber' label='Strength (STR)' type='number'/>
-            <TextField id='abilityScoresDexterity' className='characterNumber' label='Dexterity (DEX)' type='number'/>
-            <TextField id='abilityScoresConstitution' className='characterNumber' label='Constitution (CON)' type='number'/>
-            <TextField id='abilityScoresIntelligence' className='characterNumber' label='Intelligence (INT)' type='number'/>
-            <TextField id='abilityScoresWisdom' className='characterNumber' label='Wisdom (WIS)' type='number'/>
-            <TextField id='abilityScoresCharisma' className='characterNumber' label='Charisma (CHA)' type='number'/>
+            <TextField id='abilityScoresStrength' label='Strength (STR)' type='number'/>
+            <TextField id='abilityScoresDexterity' label='Dexterity (DEX)' type='number'/>
+            <TextField id='abilityScoresConstitution' label='Constitution (CON)' type='number'/>
+            <TextField id='abilityScoresIntelligence' label='Intelligence (INT)' type='number'/>
+            <TextField id='abilityScoresWisdom' label='Wisdom (WIS)' type='number'/>
+            <TextField id='abilityScoresCharisma' label='Charisma (CHA)' type='number'/>
           </Box>
         </Box>
       </Box>
 
       {/* Ability modifiers */}
-      <Box className='titleContainer'>
-        <Typography className='containerTitle'>Ability Modifiers</Typography>
-        <Box className='subContainer'>
+      <Box sx={sxProps.titleContainer}>
+        <Typography variant='h4'>Ability Modifiers</Typography>
+        <Box sx={sxProps.subContainer}>
           <Box>
-            <TextField id='abilityModifiersStrength' className='characterNumber' label='Strength (STR)' type='number'/>
-            <TextField id='abilityModifiersDexterity' className='characterNumber' label='Dexterity (DEX)' type='number'/>
-            <TextField id='abilityModifiersConstitution' className='characterNumber' label='Constitution (CON)' type='number'/>
-            <TextField id='abilityModifiersIntelligence' className='characterNumber' label='Intelligence (INT)' type='number'/>
-            <TextField id='abilityModifiersWisdom' className='characterNumber' label='Wisdom (WIS)' type='number'/>
-            <TextField id='abilityModifiersCharisma' className='characterNumber' label='Charisma (CHA)' type='number'/>
+            <TextField id='abilityModifiersStrength' label='Strength (STR)' type='number'/>
+            <TextField id='abilityModifiersDexterity' label='Dexterity (DEX)' type='number'/>
+            <TextField id='abilityModifiersConstitution' label='Constitution (CON)' type='number'/>
+            <TextField id='abilityModifiersIntelligence' label='Intelligence (INT)' type='number'/>
+            <TextField id='abilityModifiersWisdom' label='Wisdom (WIS)' type='number'/>
+            <TextField id='abilityModifiersCharisma' label='Charisma (CHA)' type='number'/>
           </Box>
         </Box>
       </Box>
 
       {/* Saving throws */}
-      <Box className='titleContainer'>
-        <Typography className='containerTitle'>Saving Throws</Typography>
-        <Box className='subContainer'>
+      <Box sx={sxProps.titleContainer}>
+        <Typography variant='h4'>Saving Throws</Typography>
+        <Box sx={sxProps.subContainer}>
           <Box>
-            <TextField id='savingThrowsStrength' className='characterNumber' label='Strength (STR)' type='number'/>
-            <TextField id='savingThrowsDexterity' className='characterNumber' label='Dexterity (DEX)' type='number'/>
-            <TextField id='savingThrowsConstitution' className='characterNumber' label='Constitution (CON)' type='number'/>
-            <TextField id='savingThrowsIntelligence' className='characterNumber' label='Intelligence (INT)' type='number'/>
-            <TextField id='savingThrowsWisdom' className='characterNumber' label='Wisdom (WIS)' type='number'/>
-            <TextField id='savingThrowsCharisma' className='characterNumber' label='Charisma (CHA)' type='number'/>
+            <TextField id='savingThrowsStrength' label='Strength (STR)' type='number'/>
+            <TextField id='savingThrowsDexterity' label='Dexterity (DEX)' type='number'/>
+            <TextField id='savingThrowsConstitution' label='Constitution (CON)' type='number'/>
+            <TextField id='savingThrowsIntelligence' label='Intelligence (INT)' type='number'/>
+            <TextField id='savingThrowsWisdom' label='Wisdom (WIS)' type='number'/>
+            <TextField id='savingThrowsCharisma' label='Charisma (CHA)' type='number'/>
           </Box>
         </Box>
       </Box>
 
       {/* Skills */}
-      <Box className='titleContainer'>
-        <Typography className='containerTitle'>Skills</Typography>
-        <Box className='skillsColumn'>
+      <Box sx={sxProps.titleContainer}>
+        <Typography variant='h4'>Skills</Typography>
+        <Box sx={sxProps.skillsColumn}>
           <DashboardCharacterSheetSkill skillName="Acrobatics (DEX)" />
           <DashboardCharacterSheetSkill skillName="Animal Handling (WIS)" />
           <DashboardCharacterSheetSkill skillName="Arcana (INT)" />
@@ -155,153 +276,74 @@ const DashboardCharacterSheet: FC = () => {
       </Box>
 
       {/* initiative and armor */}
-      <Box className='initiativeArmorContainer'>
-        <TextField id='initiative' className='characterNumber' label='Initiative' type='number'/>
-        <TextField id='armor' className='characterNumber' label='Armor Class (AC)' type='number'/>
-        <TextField id='proficiencyBonus' className='characterNumber' label='Proficiency Bonus' type='number'/>
+      <Box sx={sxProps.initiativeArmorContainer}>
+        <TextField id='initiative' label='Initiative' type='number'/>
+        <TextField id='armor' label='Armor Class (AC)' type='number'/>
+        <TextField id='proficiencyBonus' label='Proficiency Bonus' type='number'/>
       </Box>
 
       {/* Life stats */}
-      <Box className='titleContainer'>
-      <Typography className='containerTitle'>Life</Typography>
-        <Box className='subContainer'>
+      <Box sx={sxProps.titleContainer}>
+      <Typography variant='h4'>Life</Typography>
+        <Box sx={sxProps.subContainer}>
           <Box>
-            <TextField id='lifeMaxHP' className='characterNumber' label='Max HP' type='number' />
-            <TextField id='lifeCurrentHP' className='characterNumber' label='Current HP' type='number' />
-            <TextField id='lifeTempHP' className='characterNumber' label='Temp HP' type='number' />
+            <TextField id='lifeMaxHP' label='Max HP' type='number' />
+            <TextField id='lifeCurrentHP' label='Current HP' type='number' />
+            <TextField id='lifeTempHP' label='Temp HP' type='number' />
           </Box>
         </Box>
       </Box>
 
       {/* Death throws */}
-      <Box className='titleContainer'>
-      <Typography className='containerTitle'>Death Throws</Typography>
-        <Box className='subContainer'>
+      <Box sx={sxProps.titleContainer}>
+      <Typography variant='h4'>Death Throws</Typography>
+        <Box sx={sxProps.subContainer}>
           <Box>
-            <TextField id='SuccessfulDeathSaves' className='characterNumber' label='Successful Death Saves' type='number' />
-            <TextField id='lifeFailedDeathSaves' className='characterNumber' label='Failed Death Saves' type='number' />
+            <TextField id='SuccessfulDeathSaves' label='Successful Death Saves' type='number' />
+            <TextField id='lifeFailedDeathSaves' label='Failed Death Saves' type='number' />
           </Box>
         </Box>
       </Box>
 
       {/* Conditions */}
-      <Box className='titleContainer'>
-        <Typography className='containerTitle'>Conditions</Typography>
-        <Button onClick={handleConditionsOpen}>Edit Conditions</Button>
-        <Modal open={conditionsModalOpen} onClose={handleConditionsClose}>
-          <Box className='switchContainer'>
-            <FormControlLabel control={<Switch />} label="Blinded" />
-            <FormControlLabel control={<Switch />} label="Charmed" />
-            <FormControlLabel control={<Switch />} label="Deafened" />
-            <FormControlLabel control={<Switch />} label="Frightened" />
-            <FormControlLabel control={<Switch />} label="Grappled" />
-            <FormControlLabel control={<Switch />} label="Incapacitated" />
-            <FormControlLabel control={<Switch />} label="Invisible" />
-            <FormControlLabel control={<Switch />} label="Paralyzed" />
-            <FormControlLabel control={<Switch />} label="Petrified" />
-            <FormControlLabel control={<Switch />} label="Poisoned" />
-            <FormControlLabel control={<Switch />} label="Prone" />
-            <FormControlLabel control={<Switch />} label="Restrained" />
-            <FormControlLabel control={<Switch />} label="Stunned" />
-            <FormControlLabel control={<Switch />} label="Unconscious" />
-          </Box>
-        </Modal>
+      <Box sx={sxProps.titleContainer}>
+        <Typography variant='h4'>Conditions</Typography>
+        <Typography>{selectedConditions.length > 0 ? selectedConditions.join(', ') : 'No conditions selected.'}</Typography>
+        <Button onClick={handleConditionsOpen} variant='contained' color='primary'>Edit Conditions</Button>
+        <CharacterConditions open={conditionsModalOpen} onClose={handleConditionsClose} onConditionsChange={handleConditionsChange}></CharacterConditions>
       </Box>
 
       {/* Container for all conditions containers */}
-      <Box className='titleContainer'>
-        <Typography className='containerTitle'>Defenses</Typography>
+      <Box sx={sxProps.titleContainer}>
+        <Typography variant='h4'>Defenses</Typography>
         {/* Resistances */}
-        <Box className='titleContainer'>
-          <Typography className='containerTitle'>Resistances</Typography>
-          <Button onClick={handleResistancesOpen}>Edit Resistances</Button>
-        <Modal open={resistancesModalOpen} onClose={handleResistancesClose}>
-          <Box className='switchContainer'>
-            <FormControlLabel control={<Switch />} label="Acid" />
-            <FormControlLabel control={<Switch />} label="Bludgeoning" />
-            <FormControlLabel control={<Switch />} label="Cold" />
-            <FormControlLabel control={<Switch />} label="Fire" />
-            <FormControlLabel control={<Switch />} label="Force" />
-            <FormControlLabel control={<Switch />} label="Lightning" />
-            <FormControlLabel control={<Switch />} label="Necrotic" />
-            <FormControlLabel control={<Switch />} label="Piercing" />
-            <FormControlLabel control={<Switch />} label="Poison" />
-            <FormControlLabel control={<Switch />} label="Psychic" />
-            <FormControlLabel control={<Switch />} label="Radiant" />
-            <FormControlLabel control={<Switch />} label="Ranged" />
-            <FormControlLabel control={<Switch />} label="Slashing" />
-            <FormControlLabel control={<Switch />} label="Spells" />
-            <FormControlLabel control={<Switch />} label="Thunder" />
-            <FormControlLabel control={<Switch />} label="Traps" />
-          </Box>
-          </Modal>
+        <Box sx={sxProps.modalContainer}>
+          <Typography variant='h6'>Resistances</Typography>
+          <Typography>{selectedResistances.length > 0 ? selectedResistances.join(', ') : 'No resistances selected.'}</Typography>
+          <Button onClick={handleResistancesOpen} variant='contained' color='primary'>Edit Resistances</Button>
+          <CharacterResistances open={resistancesModalOpen} onClose={handleResistancesClose} onResistancesChange={handleResistancesChange}></CharacterResistances>
         </Box>
         {/* Immunities */}
-        <Box className='titleContainer'>
-          <Typography className='containerTitle'>Immunities</Typography>
-          <Button onClick={handleImmunitiesOpen}>Edit Immunities</Button>
-        <Modal open={immunitiesModalOpen} onClose={handleImmunitiesClose}>
-          <Box className='switchContainer'>
-            <FormControlLabel control={<Switch />} label="Bludgeoning" />
-            <FormControlLabel control={<Switch />} label="Piercing" />
-            <FormControlLabel control={<Switch />} label="Slashing" />
-            <FormControlLabel control={<Switch />} label="Lightning" />
-            <FormControlLabel control={<Switch />} label="Thunder" />
-            <FormControlLabel control={<Switch />} label="Poison" />
-            <FormControlLabel control={<Switch />} label="Cold" />
-            <FormControlLabel control={<Switch />} label="Radiant" />
-            <FormControlLabel control={<Switch />} label="Fire" />
-            <FormControlLabel control={<Switch />} label="Necrotic" />
-            <FormControlLabel control={<Switch />} label="Acid" />
-            <FormControlLabel control={<Switch />} label="Psychic" />
-            <FormControlLabel control={<Switch />} label="Force" />
-            <FormControlLabel control={<Switch />} label="Blinded" />
-            <FormControlLabel control={<Switch />} label="Charmed" />
-            <FormControlLabel control={<Switch />} label="Deafened" />
-            <FormControlLabel control={<Switch />} label="Frightened" />
-            <FormControlLabel control={<Switch />} label="Grappled" />
-            <FormControlLabel control={<Switch />} label="Incapacitated" />
-            <FormControlLabel control={<Switch />} label="Invisible" />
-            <FormControlLabel control={<Switch />} label="Paralyzed" />
-            <FormControlLabel control={<Switch />} label="Petrified" />
-            <FormControlLabel control={<Switch />} label="Poisoned" />
-            <FormControlLabel control={<Switch />} label="Prone" />
-            <FormControlLabel control={<Switch />} label="Restrained" />
-            <FormControlLabel control={<Switch />} label="Stunned" />
-            <FormControlLabel control={<Switch />} label="Unconscious" />
-            <FormControlLabel control={<Switch />} label="Exhaustion" />
-          </Box>
-          </Modal>
+        <Box sx={sxProps.modalContainer}>
+          <Typography variant='h6'>Immunities</Typography>
+          <Typography>{selectedImmunities.length > 0 ? selectedImmunities.join(', ') : 'No immunities selected.'}</Typography>
+          <Button onClick={handleImmunitiesOpen} variant='contained' color='primary'>Edit Immunities</Button>
+          <CharacterImmunities open={immunitiesModalOpen} onClose={handleImmunitiesClose} onImmunitiesChange={handleImmunitiesChange}></CharacterImmunities>
         </Box>
         {/* Vulnerabilities */}
-        <Box className='titleContainer'>
-          <Typography className='containerTitle'>Vulnerability</Typography>
-          <Button onClick={handleVulnerabilitiesOpen}>Edit Vulnerabilities</Button>
-        <Modal open={vulnerabilitiesModalOpen} onClose={handleVulnerabilitiesClose}>
-          <Box className='switchContainer'>
-            <FormControlLabel control={<Switch />} label="Bludgeoning" />
-            <FormControlLabel control={<Switch />} label="Piercing" />
-            <FormControlLabel control={<Switch />} label="Slashing" />
-            <FormControlLabel control={<Switch />} label="Lightning" />
-            <FormControlLabel control={<Switch />} label="Thunder" />
-            <FormControlLabel control={<Switch />} label="Poison" />
-            <FormControlLabel control={<Switch />} label="Cold" />
-            <FormControlLabel control={<Switch />} label="Radiant" />
-            <FormControlLabel control={<Switch />} label="Fire" />
-            <FormControlLabel control={<Switch />} label="Necrotic" />
-            <FormControlLabel control={<Switch />} label="Acid" />
-            <FormControlLabel control={<Switch />} label="Psychic" />
-            <FormControlLabel control={<Switch />} label="Force" />
-          </Box>
-          </Modal>
+        <Box sx={sxProps.modalContainer}>
+          <Typography variant='h6'>Vulnerability</Typography>
+          <Typography>{selectedVulnerabilities.length > 0 ? selectedVulnerabilities.join(', ') : 'No Vulnerabilities selected.'}</Typography>
+          <Button onClick={handleVulnerabilitiesOpen} variant='contained' color='primary'>Edit Vulnerabilities</Button>
+          <CharacterVulnerabilities open={vulnerabilitiesModalOpen} onClose={handleVulnerabilitiesClose} onVulnerabilitiesChange={handleVulnerabilitiesChange}></CharacterVulnerabilities>
         </Box>
       </Box>
 
       {/* Weapons */}
-      <Box className='titleContainer'>
-        <Typography className='containerTitle'>Weapons</Typography>
-        <Table className='weaponTable'>
-          <TableHead className='weaponTableHeader'>
+      <Box sx={sxProps.titleContainer}>
+        <Typography variant='h4'>Weapons</Typography>
+        <Table sx={sxProps.weaponTable}>
+          <TableHead sx={sxProps.weaponTableHeader}>
             <TableRow>
               <TableCell>Weapon Name</TableCell>
               {/* <TableCell>Hit</TableCell> */}
@@ -313,7 +355,7 @@ const DashboardCharacterSheet: FC = () => {
           </TableHead>
           <TableBody>
             {weapons.map((weapon, index) => (
-              <TableRow className='' key={index}>
+              <TableRow key={index}>
                 <TableCell>{weapon.name}</TableCell>
                 {/* <TableCell>{weapon.hit}</TableCell> */}
                 <TableCell>{weapon.diceAmount}D{weapon.diceType} + {weapon.hit}</TableCell>
@@ -329,32 +371,31 @@ const DashboardCharacterSheet: FC = () => {
       </Box>
 
       {/* Notes */}
-      <Box className='titleContainer'>
-        <Typography className='containerTitle'>Notes</Typography>
-        <TextField className='characterText notesText'/>
+      <Box sx={sxProps.titleContainer}>
+        <Typography variant='h4'>Notes</Typography>
+        <TextField sx={{width: '95%'}}/>
       </Box>
 
       {/* Equipment */}
-      <Box className='titleContainer'>
-        <Typography className='containerTitle'>Equipment</Typography>
-        <List className='equipmentList'>
+      <Box sx={sxProps.titleContainer}>
+        <Typography sx={{pb: 1}} variant='h4'>Equipment</Typography>
+        <TextField onChange={(e) => setNewEquipment(e.target.value)} label="Add Equipment"/>
+        <Button onClick={handleAddEquipment}>Add Equipment</Button>
+        <List sx={sxProps.equipmentList}>
           {equipment.map((item, index) => (
             <ListItem key={index}>
               <ListItemText primary={item}/>
             </ListItem>
           ))}
         </List>
-        <TextField className='characterText' onChange={(e) => setNewEquipment(e.target.value)} label="Add Equipment"/>
-        <Button onClick={handleAddEquipment}>Add Equipment</Button>
-
       </Box>
 
       {/* Container for the save and cancel buttons */}
-      <Box className='horizontaltitleContainer'>
-        <Button>
+      <Box sx={sxProps.horizontalButtonsContainer}>
+        <Button variant='contained'>
           Save
         </Button>
-        <Button>
+        <Button variant='contained'>
           Cancel
         </Button>
       </Box>
