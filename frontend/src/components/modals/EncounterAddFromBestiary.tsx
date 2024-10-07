@@ -1,47 +1,86 @@
-import React, { useState } from 'react';
-import { Box, Typography, Button, List, ListItem, ListItemText, IconButton, Paper, Dialog } from '@mui/material';
-import { Casino as CasinoIcon } from '@mui/icons-material';
-
-interface Player {
-  id: string;
-  name: string;
-}
+import React, { useState, useEffect } from 'react';
+import { CircularProgress, Radio, RadioGroup, Box, Typography, Button, List, ListItem, Paper, Dialog, FormControlLabel } from '@mui/material';
 
 function EncounterAddFromBestiary ({open, onClose}: {open: boolean, onClose: () => void}) {
-  const [players, setPlayers] = useState<Player[]>([
-    { id: '1', name: 'Sam' },
-    { id: '2', name: 'Jarrod' },
-    { id: '3', name: 'Mosaab' },
-  ]);
+  
+  const [monsters, setMonsters] = useState([]);
+  const [selectedMonster, setSelectedMonster] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMonsters = async () => {
+      try {
+        const response = await fetch('https://www.dnd5eapi.co/api/monsters');
+        const data = await response.json();
+        setMonsters(data.results);
+        console.log(data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching monsters:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchMonsters();
+  }, []);
+
+  const handleSelectMonster = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedMonster(event.target.value);
+  };
 
   return (
     <Dialog open={open} onClose={onClose}>
         <Box sx={{ width: 400, bgcolor: 'background.paper', p: 2 }}>
           <Paper sx={{ p: 1, mb: 2 }}>
               <Typography variant="h6">
-              Initiative tracker
+                Bestiary
               </Typography>
           </Paper>
-          <List>
-              {players.map((player) => (
-              <ListItem key={player.id} sx={{ mb: 1, borderRadius: 1 }}>
-                  <ListItemText primary={player.name} />
-                  <IconButton>
-                  <CasinoIcon />
-                  </IconButton>
-              </ListItem>
-              ))}
-          </List>
           <Paper sx={{ p: 2, mt: 2 }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
-              Add from bestiary
+                Add from bestiary
               </Typography>
-              <Box
+              {/* <Box
               component="img"
               src="/api/placeholder/400/320"
               alt="Bestiary placeholder"
               sx={{ width: '100%', height: 200, objectFit: 'contain', mb: 2 }}
-              />
+              /> */}
+              <Box>
+                {loading ? (
+                  <CircularProgress/>
+                ) : (
+                  <Box sx={{ maxHeight: 400, overflow: 'auto', padding: '10px' }}>
+                    <Typography variant='h6'>Select Monster</Typography>
+                    {/* <FormControl sx={{width: '95%', pb: 1}}>
+                      <InputLabel id='monster-select-label'>Select a Monster</InputLabel>
+                      <Select labelId='monster-select-label' value={selectedMonster} onChange={handleSelectMonster}>
+                        {monsters.map((monster, index) => (
+                          <MenuItem key={index} value={index}>
+                            {monster.name} {monster.challenge_rating}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl> */}
+                    <RadioGroup value={selectedMonster} onChange={handleSelectMonster}>
+                      <List>
+                        {monsters.map((monster) => (
+                          <ListItem key={monster.index}>
+                            <FormControlLabel value={monster.name} control={<Radio/>} label={
+                              <Typography>{monster.name}{monster.challenge_rating}</Typography>
+                            }/>
+                          </ListItem>
+                        ))}
+                      </List>
+                    </RadioGroup>
+                  </Box>
+                )}
+                {selectedMonster && (
+                  <p>
+                    Selected Monster: <strong>{selectedMonster}</strong>
+                  </p>
+                )}
+              </Box>
               <Button
               variant="contained"
               color="primary"
