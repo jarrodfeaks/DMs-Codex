@@ -1,6 +1,5 @@
 import React, {FC} from 'react';
 import {TextField, Box, FormControlLabel, Switch} from "@mui/material";
-import './DashboardCharacterSheet.css';
 
 const DashboardCharacterSheetSkill: FC<{ skillName: string}> = ({skillName}) => {
 

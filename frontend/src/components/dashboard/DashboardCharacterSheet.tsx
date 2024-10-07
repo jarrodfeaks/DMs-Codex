@@ -1,7 +1,6 @@
 import React, {FC, useState} from 'react';
 import {TextField, Box, Typography, FormControlLabel, Switch, Button, List, ListItem, ListItemText, Table, TableRow, TableHead, TableCell, TableBody, Modal} from "@mui/material";
 import DashboardCharacterSheetSkill from './DashboardCharacterSheetSkill.tsx';
-import './DashboardCharacterSheet.css';
 
 interface Weapon {
   name: string;

@@ -12,7 +12,20 @@ function EncounterAddFromBestiary ({open, onClose}: {open: boolean, onClose: () 
       try {
         const response = await fetch('https://www.dnd5eapi.co/api/monsters');
         const data = await response.json();
-        setMonsters(data.results);
+
+        const monstersWithDetails = await Promise.all(
+          data.results.map(async (monster: any) => {
+            const detailsResponse = await fetch(`https://www.dnd5eapi.co/api/monsters/${monster.index}`);
+            const details = await detailsResponse.json();
+
+            return {
+              name: details.name,
+              index: details.index,
+              challenge_rating: details.challenge_rating,
+            };
+          })
+        );
+        setMonsters(monstersWithDetails);
         console.log(data);
         setLoading(false);
       } catch (error) {
@@ -67,7 +80,7 @@ function EncounterAddFromBestiary ({open, onClose}: {open: boolean, onClose: () 
                         {monsters.map((monster) => (
                           <ListItem key={monster.index}>
                             <FormControlLabel value={monster.name} control={<Radio/>} label={
-                              <Typography>{monster.name}{monster.challenge_rating}</Typography>
+                              <Typography>{monster.name} ({monster.challenge_rating})</Typography>
                             }/>
                           </ListItem>
                         ))}
