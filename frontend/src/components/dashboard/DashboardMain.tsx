@@ -1,5 +1,6 @@
 import { Button, Typography, TextField, Box, List, ListItem, ListItemButton, ListItemText, Paper } from "@mui/material";
 import { useState } from "react";
+import ImportCharacterModal from "../modals/ImportCharacter.tsx";
 
 // Temp until backend stuff gets added?
 interface Player {
@@ -11,6 +12,8 @@ interface Player {
 
 export default function DashboardMain(
     { onCreateCharacter }: { onCreateCharacter: () => void }) {
+
+    const [ modalOpen, setModalOpen ] = useState(false);
 
     // Updates selectedPlayerID with whatever the hell a react hook is
     const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
@@ -33,6 +36,7 @@ export default function DashboardMain(
 
     const onImportCharacter = () => {
         // Open Import Character modal
+        setModalOpen(true);
     };
 
     const onEditCharacter = () => {
@@ -67,6 +71,7 @@ export default function DashboardMain(
                 textAlign: 'center',
             }}
         >
+            <ImportCharacterModal open={modalOpen} onClose={() => setModalOpen(false)} />
             {/* Campaign Notes */}
             <Typography variant='h5' sx={{ textAlign: 'left', width: '50%', mt: 2 }}>
                 Campaign Notes:
@@ -130,7 +135,7 @@ export default function DashboardMain(
                 </Button>
                 <Button 
                     variant="outlined" 
-                    onClick={onImportCharacter} 
+                    onClick={onImportCharacter}
                     sx={{ mt: 1, ml: 0.5, mr: 0.5 }}
                 >
                     Import Character
