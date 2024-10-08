@@ -7,34 +7,47 @@ function EncounterAddFromBestiary ({open, onClose}: {open: boolean, onClose: () 
   const [selectedMonster, setSelectedMonster] = useState('');
   const [loading, setLoading] = useState(true);
 
+  const apiUrl = 'https://www.dnd5eapi.co/api/monsters';
+
+  // Check if monster data is already saved locally
+  const loadMonsters = async () => {
+    const storedMonsters = localStorage.getItem('monsters'); // Check if it's in localStorage
+
+    if (storedMonsters) {
+      // Load from localStorage if data is available
+      console.log('Loading monsters from localStorage');
+      setMonsters(JSON.parse(storedMonsters));
+      setLoading(false);
+    } else {
+      // Fetch from API if no data in localStorage
+      console.log('Fetching monsters from API');
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+
+      // Fetch challenge rating for each monster
+      const monstersWithDetails = await Promise.all(
+        data.results.map(async (monster: any) => {
+          const detailsResponse = await fetch(`${apiUrl}/${monster.index}`);
+          const details = await detailsResponse.json();
+
+          return {
+            name: details.name,
+            index: details.index,
+            challenge_rating: details.challenge_rating,
+          };
+        })
+      );
+
+      // Save monsters to localStorage for future use
+      localStorage.setItem('monsters', JSON.stringify(monstersWithDetails));
+      setLoading(false);
+      setMonsters(monstersWithDetails);
+    }
+  };
+
+  // Trigger loadMonsters only on first render
   useEffect(() => {
-    const fetchMonsters = async () => {
-      try {
-        const response = await fetch('https://www.dnd5eapi.co/api/monsters');
-        const data = await response.json();
-
-        const monstersWithDetails = await Promise.all(
-          data.results.map(async (monster: any) => {
-            const detailsResponse = await fetch(`https://www.dnd5eapi.co/api/monsters/${monster.index}`);
-            const details = await detailsResponse.json();
-
-            return {
-              name: details.name,
-              index: details.index,
-              challenge_rating: details.challenge_rating,
-            };
-          })
-        );
-        setMonsters(monstersWithDetails);
-        console.log(data);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching monsters:', error);
-        setLoading(false);
-      }
-    };
-
-    fetchMonsters();
+    loadMonsters();
   }, []);
 
   const handleSelectMonster = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,7 +56,7 @@ function EncounterAddFromBestiary ({open, onClose}: {open: boolean, onClose: () 
 
   return (
     <Dialog open={open} onClose={onClose}>
-        <Box sx={{ width: 400, bgcolor: 'background.paper', p: 2 }}>
+        <Box sx={{ width: 500, bgcolor: 'background.paper', p: 2 }}>
           <Paper sx={{ p: 1, mb: 2 }}>
               <Typography variant="h6">
                 Bestiary
