@@ -1,5 +1,5 @@
 import { Schema, model, Document, ObjectId } from 'mongoose';
-import { Attribute, DamageType, Initative, Skill, Status } from '../enums';
+import { Attribute, DamageType, Initative, Skill, Status } from '../../shared/enums';
 
 interface ICharacter extends Document {
     name: string;

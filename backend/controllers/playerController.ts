@@ -9,7 +9,7 @@ const getAllPlayers = async (req: Request, res: Response) => {
         const players = await Player.find({}).populate('weapons') as IPlayer[];
         res.status(200).send(players);
      } catch (error: any) {
-        res.status(500).send(error.message);
+        res.status(500).json(error.message);
     }
 };
 

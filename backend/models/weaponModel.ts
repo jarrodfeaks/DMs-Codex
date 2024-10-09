@@ -1,5 +1,5 @@
 import { Schema, model, Document, ObjectId } from 'mongoose';
-import { DamageType, Attribute, Dice } from '../enums';
+import { DamageType, Attribute, Dice } from '../../shared/enums';
 
 interface IWeapon {
     name: string;
