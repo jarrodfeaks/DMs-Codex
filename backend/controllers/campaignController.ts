@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { ICampaign, Campaign } from '../models/campaignModel';
+import { Campaign } from '../models/campaignModel';
 
 // @desc Get all campaigns
 // @route GET /campaigns/dm/:id
@@ -18,7 +18,7 @@ const getAllCampaigns = async (req: Request, res: Response) => {
                 path: 'monsters',
                 select: '_id name level class currentHitpoints maxHitpoints tempHitpoints armorClass deathSavingThrows'
             });
-        res.status(200).send(campaigns);
+        res.status(200).json(campaigns);
     } catch (error: any) {
         res.status(500).send(error.message);
     }
@@ -34,7 +34,7 @@ const getDMCampaigns = async (req: Request, res: Response) => {
         if (campaigns.length > 0) {
             res.status(200).json(campaigns);
         } else {
-            res.status(404).json({ message: 'No campaigns found for this DM' });
+            res.status(404).send({ message: 'No campaigns found for this DM' });
         }
     } catch (error: any) {
         res.status(500).send(error.message);
@@ -47,16 +47,11 @@ const getDMCampaigns = async (req: Request, res: Response) => {
 const getCampaignWithPlayersBrief = async (req: Request, res: Response) => {
     try {
         const campaignId = req.params.id;
-        const campaign = await Campaign.findById(campaignId)
-            .populate({
-                path: 'players',
-                select: '_id name level class'
-            });
-
+        const campaign = await Campaign.findById(campaignId).populate('players', '_id name level class');
         if (campaign) {
             res.status(200).json(campaign);
         } else {
-            res.status(404).json({ message: 'Campaign not found' });
+            res.status(404).send({ message: 'Campaign not found' });
         }
     } catch (error: any) {
         res.status(500).send(error.message);
@@ -73,7 +68,7 @@ const getCampaignInformation = async (req: Request, res: Response) => {
         if (campaign) {
             res.status(200).json(campaign);
         } else {
-            res.status(404).json({ message: 'Campaign not found' });
+            res.status(404).send({ message: 'Campaign not found' });
         }
     } catch (error: any) {
         res.status(500).send(error.message);
@@ -87,7 +82,7 @@ const createCampaign = async (req: Request, res: Response) => {
     try {
         const newCampaign = new Campaign(req.body);
         if (!newCampaign.dm_id) {
-            return res.status(400).json({ message: 'DM ID is required' });
+            return res.status(400).send({ message: 'DM ID is required' });
         }
         const savedCampaign = await newCampaign.save();
         res.status(201).json(savedCampaign);
@@ -106,7 +101,7 @@ const updateCampaign = async (req: Request, res: Response) => {
         if (updatedCampaign) {
             res.status(200).json(updatedCampaign);
         } else {
-            res.status(404).json({ message: 'Campaign not found' });
+            res.status(404).send({ message: 'Campaign not found' });
         }
     } catch (error: any) {
         res.status(500).send(error.message);
@@ -121,9 +116,9 @@ const deleteCampaign = async (req: Request, res: Response) => {
         const campaignId = req.params.id;
         const deletedCampaign = await Campaign.findByIdAndDelete(campaignId);
         if (deletedCampaign) {
-            res.status(200).json({ message: 'Campaign deleted' });
+            res.status(200).send({ message: 'Campaign deleted' });
         } else {
-            res.status(404).json({ message: 'Campaign not found' });
+            res.status(404).send({ message: 'Campaign not found' });
         }
     } catch (error: any) {
         res.status(500).send(error.message);
