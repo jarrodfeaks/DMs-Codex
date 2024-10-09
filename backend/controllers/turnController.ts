@@ -12,7 +12,7 @@ const getTurnInformation = async (req: Request, res: Response) => {
         if (turn) {
             res.status(200).json(turn);
         } else {
-            res.status(404).json({ message: 'Turn not found' });
+            res.status(404).send({ message: 'Turn not found' });
         }
     } catch (error: any) {
         res.status(500).send(error.message);
@@ -35,7 +35,7 @@ const createTurn = async (req: Request, res: Response) => {
             { new: true, runValidators: true }
         );
         if (!updatedEncounter) {
-            return res.status(404).json({ message: 'Encounter not found' });
+            return res.status(404).send({ message: 'Encounter not found' });
         }
         res.status(201).json(savedTurn);
     } catch (error: any) {
@@ -53,7 +53,7 @@ const updateTurn = async (req: Request, res: Response) => {
         if (updatedTurn) {
             res.status(200).json(updatedTurn);
         } else {
-            res.status(404).json({ message: 'Turn not found' });
+            res.status(404).send({ message: 'Turn not found' });
         }
     } catch (error: any) {
         res.status(500).send(error.message);
