@@ -1,15 +1,13 @@
 import { Request, Response } from 'express';
 import { IPlayer, Player } from '../models/playerModel';
-import { Schema } from 'mongoose';
-import { CreateEffect, DeleteEffect } from '../src/effectUtils';
 
 // @desc Get all players
 // @route GET /players
 // @access Public
 const getAllPlayers = async (req: Request, res: Response) => {
     try {
-        const players = await Player.find({});
-        res.status(200).json(players);
+        const players = await Player.find({}).populate('weapons') as IPlayer[];
+        res.status(200).send(players);
      } catch (error: any) {
         res.status(500).json(error.message);
     }
@@ -22,19 +20,11 @@ const getPlayerInformation = async (req: Request, res: Response) => {
     try {
         const playerId = req.params.id;
         const player = await Player.findById(playerId)
-            .populate({
-                path: 'effects',
-                select: '-_id'
-            })
-            .populate({
-                path: 'weapons',
-                select: '-_id name type damage'
-            });
-
+            .populate('weapons');
         if (player) {
             res.status(200).json(player);
         } else {
-            res.status(404).json({ message: 'Player not found' });
+            res.status(404).send({ message: 'Player not found' });
         }
     } catch (error: any) {
         res.status(500).send(error.message);
@@ -47,11 +37,11 @@ const getPlayerInformation = async (req: Request, res: Response) => {
 const getPlayerInformationBrief = async (req: Request, res: Response) => {
     try {
         const playerId = req.params.id;
-        const player = await Player.findById(playerId).select('_id name level class');
+        const player = await Player.findById(playerId, '_id name level class');
         if (player) {
             res.status(200).json(player);
         } else {
-            res.status(404).json({ message: 'Player not found' });
+            res.status(404).send({ message: 'Player not found' });
         }
     } catch (error: any) {
         res.status(500).send(error.message);
@@ -64,11 +54,9 @@ const getPlayerInformationBrief = async (req: Request, res: Response) => {
 const getPlayersInformationBrief = async (req: Request, res: Response) => {
     try {
         const { playerIds } = req.body;
-
         if (!Array.isArray(playerIds) || playerIds.length === 0) {
-            return res.status(400).json({ message: 'playerIds must be a non-empty array' });
+            return res.status(400).send({ message: 'playerIds must be a non-empty array' });
         }
-
         const players = await Player.find({ _id: { $in: playerIds } }).select('_id name level class');
         res.status(200).json(players);
     } catch (error: any) {
@@ -82,10 +70,6 @@ const getPlayersInformationBrief = async (req: Request, res: Response) => {
 const createPlayer = async (req: Request, res: Response) => {
     try {
         const newPlayer = req.body as IPlayer;
-        // Assign player with new empty effect
-        const effectId = await CreateEffect();
-        newPlayer.effectId = effectId as unknown as Schema.Types.ObjectId;
-        
         const savedPlayer = await Player.create(newPlayer);
         res.status(201).json(savedPlayer._id);
     } catch (error: any) {
@@ -120,31 +104,13 @@ const deletePlayer = async (req: Request, res: Response) => {
         const deletedPlayer = await Player.findByIdAndDelete(playerId);
 
         if (deletedPlayer) {
-            await DeleteEffect(deletedPlayer.effectId);
-            res.status(200).json({ message: 'Player deleted successfully' });
+            res.status(200).send({ message: 'Player deleted successfully' });
         } else {
-            res.status(404).json({ message: 'Player not found' });
+            res.status(404).send({ message: 'Player not found' });
         }
     } catch (error: any) {
         res.status(500).send(error.message);
     }
 };
 
-// @desc Get all effects of a player
-// @route GET /players/:id/effects
-// @access Public
-const getPlayerEffects = async (req: Request, res: Response) => {
-    try {
-        const playerId = req.params.id;
-        const player = await Player.findById(playerId).populate({path: 'effects', select: '-_id'});
-        if (player) {
-            res.status(200).json(player.effectId);
-        } else {
-            res.status(404).json({ message: 'Player not found' });
-        }
-    } catch (error: any) {
-        res.status(500).send(error.message);
-    }
-}
-
-export { createPlayer, deletePlayer, getAllPlayers, getPlayerEffects, getPlayerInformation, getPlayerInformationBrief, getPlayersInformationBrief, updatePlayer };
+export { createPlayer, deletePlayer, getAllPlayers, getPlayerInformation, getPlayerInformationBrief, getPlayersInformationBrief, updatePlayer };
