@@ -11,15 +11,15 @@ interface Player {
 
 function EncounterAddFromPlayers ({open, onClose}: {open: boolean, onClose: () => void}) {
   const [players] = useState<Player[]>([
-    { id: '1', name: 'Sam', level: 0, class: '' },
-    { id: '2', name: 'Jarrod', level: 0, class: '' },
-    { id: '3', name: 'Mosaab', level: 0, class: '' },
+    // { id: '1', name: 'Sam', level: 0, class: '' },
+    // { id: '2', name: 'Jarrod', level: 0, class: '' },
+    // { id: '3', name: 'Mosaab', level: 0, class: '' },
   ]);
 
   const [playerList, setPlayerList] = useState<Player[]>([
-    { id: '4', name: 'Jarrod the mighty', level: 2, class: 'Wizard' },
-    { id: '5', name: 'Mosaab the Handsome', level: 2, class: 'Bard' },
-    { id: '6', name: 'Sydney the strong', level: 2, class: 'Fighter' },
+    // { id: '4', name: 'Jarrod the mighty', level: 2, class: 'Wizard' },
+    // { id: '5', name: 'Mosaab the Handsome', level: 2, class: 'Bard' },
+    // { id: '6', name: 'Sydney the strong', level: 2, class: 'Fighter' },
   ]);
 
   const addToInitiativeQueue = (player: Player) => {
