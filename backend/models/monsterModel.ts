@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 import { ICharacter, characterSchema } from './characterModel';
-import { MonsterType, MovementType } from '../enums';
+import { MonsterType, MovementType } from '../../shared/enums';
 
 interface IMonster extends ICharacter {
     challengeRating: number;

@@ -1,5 +1,5 @@
 import { Player } from '../playerModel';
-import { Status }from '../../enums';
+import { Status }from '../../../shared/enums';
 
 const createPlayer = async () => {
     const player = new Player({

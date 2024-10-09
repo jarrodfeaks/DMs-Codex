@@ -1,5 +1,5 @@
 import { Schema, model, Document, ObjectId } from 'mongoose';
-import { Attribute, DamageType, Skill, Status } from '../enums';
+import { Attribute, DamageType, Skill, Status } from '../../shared/enums';
 
 interface IEffect {
     status: Status[];
