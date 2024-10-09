@@ -22,6 +22,8 @@ function EncounterAddFromPlayers ({open, onClose}: {open: boolean, onClose: () =
     // { id: '5', name: 'Mosaab the Handsome', level: 2, class: 'Bard' },
     // { id: '6', name: 'Sydney the strong', level: 2, class: 'Fighter' },
 
+  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
+
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
@@ -41,9 +43,11 @@ function EncounterAddFromPlayers ({open, onClose}: {open: boolean, onClose: () =
   }, []);
   
   const addToInitiativeQueue = (player: Player) => {
-    // Logic to add player to initiative queue
-    setPlayers([...players, player]);
-    console.log(`Added ${player.name} to initiative queue`);
+    if (player){
+      setPlayers([...players, player]);
+      console.log(`Added ${player.name} to initiative queue`);
+      setSelectedPlayer(null);
+    }
   };
 
   return (
@@ -55,7 +59,12 @@ function EncounterAddFromPlayers ({open, onClose}: {open: boolean, onClose: () =
                 </Typography>
                 <List>
                 {playerList.map((player) => (
-                    <ListItem key={player.id} onClick={() => addToInitiativeQueue(player)}>
+                    <ListItem 
+                      key={player.id} 
+                      selected={selectedPlayer?.id === player.id} 
+                      onClick={() => setSelectedPlayer(player)}
+                      sx={{ cursor: 'pointer' }}
+                      >
                       <ListItemText
                           primary={player.name}
                           secondary={`level ${player.level} ${player.class}`}
@@ -68,12 +77,13 @@ function EncounterAddFromPlayers ({open, onClose}: {open: boolean, onClose: () =
                 color="primary"
                 fullWidth
                 sx={{ mt: 2 }}
-                onClick={() => addToInitiativeQueue(playerList[0])}
+                disabled={!selectedPlayer}
+                onClick={() => selectedPlayer && addToInitiativeQueue(selectedPlayer)}
                 >
                 Add to initiative queue
                 </Button>
             </Paper>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+            {/* <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
                 <Button variant="outlined" sx={{ flex: 1, mr: 1 }}>
                 +
                 </Button>
@@ -83,7 +93,7 @@ function EncounterAddFromPlayers ({open, onClose}: {open: boolean, onClose: () =
                 <Button variant="outlined" sx={{ flex: 1, ml: 1 }}>
                 Next
                 </Button>
-            </Box>
+            </Box> */}
         </Box>
     </Dialog>
   );
