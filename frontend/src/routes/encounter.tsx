@@ -6,7 +6,8 @@ import {
     MenuItem,
     Select,
     TextField,
-    Typography
+    Typography,
+    
 } from "@mui/material";
 import {useState} from "react";
 import AddIcon from "@mui/icons-material/Add";
@@ -14,6 +15,7 @@ import { useDialogs } from "@toolpad/core/useDialogs";
 import EncounterAddFromPlayers from "../components/modals/EncounterAddFromPlayers";
 import EncounterAddFromBestiary from "../components/modals/EncounterAddFromBestiary";
 import EncounterAddFromAI from "../components/modals/EncounterAddFromAI";
+import { Send } from '@mui/icons-material';
 
 export default function Encounter() {
 
@@ -208,13 +210,20 @@ export default function Encounter() {
                             <Typography variant="body2">• Sydney Melendres tries to opportunity attack Joseph Kizana with their Greatsword but misses!</Typography>
                             <Typography variant="body2">• Mosaab Saleem deals 15 damage to Justin Tran with their Shortsword!</Typography>
                         </Box>
-                        <TextField placeholder="Type here..." size="small" fullWidth />
-                    </Card>
-                    {/* not needed anymore since smart assistant has been moved to another page */}
-                    {/*<Box className="combat-buttons">*/}
-                    {/*    <Button variant="contained" color="primary">COMBAT LOG</Button>*/}
-                    {/*    <Button variant="contained" color="primary">SMART ASSISTANT</Button>*/}
-                    {/*</Box>*/}
+                        <TextField 
+                            placeholder="Type here..." 
+                            size="small" 
+                            fullWidth 
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton edge="end">
+                                            <Send />
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />                    </Card>
                 </Box>
 
                 <Box sx={sxProps.targetSection}>
