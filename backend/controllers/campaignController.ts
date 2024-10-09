@@ -18,7 +18,7 @@ const getAllCampaigns = async (req: Request, res: Response) => {
                 path: 'monsters',
                 select: '_id name level class currentHitpoints maxHitpoints tempHitpoints armorClass deathSavingThrows'
             });
-        res.status(200).send(campaigns);
+        res.status(200).json(campaigns);
     } catch (error: any) {
         res.status(500).send(error.message);
     }

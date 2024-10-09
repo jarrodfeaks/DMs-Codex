@@ -8,19 +8,10 @@ import { CreateEffect, DeleteEffect } from '../src/effectUtils';
 // @access Public
 const getAllPlayers = async (req: Request, res: Response) => {
     try {
-        const players = await Player.find({}).populate([
-            {
-                path:'weapons', 
-                select:'-_id' 
-            },
-            {
-                path: 'effects',
-                select: '-_id'
-            }
-        ]) as IPlayer[];
-        res.status(200).send(players);
+        const players = await Player.find({});
+        res.status(200).json(players);
      } catch (error: any) {
-        res.status(500).send(error.message);
+        res.status(500).json(error.message);
     }
 };
 
