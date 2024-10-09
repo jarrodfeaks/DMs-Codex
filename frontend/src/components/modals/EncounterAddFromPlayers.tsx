@@ -27,9 +27,9 @@ function EncounterAddFromPlayers ({open, onClose}: {open: boolean, onClose: () =
       try {
         const response = await fetch('http://localhost:5000/players');
         const data = await response.json();
-        if (data.players) {
-          setPlayerList(data.players);
-          console.log(playerList);
+        if (data) {
+          setPlayerList(data);
+          console.log(data);
         } else {
           console.error("Players data is missing in response");
         }
