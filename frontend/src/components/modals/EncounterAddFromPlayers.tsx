@@ -10,18 +10,8 @@ interface Player {
 }
 
 function EncounterAddFromPlayers ({open, onClose}: {open: boolean, onClose: () => void}) {
-  // currently in the initiative
   const [players, setPlayers] = useState<Player[]>([]);
-    // { id: '1', name: 'Sam', level: 0, class: '' },
-    // { id: '2', name: 'Jarrod', level: 0, class: '' },
-    // { id: '3', name: 'Mosaab', level: 0, class: '' },
-
-  // list of players
   const [playerList, setPlayerList] = useState<Player[]>([]);
-    // { id: '4', name: 'Jarrod the mighty', level: 2, class: 'Wizard' },
-    // { id: '5', name: 'Mosaab the Handsome', level: 2, class: 'Bard' },
-    // { id: '6', name: 'Sydney the strong', level: 2, class: 'Fighter' },
-
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
 
   useEffect(() => {
@@ -83,17 +73,6 @@ function EncounterAddFromPlayers ({open, onClose}: {open: boolean, onClose: () =
                 Add to initiative queue
                 </Button>
             </Paper>
-            {/* <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-                <Button variant="outlined" sx={{ flex: 1, mr: 1 }}>
-                +
-                </Button>
-                <Button variant="outlined" sx={{ flex: 1, mx: 1 }}>
-                -
-                </Button>
-                <Button variant="outlined" sx={{ flex: 1, ml: 1 }}>
-                Next
-                </Button>
-            </Box> */}
         </Box>
     </Dialog>
   );
