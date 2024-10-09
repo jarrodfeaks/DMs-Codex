@@ -20,7 +20,7 @@ const getAllWeaponsList = async (req: Request, res: Response) => {
 const getWeaponInformation = async (req: Request, res: Response) => {
     try {
         const weaponId = req.params.id;
-        const weapon = await Weapon.findById(weaponId).select('-_id -__v');
+        const weapon = await Weapon.findById(weaponId);
         if (weapon) {
             res.status(200).json(weapon);
         } else {
@@ -54,7 +54,7 @@ const updateWeapon = async (req: Request, res: Response) => {
         if (updatedWeapon) {
             res.status(200).json(updatedWeapon);
         } else {
-            res.status(404).json({ message: 'Weapon not found' });
+            res.status(404).send({ message: 'Weapon not found' });
         }
     } catch (error: any) {
         res.status(500).send(error.message);
@@ -69,9 +69,9 @@ const deleteWeapon = async (req: Request, res: Response) => {
         const weaponId = req.params.id;
         const deletedWeapon = await Weapon.findByIdAndDelete(weaponId);
         if (deletedWeapon) {
-            res.status(200).json({ message: 'Weapon deleted' });
+            res.status(200).send({ message: 'Weapon deleted' });
         } else {
-            res.status(404).json({ message: 'Weapon not found' });
+            res.status(404).send({ message: 'Weapon not found' });
         }
     } catch (error: any) {
         res.status(500).send(error.message);

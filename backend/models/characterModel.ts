@@ -1,5 +1,5 @@
 import { Schema, model, Document, ObjectId } from 'mongoose';
-import { Attribute, Initative, Skill } from '../enums';
+import { Attribute, DamageType, Initative, Skill, Status } from '../enums';
 
 interface ICharacter extends Document {
     name: string;
@@ -13,10 +13,15 @@ interface ICharacter extends Document {
     wisdom: number;
     charisma: number;
     armorClass: number;
-    effectId: ObjectId;
+    customModifiers: Map<Skill | Initative, number>;
+    status: Status[];
+    temperaroaryModifiers: [Attribute | Skill, number][];
+    damageImmunities: DamageType[];
+    statusImmunities: Status[];
+    resistances: DamageType[];
+    vulnerabilities: DamageType[];
     weapons: ObjectId[];
     proficiencies: [Attribute | Skill];
-    customModifiers: Map<Attribute | Skill | Initative, number>;
     notes?: string;
 }
 
@@ -32,7 +37,12 @@ const characterSchema = new Schema<ICharacter>({
     wisdom: { type: Number, required: true, default: 1 },
     charisma: { type: Number, required: true, default: 1 },
     armorClass: { type: Number, required: true, default: 1 },
-    effectId: { type: Schema.Types.ObjectId, ref: 'Effect', required: false, default: null },
+    status: { type: [String], enum: Object.values(Status), required: false},
+    temperaroaryModifiers: { type: [[String, Number]], required: false, default: [] },
+    damageImmunities: { type: [String], enum: Object.values(DamageType), required: false, default: [] },
+    statusImmunities: { type: [String], enum: Object.values(Status), required: false, default: [] },
+    resistances: { type: [String], enum: Object.values(DamageType), required: false, default: [] },
+    vulnerabilities: { type: [String], enum: Object.values(DamageType), required: true, default: [] },
     weapons: [{ type: Schema.Types.ObjectId, ref: 'Weapon', required: false, default: [] }],
     customModifiers: { type: Map, of: Number, required: false, default: {} },
     notes: { type: String, required: false },
