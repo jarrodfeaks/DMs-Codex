@@ -42,14 +42,14 @@ function EncounterAddFromAI ({open, onClose}: {open: boolean, onClose: () => voi
                 </Typography>
                 <TextField
                 fullWidth
-                label="AI assistant: what difficulty would you like this fight?"
+                label="What difficulty would you like this fight?"
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value)}
                 margin="normal"
                 />
                 <TextField
                 fullWidth
-                label="AI assistant: How many creatures would you like?"
+                label="How many creatures would you like?"
                 value={creatures}
                 onChange={(e) => setCreatures(e.target.value)}
                 margin="normal"
@@ -57,7 +57,7 @@ function EncounterAddFromAI ({open, onClose}: {open: boolean, onClose: () => voi
                 />
                 <TextField
                 fullWidth
-                label="AI assistant: What setting are your heroes in?"
+                label="What setting are your heroes in?"
                 value={setting}
                 onChange={(e) => setSetting(e.target.value)}
                 margin="normal"
