@@ -52,5 +52,5 @@ const characterSchema = new Schema<ICharacter>({
     }
 );
 
-const Character = model<ICharacter>('Character', characterSchema);
+const Character = model<ICharacter>('character', characterSchema);
 export { Character, characterSchema, ICharacter };
