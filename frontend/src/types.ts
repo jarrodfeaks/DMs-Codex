@@ -21,6 +21,18 @@ interface Campaign {
     name: string;
 }
 
-export { LoginStatus };
-export type { User, Campaign };
+enum AssistantMode {
+    Rules,
+    Encounter,
+    Chat
+}
+
+interface Message {
+    id: number;
+    role: 'user' | 'assistant';
+    content: string;
+}
+
+export { LoginStatus, AssistantMode };
+export type { User, Campaign, Message };
 
