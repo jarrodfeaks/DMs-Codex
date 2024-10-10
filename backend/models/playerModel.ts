@@ -29,6 +29,6 @@ const playerSchema = new Schema<IPlayer>(
 
 playerSchema.add(characterSchema.obj);
 
-const Player = model('Player', playerSchema);
+const Player = model<IPlayer>('Player', playerSchema);
 
 export { IPlayer, Player };
