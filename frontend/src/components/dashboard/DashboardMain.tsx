@@ -1,6 +1,7 @@
 import { Button, Typography, TextField, Box, List, ListItem, ListItemButton, ListItemText, Paper } from "@mui/material";
 import { useState } from "react";
-import ImportCharacterModal from "../modals/ImportCharacter.tsx";
+import ImportCharacterModal from "../modals/ImportCharacterModal.tsx";
+import { useDialogs } from "@toolpad/core/useDialogs";
 
 // Temp until backend stuff gets added?
 interface Player {
@@ -13,7 +14,7 @@ interface Player {
 export default function DashboardMain(
     { onCreateCharacter }: { onCreateCharacter: () => void }) {
 
-    const [ modalOpen, setModalOpen ] = useState(false);
+    const dialogs = useDialogs();
 
     // Updates selectedPlayerID with whatever the hell a react hook is
     const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
@@ -36,7 +37,7 @@ export default function DashboardMain(
 
     const onImportCharacter = () => {
         // Open Import Character modal
-        setModalOpen(true);
+        dialogs.open(ImportCharacterModal);
     };
 
     const onEditCharacter = () => {
@@ -71,33 +72,32 @@ export default function DashboardMain(
                 textAlign: 'center',
             }}
         >
-            <ImportCharacterModal open={modalOpen} onClose={() => setModalOpen(false)} />
             {/* Campaign Notes */}
             <Typography variant='h5' sx={{ textAlign: 'left', width: '50%', mt: 2 }}>
                 Campaign Notes:
             </Typography>
-            <TextField 
-                placeholder="Type here..." 
+            <TextField
+                placeholder="Type here..."
                 sx={{ width: '50%', mt: 2 }}
             />
-            
+
             {/* Player List */}
             <Typography variant='h5' sx={{ textAlign: 'left', width: '50%', mt: 2 }}>
                 Player List:
             </Typography>
-            <Paper 
+            <Paper
                 sx={{
-                    width: '50%', 
-                    maxHeight: '50vh', 
-                    overflowY: 'auto', 
-                    borderRadius: '4px', 
+                    width: '50%',
+                    maxHeight: '50vh',
+                    overflowY: 'auto',
+                    borderRadius: '4px',
                     padding: 1,
                     mt: 2,
                 }}
             >
                 <List>
                     {players.map(player => ( // Replace with Character data for the currently selected Campaign
-                        <ListItem 
+                        <ListItem
                             key={player.id}
                             disablePadding
                         >
@@ -106,16 +106,16 @@ export default function DashboardMain(
                                 onClick={() => selectPlayer(player.id)}
                                 onDoubleClick={() => doubleClickPlayer(player.id)}
                             >
-                                <Box sx={{ 
-                                    display: 'flex', 
-                                    justifyContent: 'space-between', 
+                                <Box sx={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
                                     flexGrow: 1,
                                 }}>
-                                    <ListItemText 
+                                    <ListItemText
                                         primary={player.name}
                                     />
-                                    <ListItemText 
-                                        primary={`Level ${player.level} ${player.playerClass}`} 
+                                    <ListItemText
+                                        primary={`Level ${player.level} ${player.playerClass}`}
                                         sx={{ textAlign: 'right' }}
                                     />
                                 </Box>
@@ -127,30 +127,30 @@ export default function DashboardMain(
 
             {/* Button Container */}
             <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-                <Button 
-                    variant="outlined" 
-                    onClick={onCreateCharacter} 
+                <Button
+                    variant="outlined"
+                    onClick={onCreateCharacter}
                     sx={{ mt: 1, ml: 0.5, mr: 0.5 }}>
                     Create Character
                 </Button>
-                <Button 
-                    variant="outlined" 
+                <Button
+                    variant="outlined"
                     onClick={onImportCharacter}
                     sx={{ mt: 1, ml: 0.5, mr: 0.5 }}
                 >
                     Import Character
                 </Button>
-                <Button 
-                    variant="outlined" 
-                    onClick={onEditCharacter} 
+                <Button
+                    variant="outlined"
+                    onClick={onEditCharacter}
                     sx={{ mt: 1, ml: 0.5, mr: 0.5 }}
                     disabled={selectedPlayerId === null}
                 >
                     Edit Character
                 </Button>
-                <Button 
-                    variant="outlined" 
-                    onClick={onDeleteCharacter} 
+                <Button
+                    variant="outlined"
+                    onClick={onDeleteCharacter}
                     sx={{ mt: 1, ml: 0.5, mr: 0.5 }}
                     disabled={selectedPlayerId === null}
                 >

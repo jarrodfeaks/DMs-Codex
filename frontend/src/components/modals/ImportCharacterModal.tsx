@@ -1,4 +1,4 @@
-import { Box, Button, Modal, Typography } from "@mui/material";
+import { Box, Button, Dialog, Typography } from "@mui/material";
 import { useState } from "react";
 
 export default function ImportCharacterModal({ open, onClose }: { open: boolean, onClose: () => void }) {
@@ -14,7 +14,7 @@ export default function ImportCharacterModal({ open, onClose }: { open: boolean,
     // PDF upload
     const onUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (file && file.type === "application/pdf") { setSelectedFile(file); } 
+        if (file && file.type === "application/pdf") { setSelectedFile(file); }
         else { alert("Please upload a PDF file."); }
     };
 
@@ -24,7 +24,7 @@ export default function ImportCharacterModal({ open, onClose }: { open: boolean,
     };
 
     return (
-        <Modal
+        <Dialog
             open={open}
             onClose={() => {
                 setSelectedFile(null);
@@ -34,13 +34,7 @@ export default function ImportCharacterModal({ open, onClose }: { open: boolean,
             <Box sx={{
                 width: 400,
                 bgcolor: 'background.paper',
-                borderRadius: 2,
                 p: 4,
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                boxShadow: 24
             }}>
                 <Typography variant="h5" sx={{ mb: 2 }}>
                     Import Character
@@ -58,7 +52,7 @@ export default function ImportCharacterModal({ open, onClose }: { open: boolean,
                         />
                     </Button>
                     {selectedFile && (
-                        <Typography sx={{ ml: 2, display: 'inline-block' }}>
+                        <Typography sx={{ mt: 1, display: 'inline-block' }}>
                             {selectedFile.name}
                         </Typography>
                     )}
@@ -79,6 +73,6 @@ export default function ImportCharacterModal({ open, onClose }: { open: boolean,
                     </Button>
                 </Box>
             </Box>
-        </Modal>
+        </Dialog>
     );
 }
