@@ -1,5 +1,5 @@
 import { Player } from '../playerModel';
-import { Status }from '../../enums';
+import { Status }from '../../../shared/enums';
 
 const createPlayer = async () => {
     const player = new Player({
@@ -14,7 +14,7 @@ const createPlayer = async () => {
         // vulnerabilities?: object;
         // resistances?: object;
         // immunities?: object;
-        conditions: Status.charmed,
+        conditions: Status.Charmed,
         // createdAt?: Date;
     });
 
