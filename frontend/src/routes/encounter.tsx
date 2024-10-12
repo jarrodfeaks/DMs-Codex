@@ -14,6 +14,8 @@ import { useDialogs } from "@toolpad/core/useDialogs";
 import EncounterAddFromPlayers from "../components/modals/EncounterAddFromPlayers";
 import EncounterAddFromBestiary from "../components/modals/EncounterAddFromBestiary";
 import EncounterAddFromAI from "../components/modals/EncounterAddFromAI";
+import CharacterConditions from "../components/modals/CharacterConditions";
+import EncounterDefenses from "../components/modals/EncounterDefenses";
 
 export default function Encounter() {
 
@@ -23,6 +25,35 @@ export default function Encounter() {
     const [creatureCount, setCreatureCount] = useState('');
     const [setting, setSetting] = useState('');
     const [suggestion, setSuggestion] = useState('5 goblins with spears');
+
+    const [conditionsModalOpen, setConditionsModalOpen] = useState(false);
+    const handleConditionsOpen = () => setConditionsModalOpen(true);
+    const handleConditionsClose = () => setConditionsModalOpen(false);
+
+    const [immunitiesModalOpen, setImmunitiesModalOpen] = useState(false);
+    const handleImmunitiesOpen = () => setImmunitiesModalOpen(true);
+    const handleImmunitiesClose = () => setImmunitiesModalOpen(false);
+
+    const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+    const [selectedImmunities, setSelectedImmunities] = useState<string[]>([]);
+    const [selectedResistances, setSelectedResistances] = useState<string[]>([]);
+    const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>([]);
+
+    const handleConditionsChange = (conditions: string[]) => {
+      setSelectedConditions(conditions); 
+    };
+
+    const handleImmunitiesChange = (conditions: string[]) => {
+      setSelectedImmunities(conditions);
+    };
+
+    const handleResistancesChange = (conditions: string[]) => {
+      setSelectedResistances(conditions);
+    };
+  
+    const handleVulnerabilitiesChange = (conditions: string[]) => {
+      setSelectedVulnerabilities(conditions);
+    };
 
     const initiativeOrder = [
         { name: 'Joseph Kizana', initiative: 20, hp: 40, maxHp: 50, ac: 19 },
@@ -147,11 +178,17 @@ export default function Encounter() {
                 </Card>
                 <Card sx={sxProps.columnCard}>
                     <Typography variant="subtitle2">Conditions</Typography>
-                    <IconButton size="small"><AddIcon /></IconButton>
+                    <IconButton size="small" onClick={handleConditionsOpen}><AddIcon /></IconButton>
+                    <Typography>{selectedConditions.length > 0 ? selectedConditions.join(', ') : 'No conditions'}</Typography>
+                    <CharacterConditions open={conditionsModalOpen} onClose={handleConditionsClose} onConditionsChange={handleConditionsChange}></CharacterConditions>
                 </Card>
                 <Card sx={sxProps.columnCard}>
                     <Typography variant="subtitle2">Defenses</Typography>
-                    <IconButton size="small"><AddIcon /></IconButton>
+                    <IconButton size="small" onClick={handleImmunitiesOpen}><AddIcon /></IconButton>
+                    <Typography>{selectedImmunities.length > 0 ? 'Immunities: ' + selectedImmunities.join(', ') : 'No immunities'}</Typography>
+                    <Typography>{selectedResistances.length > 0 ? 'Resistances: ' + selectedResistances.join(', ') : 'No resistances'}</Typography>
+                    <Typography>{selectedVulnerabilities.length > 0 ? 'Vulnerabilities: ' + selectedVulnerabilities.join(', ') : 'No Vulnerabilities'}</Typography>
+                    <EncounterDefenses open={immunitiesModalOpen} onClose={handleImmunitiesClose} onImmunitiesChange={handleImmunitiesChange} onResistancesChange={handleResistancesChange} onVulnerabilitiesChange={handleVulnerabilitiesChange}></EncounterDefenses>
                 </Card>
                 <Card sx={sxProps.columnCard}>
                     <Box sx={sxProps.actionGroup}>
