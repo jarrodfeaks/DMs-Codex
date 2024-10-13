@@ -1,26 +1,66 @@
+import { Send } from '@mui/icons-material';
+import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
 import {
     Box,
     Button,
     Card,
+    Chip,
+    CircularProgress,
     IconButton,
+    InputAdornment,
     MenuItem,
     Select,
     TextField,
-    Typography,
-    InputAdornment
+    Typography
 } from "@mui/material";
-import {useState} from "react";
-import AddIcon from "@mui/icons-material/Add";
 import { useDialogs } from "@toolpad/core/useDialogs";
-import EncounterAddFromPlayers from "../components/modals/EncounterAddFromPlayers";
-import EncounterAddFromBestiary from "../components/modals/EncounterAddFromBestiary";
-import EncounterAddFromAI from "../components/modals/EncounterAddFromAI";
-import { Send } from '@mui/icons-material';
-import CloseIcon from "@mui/icons-material/Close";
+import { useState, useEffect } from "react";
 import CharacterConditions from "../components/modals/CharacterConditions";
+import EncounterAddFromAI from "../components/modals/EncounterAddFromAI";
+import EncounterAddFromBestiary from "../components/modals/EncounterAddFromBestiary";
+import EncounterAddFromPlayers from "../components/modals/EncounterAddFromPlayers";
 import EncounterDefenses from "../components/modals/EncounterDefenses";
 
 export default function Encounter() {
+
+    useEffect(() => {
+        const fetchCurrentPlayer = async () => {
+            try {
+                // Assuming 'Justin Tran' is the current player and has an ID of '123'
+                const response = await axios.get('/api/players/current/123');
+                setCurrentPlayer(response.data);
+                setLoadingStatus(false);
+                setLoadingConditions(false);
+                setLoadingDefenses(false);
+            } catch (err) {
+                setError('Failed to fetch player information');
+                setLoadingStatus(false);
+                setLoadingConditions(false);
+                setLoadingDefenses(false);
+            }
+        };
+
+        fetchCurrentPlayer();
+    }, []);
+
+    const [loadingStatus, setLoadingStatus] = useState(true);
+    const [loadingConditions, setLoadingConditions] = useState(true);
+    const [loadingDefenses, setLoadingDefenses] = useState(true);
+
+    const renderLabels = (items, emptyMessage) => {
+        console.log('Rendering labels for:', items);
+        if (!items || items.length === 0) {
+            return <Typography>{emptyMessage}</Typography>;
+        }
+        return (
+            <Box display="flex" flexWrap="wrap" gap={1}>
+                {items.map((item, index) => (
+                    <Chip key={index} label={item} size="small" color="primary" />
+                ))}
+            </Box>
+        );
+    };
 
     const dialogs = useDialogs();
 
@@ -145,7 +185,6 @@ export default function Encounter() {
         return name === 'Justin Tran';
     }
 
-    // Related to notes section
     const [notes, setNotes] = useState([
     ]);
 
@@ -163,7 +202,10 @@ export default function Encounter() {
         const newNotes = notes.filter((_, i) => i !== index);
         setNotes(newNotes);
     };
-    //
+
+    const [currentPlayer, setCurrentPlayer] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     return (
         <Box sx={sxProps.encounterScreen}>
@@ -188,31 +230,87 @@ export default function Encounter() {
             </Box>
 
             <Box sx={sxProps.encounterColumn}>
-                <Typography variant="h6" sx={sxProps.columnTitle}>JUSTIN TRAN</Typography>
+            <Typography variant="h6" sx={sxProps.columnTitle}>{currentPlayer?.name || 'Loading...'}</Typography>
+                {/* Current player status is in progress */}
+
                 <Card sx={sxProps.columnCard}>
-                    <Typography variant="subtitle2">Status</Typography>
-                    <Typography>Hit Points: 30/50</Typography>
-                    <Typography>Temp HP: 10</Typography>
-                    <Typography>AC: 21</Typography>
-                    <Box sx={sxProps.deathSaves}>
-                        <Typography>☠</Typography>
-                        <Box>□□□□□</Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                        <Typography variant="subtitle2">Conditions</Typography>
+                        <IconButton size="small" onClick={handleConditionsOpen}><AddIcon /></IconButton>
                     </Box>
+                    {loadingConditions ? (
+                        <Box display="flex" justifyContent="center" alignItems="center" height={50}>
+                            <CircularProgress size={24} />
+                        </Box>
+                    ) : (
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                            {selectedConditions.map((condition, index) => (
+                                <Chip key={index} label={condition} size="small" color="primary" />
+                            ))}
+                            {selectedConditions.length === 0 && <Typography>No conditions</Typography>}
+                        </Box>
+                    )}
+                    <CharacterConditions 
+                        open={conditionsModalOpen} 
+                        onClose={handleConditionsClose} 
+                        onConditionsChange={handleConditionsChange}
+                        initialConditions={selectedConditions}
+                    />
                 </Card>
+
                 <Card sx={sxProps.columnCard}>
-                    <Typography variant="subtitle2">Conditions</Typography>
-                    <IconButton size="small" onClick={handleConditionsOpen}><AddIcon /></IconButton>
-                    <Typography>{selectedConditions.length > 0 ? selectedConditions.join(', ') : 'No conditions'}</Typography>
-                    <CharacterConditions open={conditionsModalOpen} onClose={handleConditionsClose} onConditionsChange={handleConditionsChange}></CharacterConditions>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                        <Typography variant="subtitle2">Defenses</Typography>
+                        <IconButton size="small" onClick={handleImmunitiesOpen}><AddIcon /></IconButton>
+                    </Box>
+                    {loadingDefenses ? (
+                        <Box display="flex" justifyContent="center" alignItems="center" height={100}>
+                            <CircularProgress size={24} />
+                        </Box>
+                    ) : (
+                        <>
+                            <Box sx={{ mb: 1 }}>
+                                <Typography variant="body2">Immunities</Typography>
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                                    {selectedImmunities.map((immunity, index) => (
+                                        <Chip key={index} label={immunity} size="small" color="primary" />
+                                    ))}
+                                    {selectedImmunities.length === 0 && <Typography>No immunities</Typography>}
+                                </Box>
+                            </Box>
+                            <Box sx={{ mb: 1 }}>
+                                <Typography variant="body2">Resistances</Typography>
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                                    {selectedResistances.map((resistance, index) => (
+                                        <Chip key={index} label={resistance} size="small" color="primary" />
+                                    ))}
+                                    {selectedResistances.length === 0 && <Typography>No resistances</Typography>}
+                                </Box>
+                            </Box>
+                            <Box>
+                                <Typography variant="body2">Vulnerabilities</Typography>
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                                    {selectedVulnerabilities.map((vulnerability, index) => (
+                                        <Chip key={index} label={vulnerability} size="small" color="primary" />
+                                    ))}
+                                    {selectedVulnerabilities.length === 0 && <Typography>No vulnerabilities</Typography>}
+                                </Box>
+                            </Box>
+                        </>
+                    )}
+                    <EncounterDefenses 
+                        open={immunitiesModalOpen} 
+                        onClose={handleImmunitiesClose} 
+                        onImmunitiesChange={handleImmunitiesChange} 
+                        onResistancesChange={handleResistancesChange} 
+                        onVulnerabilitiesChange={handleVulnerabilitiesChange}
+                        initialImmunities={selectedImmunities}
+                        initialResistances={selectedResistances}
+                        initialVulnerabilities={selectedVulnerabilities}
+                    />
                 </Card>
-                <Card sx={sxProps.columnCard}>
-                    <Typography variant="subtitle2">Defenses</Typography>
-                    <IconButton size="small" onClick={handleImmunitiesOpen}><AddIcon /></IconButton>
-                    <Typography>{selectedImmunities.length > 0 ? 'Immunities: ' + selectedImmunities.join(', ') : 'No immunities'}</Typography>
-                    <Typography>{selectedResistances.length > 0 ? 'Resistances: ' + selectedResistances.join(', ') : 'No resistances'}</Typography>
-                    <Typography>{selectedVulnerabilities.length > 0 ? 'Vulnerabilities: ' + selectedVulnerabilities.join(', ') : 'No Vulnerabilities'}</Typography>
-                    <EncounterDefenses open={immunitiesModalOpen} onClose={handleImmunitiesClose} onImmunitiesChange={handleImmunitiesChange} onResistancesChange={handleResistancesChange} onVulnerabilitiesChange={handleVulnerabilitiesChange}></EncounterDefenses>
-                </Card>
+
+
                 <Card sx={sxProps.columnCard}>
                     <Box sx={sxProps.actionGroup}>
                         <Box sx={sxProps.actionItem}>
@@ -307,7 +405,7 @@ export default function Encounter() {
                         />                    </Card>
                 </Box>
 
-                <Box sx={sxProps.targetSection}>
+                {/* <Box sx={sxProps.targetSection}>
                     <Typography variant="h6">MOSAAB SALEEM</Typography>
                     <Card sx={sxProps.columnCard}>
                         <Typography variant="subtitle2">Status</Typography>
@@ -327,7 +425,8 @@ export default function Encounter() {
                         <Typography variant="subtitle2">Defenses</Typography>
                         <IconButton size="small"><AddIcon /></IconButton>
                     </Card>
-                </Box>
+                </Box> */}
+
             </Box>
 
             <Box sx={{ position: "absolute", bottom: 1, left: 1, display: "flex", flexDirection: "column", gap: 1 }}>
