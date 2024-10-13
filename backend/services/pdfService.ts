@@ -1,4 +1,3 @@
-import path from 'path';
 import PDFParser from 'pdf2json';
 
 interface FieldData {
@@ -15,9 +14,7 @@ declare module 'pdf2json' {
     }
 }
 
-const pdfPath = path.join(__dirname, '../../sample.pdf');
-
-const extractFieldsFromPDF = async (): Promise<FieldData[]> => {
+const extractFieldsFromPDF = async (buffer: Buffer): Promise<FieldData[]> => {
     return new Promise((resolve, reject) => {
         const pdfParser = new PDFParser();
 
@@ -27,8 +24,8 @@ const extractFieldsFromPDF = async (): Promise<FieldData[]> => {
             resolve(fields);
         });
 
-        pdfParser.loadPDF(pdfPath);
-    })
+        pdfParser.parseBuffer(buffer);
+    });
 }
 
 export default { extractFieldsFromPDF };

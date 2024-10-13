@@ -7,9 +7,11 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 export default function Campaign() {
     const { currentCampaign } = useCurrentCampaign();
+    const [importData, setImportData] = useState<unknown | undefined>();
     const [showCharacterSheet, setShowCharacterSheet] = useState(false);
 
-    const toggleView = () => {
+    const toggleView = (importData?: unknown) => {
+        setImportData(importData);
         setShowCharacterSheet(!showCharacterSheet);
     };
 
@@ -39,7 +41,7 @@ export default function Campaign() {
                 {showCharacterSheet ? "Character Sheet" : `Dashboard - ${currentCampaign?.name}`}
             </Typography>
             {showCharacterSheet ? (
-                <DashboardCharacterSheet />
+                <DashboardCharacterSheet importData={importData} />
             ) : (
                 <DashboardMain onCreateCharacter={toggleView} />
             )}

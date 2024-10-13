@@ -11,7 +11,6 @@ import encounterRoutes from './routes/encounterRoutes';
 import turnRoutes from './routes/turnRoutes';
 import weaponRoutes from './routes/weaponRoutes';
 import { auth } from "express-openid-connect";
-import { importCharacterSheet } from "./controllers/aiController";
 const PORT = process.env.PORT || 5000;
 const BACKEND_URL = `http://localhost:${PORT}`;
 const FRONTEND_URL = `http://localhost:${process.env.FRONTEND_PORT || 5173}`;
@@ -83,6 +82,4 @@ app.get("/test/db", async (req, res) => {
 
 app.listen(PORT, () => {
     console.log("Server started on port " + PORT);
-    // pass in fake data for testing
-    importCharacterSheet({} as any, {} as any);
 });
