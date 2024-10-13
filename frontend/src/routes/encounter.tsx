@@ -16,6 +16,7 @@ import EncounterAddFromPlayers from "../components/modals/EncounterAddFromPlayer
 import EncounterAddFromBestiary from "../components/modals/EncounterAddFromBestiary";
 import EncounterAddFromAI from "../components/modals/EncounterAddFromAI";
 import { Send } from '@mui/icons-material';
+import CloseIcon from "@mui/icons-material/Close";
 import CharacterConditions from "../components/modals/CharacterConditions";
 import EncounterDefenses from "../components/modals/EncounterDefenses";
 
@@ -57,7 +58,7 @@ export default function Encounter() {
       setSelectedVulnerabilities(conditions);
     };
 
-    const initiativeOrder = [
+    const initiativeOrder = [ // this needs to be synced to backend
         { name: 'Joseph Kizana', initiative: 20, hp: 40, maxHp: 50, ac: 19 },
         { name: 'Mosaab Saleem', initiative: 19, hp: 50, maxHp: 50, ac: 20 },
         { name: 'Sydney Melendres', initiative: 16, hp: 25, maxHp: 50, ac: 15 },
@@ -143,6 +144,26 @@ export default function Encounter() {
     const isActive = (name: string): boolean => {
         return name === 'Justin Tran';
     }
+
+    // Related to notes section
+    const [notes, setNotes] = useState([
+    ]);
+
+    const handleNoteChange = (index, value) => {
+        const newNotes = [...notes];
+        newNotes[index] = value;
+        setNotes(newNotes);
+    };
+
+    const addNote = () => {
+        setNotes([...notes, ""]);
+    };
+
+    const removeNote = (index) => {
+        const newNotes = notes.filter((_, i) => i !== index);
+        setNotes(newNotes);
+    };
+    //
 
     return (
         <Box sx={sxProps.encounterScreen}>
@@ -230,9 +251,32 @@ export default function Encounter() {
                     </Box>
                 </Card>
                 <Card sx={sxProps.columnCard}>
-                    <Typography variant="subtitle2">Notes</Typography>
-                    <Typography>• Second Wind: Y</Typography>
-                    <Typography>• Action Surge: 1/3</Typography>
+                    <Typography variant="subtitle2" paddingBottom={1}>Notes</Typography>
+                    {notes.map((note, index) => (
+                        <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                            <TextField
+                                fullWidth
+                                size="small"
+                                value={note}
+                                onChange={(e) => handleNoteChange(index, e.target.value)}
+                            />
+                            <IconButton 
+                                size="small" 
+                                onClick={() => removeNote(index)}
+                                sx={{ ml: 1 }}
+                            >
+                                <CloseIcon />
+                            </IconButton>
+                        </Box>
+                    ))}
+                    <Button 
+                        startIcon={<AddIcon />} 
+                        onClick={addNote}
+                        size="small"
+                        sx={{ mt: 1}}
+                    >
+                        ADD NOTE
+                    </Button>
                 </Card>
             </Box>
 
