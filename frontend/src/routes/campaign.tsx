@@ -41,7 +41,7 @@ export default function Campaign() {
             {showCharacterSheet ? (
                 <DashboardCharacterSheet />
             ) : (
-                <DashboardMain onAddNewPlayer={toggleView} />
+                <DashboardMain onCreateCharacter={toggleView} />
             )}
         </>
     );

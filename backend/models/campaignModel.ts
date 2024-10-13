@@ -22,5 +22,5 @@ const campaignSchema = new Schema<ICampaign>({
     }
 );
 
-const Campaign = model<ICampaign>('Character', campaignSchema);
+const Campaign = model<ICampaign>('Campaign', campaignSchema);
 export { Campaign, campaignSchema, ICampaign };

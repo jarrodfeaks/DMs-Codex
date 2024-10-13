@@ -27,7 +27,7 @@ function App() {
             <DialogsProvider>
                 <Box sx={{ display: 'flex' }}>
                     <Sidebar user={userData.user} campaigns={userData.campaigns} currentCampaign={currentCampaign} />
-                    <Box sx={{ width: "100%", p: 2 }}>
+                    <Box sx={{ width: "100%", height: "100vh", p: 2 }}>
                         { atRoot ? <Start /> : <Outlet context={{ currentCampaign } satisfies ContextType} /> }
                     </Box>
                 </Box>
