@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { IEncounter, Encounter } from '../models/encounterModel';
 import { Turn } from '../models/turnModel';
+import { Player } from '../models/playerModel';
+import { Monster } from '../models/monsterModel';
 
 // @desc Get a specific encounter
 // @route GET /encounters/:id
@@ -47,6 +49,69 @@ const updateEncounter = async (req: Request, res: Response) => {
         } else {
             res.status(404).send({ message: 'Encounter not found' });
         }
+    } catch (error: any) {
+        console.error(error.stack);
+        res.status(500).send({ message: 'An unexpected error occurred. Please try again later.' });
+    }
+};
+
+// @desc Add a string to the combat log of an encounter
+// @route PUT /encounters/:id/combat-log
+// @access Public
+const addToCombatLog = async (req: Request, res: Response) => {
+    try {
+        const encounterId = req.params.id;
+        const logEntry = req.body.logEntry;
+
+        if (!logEntry || typeof logEntry !== 'string') {
+            return res.status(400).send({ message: 'Invalid log entry' });
+        }
+
+        const encounter = await Encounter.findById(encounterId);
+        if (encounter) {
+            encounter.combat_log.push(logEntry);
+            await encounter.save();
+            res.status(200).json(encounter);
+        } else {
+            res.status(404).send({ message: 'Encounter not found' });
+        }
+    } catch (error: any) {
+        console.error(error.stack);
+        res.status(500).send({ message: 'An unexpected error occurred. Please try again later.' });
+    }
+};
+
+// @desc Add a character to the encounter
+// @route PUT /encounters/:id/characters
+// @access Public
+const addCharacterToEncounter = async (req: Request, res: Response) => {
+    try {
+        const encounterId = req.params.id;
+        const { characterId } = req.body;
+
+        if (!characterId) {
+            return res.status(400).send({ message: 'Character ID is required' });
+        }
+
+        const encounter = await Encounter.findById(encounterId);
+        if (!encounter) {
+            return res.status(404).send({ message: 'Encounter not found' });
+        }
+
+        const player = await Player.findById(characterId);
+        if (player) {
+            encounter.players.push(characterId);
+        } else {
+            const monster = await Monster.findById(characterId);
+            if (monster) {
+                encounter.monsters.push(characterId);
+            } else {
+                return res.status(404).send({ message: 'Character not found in players or monsters' });
+            }
+        }
+
+        await encounter.save();
+        res.status(200).json(encounter);
     } catch (error: any) {
         console.error(error.stack);
         res.status(500).send({ message: 'An unexpected error occurred. Please try again later.' });
@@ -107,4 +172,4 @@ const deleteEncounter = async (req: Request, res: Response) => {
     }
 };
 
-export {getEncounterInformation, createEncounter, resetTurnsInEncounter, updateEncounter, deleteEncounter };
+export {addToCombatLog, addCharacterToEncounter, getEncounterInformation, createEncounter, resetTurnsInEncounter, updateEncounter, deleteEncounter };

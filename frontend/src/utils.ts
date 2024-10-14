@@ -85,16 +85,35 @@ export function sortQueueByInitiative(queue: Array<{ name: string, initiative: n
     @returns The default combat log string.
 */
 export function attackCombatLogString(characterName: string, weapon: string, target: string, damage: number): string {
-    return `${characterName} SUCCESSFULLY attacked ${target} with a ${weapon} and dealt ${damage}!`;
+    return `• ${characterName} SUCCESSFULLY attacked ${target} with a ${weapon} and dealt ${damage}!`;
 }
 
 /**
     Returns missed attack string for the combat log.
     @param characterName - The name of the character.
-    @param weapon - The action the character is taking.
+    @param weapon - The weapon/action the character is taking.
     @param target - The target of the action.
     @returns The default combat log string.
 */
 export function missedCombatLogString(characterName: string, weapon: string, target: string): string {
-    return `${characterName} FAILED to attack ${target} with a ${weapon}!`;
+    return `• ${characterName} FAILED to attack ${target} with a ${weapon}!`;
+}
+
+/**
+    Returns hit attack string for the combat log.
+    @param turnNumber - Prints the turn number.
+    @returns The default combat log string.
+*/
+export function nextTurnCombatLogString(turnNumber: string): string {
+    return `• TURN ${turnNumber}`;
+}
+
+/**
+    Returns hit attack string for the combat log.
+    @param number - number to format.
+    @returns The default combat log string.
+*/
+export function formatNumber(number: number): string {
+    if (number > 0) return `+ ${number}`;
+    return `${number}`;
 }
