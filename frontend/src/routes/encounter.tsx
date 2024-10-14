@@ -1,5 +1,5 @@
 import { Send } from '@mui/icons-material';
-import { Action } from '../../../shared/enums.ts';
+import { Action, Weapon, WeaponCategories } from '../../../shared/enums.ts';
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import {
@@ -10,10 +10,11 @@ import {
     CircularProgress,
     IconButton,
     InputAdornment,
+    ListSubheader,
     MenuItem,
     Select,
     TextField,
-    Typography
+    Typography,
 } from "@mui/material";
 import { useDialogs } from "@toolpad/core/useDialogs";
 import { useState, useEffect } from "react";
@@ -128,8 +129,39 @@ export default function Encounter() {
     };
 
     const [selectedAction, setSelectedAction] = useState<Action>(Action.Attack);
-    // const [selectedWeapon, setSelectedWeapon] = useState(false);
+    const [selectedWeapon, setSelectedWeapon] = useState<Weapon | ''>('');
     // const [selectedTarget, setSelectedTarget] = useState(false);
+
+    const weaponOptions = Object.values(Weapon);
+
+    const renderActionSpecificDropdown = () => {
+        switch (selectedAction) {
+            case Action.Attack:
+                return (
+                    <Box sx={sxProps.actionItem}>
+                        <Typography>Weapon</Typography>
+                        <Select
+                            value={selectedWeapon}
+                            onChange={(e) => setSelectedWeapon(e.target.value as Weapon)}
+                            size="small"
+                            fullWidth
+                        >
+                            {Object.entries(WeaponCategories).map(([category, weapons]) => [
+                                <ListSubheader key={category}>{category}</ListSubheader>,
+                                ...weapons.map((weapon) => (
+                                    <MenuItem key={weapon} value={weapon}>
+                                        <Typography>{weapon}</Typography>
+                                    </MenuItem>
+                                ))
+                            ])}
+                        </Select>
+                    </Box>
+                );
+            // Add cases for other actions that require specific dropdowns
+            default:
+                return null;
+        }
+    };
 
     const initiativeOrder = [ // this needs to be synced to backend
         { name: 'Joseph Kizana', initiative: 20, hp: 40, maxHp: 50, ac: 19 },
@@ -381,7 +413,15 @@ export default function Encounter() {
                         </Box>
                         <Box sx={sxProps.actionItem}>
                             <Typography>Action</Typography>
-                            <Select defaultValue={Action.Attack} size="small" fullWidth>
+                            <Select
+                                value={selectedAction}
+                                onChange={(e) => {
+                                    setSelectedAction(e.target.value as Action);
+                                    setSelectedWeapon(''); // Reset weapon when action changes
+                                }}
+                                size="small"
+                                fullWidth
+                            >
                                 {actionOptions.map((action) => (
                                     <MenuItem key={action} value={action}>
                                         {action}
@@ -389,12 +429,7 @@ export default function Encounter() {
                                 ))}
                             </Select>
                         </Box>
-                        <Box sx={sxProps.actionItem}>
-                            <Typography>Weapon</Typography>
-                            <Select defaultValue="Greataxe" size="small" fullWidth>
-                                <MenuItem value="Greataxe">Greataxe</MenuItem>
-                            </Select>
-                        </Box>
+                        {renderActionSpecificDropdown()}
                         <Box sx={sxProps.actionItem}>
                             <Typography>Target</Typography>
                             <Select defaultValue="Mosaab Saleem" size="small" fullWidth>
