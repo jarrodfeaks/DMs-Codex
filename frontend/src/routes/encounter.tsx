@@ -1,4 +1,5 @@
 import { Send } from '@mui/icons-material';
+import { Action } from '../../../shared/enums.ts';
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import {
@@ -63,6 +64,7 @@ export default function Encounter() {
     };
 
     const dialogs = useDialogs();
+    const actionOptions = Object.values(Action);
 
     const [difficulty, setDifficulty] = useState('');
     const [creatureCount, setCreatureCount] = useState('');
@@ -124,6 +126,10 @@ export default function Encounter() {
             prevVulnerabilities.filter(vulnerability => vulnerability !== vulnerabilityToDelete)
         );
     };
+
+    const [selectedAction, setSelectedAction] = useState<Action>(Action.Attack);
+    // const [selectedWeapon, setSelectedWeapon] = useState(false);
+    // const [selectedTarget, setSelectedTarget] = useState(false);
 
     const initiativeOrder = [ // this needs to be synced to backend
         { name: 'Joseph Kizana', initiative: 20, hp: 40, maxHp: 50, ac: 19 },
@@ -375,8 +381,12 @@ export default function Encounter() {
                         </Box>
                         <Box sx={sxProps.actionItem}>
                             <Typography>Action</Typography>
-                            <Select defaultValue="Attack" size="small" fullWidth>
-                                <MenuItem value="Attack">Attack</MenuItem>
+                            <Select defaultValue={Action.Attack} size="small" fullWidth>
+                                {actionOptions.map((action) => (
+                                    <MenuItem key={action} value={action}>
+                                        {action}
+                                    </MenuItem>
+                                ))}
                             </Select>
                         </Box>
                         <Box sx={sxProps.actionItem}>
