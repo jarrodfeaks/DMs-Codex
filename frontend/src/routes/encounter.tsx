@@ -2,6 +2,7 @@ import {
     Box,
     Button,
     Card,
+    Collapse,
     IconButton,
     MenuItem,
     Select,
@@ -23,6 +24,7 @@ export default function Encounter() {
     const [creatureCount, setCreatureCount] = useState('');
     const [setting, setSetting] = useState('');
     const [suggestion, setSuggestion] = useState('5 goblins with spears');
+    const [showButtons, setShowButtons] = useState(false);
 
     const initiativeOrder = [
         { name: 'Joseph Kizana', initiative: 20, hp: 40, maxHp: 50, ac: 19 },
@@ -38,6 +40,10 @@ export default function Encounter() {
     const handleOpenBestiary = () => dialogs.open(EncounterAddFromBestiary);
 
     const handleOpenAIGenerate = () => dialogs.open(EncounterAddFromAI);
+
+    const handleAddInitiative = () => {
+        setShowButtons(true);
+    };
 
     const handleGenerateSuggestion = () => {
         // In a real application, this would call an AI service
@@ -103,10 +109,21 @@ export default function Encounter() {
             display: "flex",
             flexDirection: "column",
             gap: 1
+        },
+        collapseButtons: {
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
+            "& .MuiButton-root": {
+                backgroundColor: "primary",
+                color: "white",
+                "&:hover": {
+                    backgroundColor: "primary.dark",
+                }
+            }
         }
     }
 
-    // Check if the character is active in the initiative order
     const isActive = (name: string): boolean => {
         return name === 'Justin Tran';
     }
@@ -129,7 +146,9 @@ export default function Encounter() {
                     </Card>
                 ))}
                 <Card sx={{ ...sxProps.columnCard, ...sxProps.addCharacter }}>
-                    <IconButton size="small"><AddIcon /></IconButton>
+                    <IconButton size="small">
+                        <AddIcon onClick={handleAddInitiative}/>
+                    </IconButton>
                 </Card>
             </Box>
 
@@ -240,11 +259,21 @@ export default function Encounter() {
                 </Box>
             </Box>
 
+            
             <Box sx={{ position: "absolute", bottom: 1, left: 1, display: "flex", flexDirection: "column", gap: 1 }}>
-                <Button onClick={handleOpenPlayerList} variant="contained" color="primary">Add from player list</Button>
-                <Button onClick={handleOpenBestiary} variant="contained" color="primary">Add from bestiary</Button>
-                <Button onClick={handleOpenAIGenerate} variant="contained" color="primary">AI Generate Encounter!</Button>
+                <Collapse in={showButtons} sx={sxProps.collapseButtons}>
+                    <Button onClick={handleOpenPlayerList} variant="contained" color="primary">
+                        Add from player list
+                    </Button>
+                    <Button onClick={handleOpenBestiary} variant="contained" color="primary">
+                        Add from bestiary
+                    </Button>
+                    <Button onClick={handleOpenAIGenerate} variant="contained" color="primary">
+                        AI Generate Encounter!
+                    </Button>
+                </Collapse>
             </Box>
+
         </Box>
     );
 }
