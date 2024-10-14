@@ -70,12 +70,15 @@ export default function Encounter() {
     const [suggestion, setSuggestion] = useState('5 goblins with spears');
 
     const [conditionsModalOpen, setConditionsModalOpen] = useState(false);
+    const [defensesModalOpen, setDefensesModalOpen] = useState(false);
     const handleConditionsOpen = () => setConditionsModalOpen(true);
     const handleConditionsClose = () => setConditionsModalOpen(false);
 
     const [immunitiesModalOpen, setImmunitiesModalOpen] = useState(false);
     const handleImmunitiesOpen = () => setImmunitiesModalOpen(true);
     const handleImmunitiesClose = () => setImmunitiesModalOpen(false);
+    const handleDefensesOpen = () => setDefensesModalOpen(true);
+    const handleDefensesClose = () => setDefensesModalOpen(false);
 
     const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
     const [selectedImmunities, setSelectedImmunities] = useState<string[]>([]);
@@ -87,15 +90,39 @@ export default function Encounter() {
     };
 
     const handleImmunitiesChange = (conditions: string[]) => {
-      setSelectedImmunities(conditions);
+        setSelectedImmunities(conditions);
+    };
+    
+    const handleResistancesChange = (conditions: string[]) => {
+        setSelectedResistances(conditions);
+    };
+    
+    const handleVulnerabilitiesChange = (conditions: string[]) => {
+        setSelectedVulnerabilities(conditions);
+    };
+    
+    const handleDeleteCondition = (conditionToDelete: string) => {
+        setSelectedConditions(prevConditions => 
+            prevConditions.filter(condition => condition !== conditionToDelete)
+        );
     };
 
-    const handleResistancesChange = (conditions: string[]) => {
-      setSelectedResistances(conditions);
+    const handleDeleteImmunity = (immunityToDelete: string) => {
+        setSelectedImmunities(prevImmunities => 
+            prevImmunities.filter(immunity => immunity !== immunityToDelete)
+        );
     };
-  
-    const handleVulnerabilitiesChange = (conditions: string[]) => {
-      setSelectedVulnerabilities(conditions);
+
+    const handleDeleteResistance = (resistanceToDelete: string) => {
+        setSelectedResistances(prevResistances => 
+            prevResistances.filter(resistance => resistance !== resistanceToDelete)
+        );
+    };
+
+    const handleDeleteVulnerability = (vulnerabilityToDelete: string) => {
+        setSelectedVulnerabilities(prevVulnerabilities => 
+            prevVulnerabilities.filter(vulnerability => vulnerability !== vulnerabilityToDelete)
+        );
     };
 
     const initiativeOrder = [ // this needs to be synced to backend
@@ -245,7 +272,13 @@ export default function Encounter() {
                     ) : (
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                             {selectedConditions.map((condition, index) => (
-                                <Chip key={index} label={condition} size="small" color="primary" />
+                                <Chip 
+                                    key={index} 
+                                    label={condition} 
+                                    size="small" 
+                                    color="primary"
+                                    onDelete={() => handleDeleteCondition(condition)}
+                                />
                             ))}
                             {selectedConditions.length === 0 && <Typography>No conditions</Typography>}
                         </Box>
@@ -261,7 +294,7 @@ export default function Encounter() {
                 <Card sx={sxProps.columnCard}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                         <Typography variant="subtitle2">Defenses</Typography>
-                        <IconButton size="small" onClick={handleImmunitiesOpen}><AddIcon /></IconButton>
+                        <IconButton size="small" onClick={handleDefensesOpen}><AddIcon /></IconButton>
                     </Box>
                     {loadingDefenses ? (
                         <Box display="flex" justifyContent="center" alignItems="center" height={100}>
@@ -273,7 +306,13 @@ export default function Encounter() {
                                 <Typography variant="body2">Immunities</Typography>
                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
                                     {selectedImmunities.map((immunity, index) => (
-                                        <Chip key={index} label={immunity} size="small" color="primary" />
+                                        <Chip 
+                                            key={index} 
+                                            label={immunity} 
+                                            size="small" 
+                                            color="primary" 
+                                            onDelete={() => handleDeleteImmunity(immunity)}
+                                        />
                                     ))}
                                     {selectedImmunities.length === 0 && <Typography>No immunities</Typography>}
                                 </Box>
@@ -282,7 +321,13 @@ export default function Encounter() {
                                 <Typography variant="body2">Resistances</Typography>
                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
                                     {selectedResistances.map((resistance, index) => (
-                                        <Chip key={index} label={resistance} size="small" color="primary" />
+                                        <Chip 
+                                            key={index} 
+                                            label={resistance} 
+                                            size="small" 
+                                            color="primary" 
+                                            onDelete={() => handleDeleteResistance(resistance)}
+                                        />
                                     ))}
                                     {selectedResistances.length === 0 && <Typography>No resistances</Typography>}
                                 </Box>
@@ -291,7 +336,13 @@ export default function Encounter() {
                                 <Typography variant="body2">Vulnerabilities</Typography>
                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
                                     {selectedVulnerabilities.map((vulnerability, index) => (
-                                        <Chip key={index} label={vulnerability} size="small" color="primary" />
+                                        <Chip 
+                                            key={index} 
+                                            label={vulnerability} 
+                                            size="small" 
+                                            color="primary" 
+                                            onDelete={() => handleDeleteVulnerability(vulnerability)}
+                                        />
                                     ))}
                                     {selectedVulnerabilities.length === 0 && <Typography>No vulnerabilities</Typography>}
                                 </Box>
@@ -299,8 +350,8 @@ export default function Encounter() {
                         </>
                     )}
                     <EncounterDefenses 
-                        open={immunitiesModalOpen} 
-                        onClose={handleImmunitiesClose} 
+                        open={defensesModalOpen} 
+                        onClose={handleDefensesClose} 
                         onImmunitiesChange={handleImmunitiesChange} 
                         onResistancesChange={handleResistancesChange} 
                         onVulnerabilitiesChange={handleVulnerabilitiesChange}
