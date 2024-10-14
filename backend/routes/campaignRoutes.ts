@@ -1,15 +1,19 @@
 import express from 'express';
-import { deleteCampaign, getAllCampaigns, getCampaignInformation, createCampaign, updateCampaign } from '../controllers/campaignController';
+import { deleteCampaign, getAllCampaigns, getCampaignInformation, getCampaignWithPlayersBrief, getDMCampaigns, createCampaign, updateCampaign } from '../controllers/campaignController';
 
 const router = express.Router();
 
 router.route('/')
+    .get(getAllCampaigns)
     .post(createCampaign);
+router.route('/:id/players/brief')
+    .get(getCampaignWithPlayersBrief);
+router.route('/dm/:dmId')
+    .get(getDMCampaigns);
 router.route('/:id')
     .get(getCampaignInformation)
-    .post(updateCampaign)
+    .put(updateCampaign)
     .delete(deleteCampaign);
-router.route('/dm/:id')
-    .get(getAllCampaigns);
+
 
 export default router;
