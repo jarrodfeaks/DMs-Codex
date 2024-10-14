@@ -130,7 +130,7 @@ export default function Encounter() {
 
     const [selectedAction, setSelectedAction] = useState<Action>(Action.Attack);
     const [selectedWeapon, setSelectedWeapon] = useState<Weapon | ''>('');
-    // const [selectedTarget, setSelectedTarget] = useState(false);
+    const [selectedTarget, setSelectedTarget] = useState(null);
 
     const weaponOptions = Object.values(Weapon);
 
@@ -268,9 +268,133 @@ export default function Encounter() {
         setNotes(newNotes);
     };
 
+    const handleTargetSelection = (targetName) => {
+        const target = initiativeOrder.find(char => char.name === targetName);
+        setSelectedTarget(target);
+    };
+
     const [currentPlayer, setCurrentPlayer] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    const renderTargetStats = () => {
+        if (!selectedTarget) return null;
+
+        return (
+            <Box sx={sxProps.targetSection}>
+                <Typography variant="h6">{selectedTarget.name}</Typography>
+                <Card sx={sxProps.columnCard}>
+                    <Typography variant="subtitle2">Status</Typography>
+                    <Typography>Hit Points: {selectedTarget.hp}/{selectedTarget.maxHp}</Typography>
+                    <Typography>Temp HP: 0</Typography>
+                    <Typography>AC: {selectedTarget.ac}</Typography>
+                    <Box sx={sxProps.deathSaves}>
+                        <Typography>☠</Typography>
+                        <Box>□□□□□</Box>
+                    </Box>
+                </Card>
+                <Card sx={sxProps.columnCard}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                        <Typography variant="subtitle2">Conditions</Typography>
+                        <IconButton size="small" onClick={handleConditionsOpen}><AddIcon /></IconButton>
+                    </Box>
+                    {loadingConditions ? (
+                        <Box display="flex" justifyContent="center" alignItems="center" height={50}>
+                            <CircularProgress size={24} />
+                        </Box>
+                    ) : (
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                            {selectedConditions.map((condition, index) => (
+                                <Chip 
+                                    key={index} 
+                                    label={condition} 
+                                    size="small" 
+                                    color="primary"
+                                    onDelete={() => handleDeleteCondition(condition)}
+                                />
+                            ))}
+                            {selectedConditions.length === 0 && <Typography>No conditions</Typography>}
+                        </Box>
+                    )}
+                    <CharacterConditions 
+                        open={conditionsModalOpen} 
+                        onClose={handleConditionsClose} 
+                        onConditionsChange={handleConditionsChange}
+                        initialConditions={selectedConditions}
+                    />
+                </Card>
+                <Card sx={sxProps.columnCard}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                        <Typography variant="subtitle2">Defenses</Typography>
+                        <IconButton size="small" onClick={handleDefensesOpen}><AddIcon /></IconButton>
+                    </Box>
+                    {loadingDefenses ? (
+                        <Box display="flex" justifyContent="center" alignItems="center" height={100}>
+                            <CircularProgress size={24} />
+                        </Box>
+                    ) : (
+                        <>
+                            <Box sx={{ mb: 1 }}>
+                                <Typography variant="body2">Immunities</Typography>
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                                    {selectedImmunities.map((immunity, index) => (
+                                        <Chip 
+                                            key={index} 
+                                            label={immunity} 
+                                            size="small" 
+                                            color="primary" 
+                                            onDelete={() => handleDeleteImmunity(immunity)}
+                                        />
+                                    ))}
+                                    {selectedImmunities.length === 0 && <Typography>No immunities</Typography>}
+                                </Box>
+                            </Box>
+                            <Box sx={{ mb: 1 }}>
+                                <Typography variant="body2">Resistances</Typography>
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                                    {selectedResistances.map((resistance, index) => (
+                                        <Chip 
+                                            key={index} 
+                                            label={resistance} 
+                                            size="small" 
+                                            color="primary" 
+                                            onDelete={() => handleDeleteResistance(resistance)}
+                                        />
+                                    ))}
+                                    {selectedResistances.length === 0 && <Typography>No resistances</Typography>}
+                                </Box>
+                            </Box>
+                            <Box>
+                                <Typography variant="body2">Vulnerabilities</Typography>
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                                    {selectedVulnerabilities.map((vulnerability, index) => (
+                                        <Chip 
+                                            key={index} 
+                                            label={vulnerability} 
+                                            size="small" 
+                                            color="primary" 
+                                            onDelete={() => handleDeleteVulnerability(vulnerability)}
+                                        />
+                                    ))}
+                                    {selectedVulnerabilities.length === 0 && <Typography>No vulnerabilities</Typography>}
+                                </Box>
+                            </Box>
+                        </>
+                    )}
+                    <EncounterDefenses 
+                        open={defensesModalOpen} 
+                        onClose={handleDefensesClose} 
+                        onImmunitiesChange={handleImmunitiesChange} 
+                        onResistancesChange={handleResistancesChange} 
+                        onVulnerabilitiesChange={handleVulnerabilitiesChange}
+                        initialImmunities={selectedImmunities}
+                        initialResistances={selectedResistances}
+                        initialVulnerabilities={selectedVulnerabilities}
+                    />
+                </Card>
+            </Box>
+        );
+    };
 
     return (
         <Box sx={sxProps.encounterScreen}>
@@ -432,9 +556,23 @@ export default function Encounter() {
                         {renderActionSpecificDropdown()}
                         <Box sx={sxProps.actionItem}>
                             <Typography>Target</Typography>
-                            <Select defaultValue="Mosaab Saleem" size="small" fullWidth>
-                                <MenuItem value="Mosaab Saleem">Mosaab Saleem</MenuItem>
-                            </Select>
+                            <Box sx={sxProps.actionGroup}>
+                                {/* ... (other action items remain the same) */}
+                                <Box sx={sxProps.actionItem}>
+                                    <Select
+                                        value={selectedTarget ? selectedTarget.name : ""}
+                                        onChange={(e) => handleTargetSelection(e.target.value)}
+                                        size="small"
+                                        fullWidth
+                                    >
+                                        {initiativeOrder.map((character) => (
+                                            <MenuItem key={character.name} value={character.name}>
+                                                {character.name}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </Box>
+                            </Box>
                         </Box>
                         <Box sx={sxProps.actionItem}>
                             <Typography>Roll</Typography>
@@ -498,31 +636,10 @@ export default function Encounter() {
                                     </InputAdornment>
                                 ),
                             }}
-                        />                    </Card>
+                        />                    
+                        </Card>
+                        {renderTargetStats()}
                 </Box>
-
-                {/* <Box sx={sxProps.targetSection}>
-                    <Typography variant="h6">MOSAAB SALEEM</Typography>
-                    <Card sx={sxProps.columnCard}>
-                        <Typography variant="subtitle2">Status</Typography>
-                        <Typography>Hit Points: 50/50</Typography>
-                        <Typography>Temp HP: 0</Typography>
-                        <Typography>AC: 20</Typography>
-                        <Box sx={sxProps.deathSaves}>
-                            <Typography>☠</Typography>
-                            <Box>□□□□□</Box>
-                        </Box>
-                    </Card>
-                    <Card sx={sxProps.columnCard}>
-                        <Typography variant="subtitle2">Conditions</Typography>
-                        <IconButton size="small"><AddIcon /></IconButton>
-                    </Card>
-                    <Card sx={sxProps.columnCard}>
-                        <Typography variant="subtitle2">Defenses</Typography>
-                        <IconButton size="small"><AddIcon /></IconButton>
-                    </Card>
-                </Box> */}
-
             </Box>
 
             <Box sx={{ position: "absolute", bottom: 1, left: 1, display: "flex", flexDirection: "column", gap: 1 }}>
