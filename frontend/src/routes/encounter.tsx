@@ -16,6 +16,7 @@ import EncounterAddFromBestiary from "../components/modals/EncounterAddFromBesti
 import EncounterAddFromAI from "../components/modals/EncounterAddFromAI";
 import CharacterConditions from "../components/modals/CharacterConditions";
 import EncounterDefenses from "../components/modals/EncounterDefenses";
+import AttackModal from "../components/modals/AttackModal";
 
 export default function Encounter() {
 
@@ -33,6 +34,10 @@ export default function Encounter() {
     const [immunitiesModalOpen, setImmunitiesModalOpen] = useState(false);
     const handleImmunitiesOpen = () => setImmunitiesModalOpen(true);
     const handleImmunitiesClose = () => setImmunitiesModalOpen(false);
+
+    const [attackModalOpen, setAttackModalOpen] = useState(false);
+    const handleAttackOpen = () => setAttackModalOpen(true);
+    const handleAttackClose = () => setAttackModalOpen(false);
 
     const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
     const [selectedImmunities, setSelectedImmunities] = useState<string[]>([]);
@@ -223,7 +228,9 @@ export default function Encounter() {
                             <Typography>Roll</Typography>
                             <TextField type="number" defaultValue="10" size="small" sx={sxProps.rollInput} />
                             <Typography>+ 5</Typography>
-                            <Button variant="contained" disableElevation color="primary">EXECUTE</Button>
+                            {/* WIP - Only open the modal if the attack roll is successful */}
+                            <Button onClick={handleAttackOpen} variant="contained" disableElevation color="primary">EXECUTE</Button>
+                            <AttackModal open={attackModalOpen} onClose={handleAttackClose}></AttackModal>
                         </Box>
                     </Box>
                 </Card>
