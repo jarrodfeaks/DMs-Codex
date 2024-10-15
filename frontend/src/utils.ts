@@ -1,3 +1,4 @@
+import { DamageType, Status } from "../../shared/enums";
 /**
     Calculates a random roll for a X-sided dice
     @param sides - The number of sides of the dice.
@@ -128,6 +129,35 @@ function capitalizeFirstLetter(str: string): string {
 }
 
 /**
+ * Formats a string to remove spaces, special characters, and conjunctions, and capitalizes the first letter.
+ * @param str - The string to format.
+ * @returns The formatted string.
+ */
+function formatStringForEnum(str: string): string[] {
+    if (typeof str !== 'string') return [];
+    return str.split(/[\s,]+/)
+              .filter(word => word.toLowerCase() !== 'and')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
+}
+
+/**
+ * Filters and formats an array based on valid enum values.
+ * @param arr - The array to filter and format.
+ * @param validValues - The array of valid enum values.
+ * @returns The filtered and formatted array.
+ */
+function filterAndFormatArray<T extends object>(arr: string[], validValues: T): string[] {
+    return arr.flatMap(type => formatStringForEnum(type))
+              .filter(type => {
+                  if (!Object.values(validValues).includes(type as unknown as T[keyof T])) {
+                      console.log(`Invalid value: ${type}`);
+                      return false;
+                  }
+                  return true;
+              });
+}
+
+/**
  * Converts D&D 5e API JSON into a format suitable for saving in MongoDB.
  * @param apiData - The JSON data from the external API.
  * @returns The formatted data for MongoDB.
@@ -150,9 +180,9 @@ export function formatMonsterForMongo(apiData: any): any {
         charisma: apiData.charisma,
         constitution: apiData.constitution,
         wisdom: apiData.wisdom,
-        // vulnerabilities: [apiData.damage_vulnerabilities],
-        // resistances: [apiData.damage_resistances],
-        // damageImmunities: [apiData.damage_immunities],
-        // statusImmunities: [apiData.condition_immunities],
+        damageImmunities: filterAndFormatArray(apiData.damage_immunities, DamageType),
+        vulnerabilities: filterAndFormatArray(apiData.damage_vulnerabilities, DamageType),
+        resistances: filterAndFormatArray(apiData.damage_resistances, DamageType),
+        statusImmunities: filterAndFormatArray(apiData.condition_immunities, Status),
     };
 }
