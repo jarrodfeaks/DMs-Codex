@@ -117,3 +117,42 @@ export function formatNumber(number: number): string {
     if (number > 0) return `+ ${number}`;
     return `${number}`;
 }
+
+/**
+ * Capitalizes the first letter of a string.
+ * @param str - The string to capitalize.
+ * @returns The string with the first letter capitalized.
+ */
+function capitalizeFirstLetter(str: string): string {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+/**
+ * Converts D&D 5e API JSON into a format suitable for saving in MongoDB.
+ * @param apiData - The JSON data from the external API.
+ * @returns The formatted data for MongoDB.
+ */
+export function formatMonsterForMongo(apiData: any): any {
+    return {
+        name: apiData.name,
+        level: apiData.challenge_rating,
+        currentHitpoints: apiData.hit_points,
+        maxHitpoints: apiData.hit_points,
+        armorClass: apiData.armor_class && apiData.armor_class.length > 0 ? apiData.armor_class[0].value : null,
+        challengeRating: apiData.challenge_rating,
+        creatureType: [capitalizeFirstLetter(apiData.type)],
+        speed: apiData.speed.walk ? parseInt(apiData.speed.walk) : 0,
+        movementType: Object.keys(apiData.speed).map(type => capitalizeFirstLetter(type)),
+        proficiencyBonus: apiData.proficiency_bonus,
+        strength: apiData.strength,
+        dexterity: apiData.dexterity,
+        intelligence: apiData.intelligence,
+        charisma: apiData.charisma,
+        constitution: apiData.constitution,
+        wisdom: apiData.wisdom,
+        // vulnerabilities: [apiData.damage_vulnerabilities],
+        // resistances: [apiData.damage_resistances],
+        // damageImmunities: [apiData.damage_immunities],
+        // statusImmunities: [apiData.condition_immunities],
+    };
+}
