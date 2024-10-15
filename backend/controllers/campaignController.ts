@@ -2,22 +2,20 @@ import { Request, Response } from 'express';
 import { Campaign } from '../models/campaignModel';
 
 // @desc Get all campaigns
-// @route GET /campaigns/dm/:id
+// @route GET /campaigns/
 // @access Public
 const getAllCampaigns = async (req: Request, res: Response) => {
     try {
-        const dmId = req.params.id;
-        const campaigns = await Campaign.find({dm_id: dmId})
-            .select('name date')
-            .populate('encounters')
-            .populate({
-                path: 'players',
-                select: '_id name level class currentHitpoints maxHitpoints tempHitpoints armorClass deathSavingThrows'
-            })
-            .populate({
-                path: 'monsters',
-                select: '_id name level class currentHitpoints maxHitpoints tempHitpoints armorClass deathSavingThrows'
-            });
+        const campaigns = await Campaign.find({})
+        .populate('encounters')
+        .populate({
+            path: 'players',
+            select: '_id name level class currentHitpoints maxHitpoints tempHitpoints armorClass deathSavingThrows'
+        })
+        .populate({
+            path: 'monsters',
+            select: '_id name level class currentHitpoints maxHitpoints tempHitpoints armorClass deathSavingThrows'
+        });
         res.status(200).json(campaigns);
     } catch (error: any) {
         res.status(500).send(error.message);
@@ -30,11 +28,14 @@ const getAllCampaigns = async (req: Request, res: Response) => {
 const getDMCampaigns = async (req: Request, res: Response) => {
     try {
         const dmId = req.params.dmId;
-        const campaigns = await Campaign.find({ dm: dmId });
+        const campaigns = await Campaign.find({ dmId: dmId })
+        .populate('encounters')
+        .populate('players')
+        .populate('monsters');
         if (campaigns.length > 0) {
             res.status(200).json(campaigns);
         } else {
-            res.status(404).send({ message: 'No campaigns found for this DM' });
+            res.status(404).send({ message: `No campaigns found for this ${dmId}` });
         }
     } catch (error: any) {
         res.status(500).send(error.message);
@@ -42,7 +43,7 @@ const getDMCampaigns = async (req: Request, res: Response) => {
 };
 
 // @desc Get a specific campaign with players brief information
-// @route GET /campaigns/:id/players/brief
+// @route GET /campaigns/dm/:dmId/brief
 // @access Public
 const getCampaignWithPlayersBrief = async (req: Request, res: Response) => {
     try {
@@ -64,7 +65,10 @@ const getCampaignWithPlayersBrief = async (req: Request, res: Response) => {
 const getCampaignInformation = async (req: Request, res: Response) => {
     try {
         const campaignId = req.params.id;
-        const campaign = await Campaign.findById(campaignId);
+        const campaign = await Campaign.findById(campaignId)
+        .populate('encounters')
+        .populate('players')
+        .populate('monsters');
         if (campaign) {
             res.status(200).json(campaign);
         } else {
@@ -81,7 +85,7 @@ const getCampaignInformation = async (req: Request, res: Response) => {
 const createCampaign = async (req: Request, res: Response) => {
     try {
         const newCampaign = new Campaign(req.body);
-        if (!newCampaign.dm_id) {
+        if (!newCampaign.dmId) {
             return res.status(400).send({ message: 'DM ID is required' });
         }
         const savedCampaign = await newCampaign.save();
