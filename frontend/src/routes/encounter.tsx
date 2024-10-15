@@ -7,6 +7,8 @@ import {
     MenuItem,
     Select,
     TextField,
+    ToggleButton,
+    ToggleButtonGroup,
     Typography
 } from "@mui/material";
 import {useState} from "react";
@@ -25,6 +27,14 @@ export default function Encounter() {
     const [setting, setSetting] = useState('');
     const [suggestion, setSuggestion] = useState('5 goblins with spears');
     const [showButtons, setShowButtons] = useState(false);
+    const [formatsByCharacter, setFormatsByCharacter] = useState({});
+
+    const handleFormat = (name, event, newFormats) => {
+        setFormatsByCharacter(prev => ({
+            ...prev,
+            [name]: newFormats || []
+        }));
+    };
 
     const initiativeOrder = [
         { name: 'Joseph Kizana', initiative: 20, hp: 40, maxHp: 50, ac: 19 },
@@ -140,9 +150,33 @@ export default function Encounter() {
                     >
                         <Typography>{index + 1}{character.name}</Typography>
                         <Typography>{character.initiative} {character.hp}/{character.maxHp} {character.ac}</Typography>
-                        <Button variant="contained" disableElevation size="small">ACTION</Button>
-                        <Button size="small">BONUS</Button>
-                        <Button size="small">REACTION</Button>
+                        <ToggleButtonGroup
+                            value={formatsByCharacter[character.name] || []}
+                            onChange={(event, newFormats) => handleFormat(character.name, event, newFormats)}
+                            sx={{ maxHeight: '40px' }}>
+                            {['action', 'bonus', 'reaction'].map(type => (
+                                <ToggleButton 
+                                    key={type}
+                                    value={type}
+                                    sx={{
+                                        // padding: '4px 8px',
+                                        backgroundColor: (formatsByCharacter[character.name] || []).includes(type)
+                                            ? 'primary.dark' //when selected
+                                            : 'primary.main', //not selcted
+                                        color: (formatsByCharacter[character.name] || []).includes(type)
+                                            ? 'black' //selected
+                                            : 'white', //notselected
+                                        '&:hover': {
+                                            backgroundColor: (formatsByCharacter[character.name] || []).includes(type)
+                                                ? 'primary.main' //hoverselected
+                                                : 'primary.dark',
+                                            color: 'white' //hovertext
+                                        }
+                                    }}>
+                                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                                </ToggleButton>
+                            ))}
+                        </ToggleButtonGroup>
                     </Card>
                 ))}
                 <Card sx={{ ...sxProps.columnCard, ...sxProps.addCharacter }}>
