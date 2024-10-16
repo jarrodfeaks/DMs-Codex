@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { CircularProgress, Radio, RadioGroup, Box, Typography, Button, List, ListItem, Paper, Dialog, FormControlLabel } from '@mui/material';
+import { formatMonsterForMongo } from '../../utils';
+import { apiService } from "../../services/apiService.ts";
 
-function EncounterAddFromBestiary ({open, onClose}: {open: boolean, onClose: () => void}) {
-  
+function EncounterAddFromBestiary({ open, onClose }: { open: boolean, onClose: () => void }) {
+
   const [monsters, setMonsters] = useState([]);
   const [selectedMonster, setSelectedMonster] = useState('');
   const [monsterDetails, setMonsterDetails] = useState<any>(null);
@@ -71,31 +73,47 @@ function EncounterAddFromBestiary ({open, onClose}: {open: boolean, onClose: () 
     }
   }, [selectedMonster]);
 
+  const handleAddMonsterToQueue = async () => {
+    const formattedMonster = selectedMonster.toLowerCase().replace(/\s+/g, '-');
+    // Fetch specific monster details
+    const apiResponse = await fetch(`${apiUrl}/${formattedMonster}`);
+    const monsterDetails = await apiResponse.json();
+    const formattedMonsterForMongo = formatMonsterForMongo(monsterDetails);
+    try {
+      // Add monster to database
+      const mongoDbResponse = await apiService.post("/monsters", formattedMonsterForMongo);
+      console.log('Monster added to database:', mongoDbResponse);
+    } catch (error) {
+      console.error('Error adding monster to database:', error);
+    }
+      // todo: add monster to initiative queue
+  };
+
   return (
     <Dialog open={open} onClose={onClose}>
-        <Box sx={{ width: 500, bgcolor: 'background.paper', p: 2 }}>
-          <Paper sx={{ p: 1, mb: 2 }}>
-              <Typography variant="h6">
-                Bestiary
-              </Typography>
-          </Paper>
-          <Paper sx={{ p: 2, mt: 2 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
-                Add from bestiary
-              </Typography>
-              {/* <Box
+      <Box sx={{ width: 500, bgcolor: 'background.paper', p: 2 }}>
+        <Paper sx={{ p: 1, mb: 2 }}>
+          <Typography variant="h6">
+            Bestiary
+          </Typography>
+        </Paper>
+        <Paper sx={{ p: 2, mt: 2 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
+            Add from bestiary
+          </Typography>
+          {/* <Box
               component="img"
               src="/api/placeholder/400/320"
               alt="Bestiary placeholder"
               sx={{ width: '100%', height: 200, objectFit: 'contain', mb: 2 }}
               /> */}
-              <Box>
-                {loading ? (
-                  <CircularProgress/>
-                ) : (
-                  <Box sx={{ maxHeight: 400, overflow: 'auto', padding: '10px' }}>
-                    <Typography variant='h6'>Select Monster</Typography>
-                    {/* <FormControl sx={{width: '95%', pb: 1}}>
+          <Box>
+            {loading ? (
+              <CircularProgress />
+            ) : (
+              <Box sx={{ maxHeight: 400, overflow: 'auto', padding: '10px' }}>
+                <Typography variant='h6'>Select Monster</Typography>
+                {/* <FormControl sx={{width: '95%', pb: 1}}>
                       <InputLabel id='monster-select-label'>Select a Monster</InputLabel>
                       <Select labelId='monster-select-label' value={selectedMonster} onChange={handleSelectMonster}>
                         {monsters.map((monster, index) => (
@@ -128,6 +146,7 @@ function EncounterAddFromBestiary ({open, onClose}: {open: boolean, onClose: () 
               variant="contained"
               color="primary"
               fullWidth
+              onClick={handleAddMonsterToQueue}
               >
               Add to initiative queue
               </Button>
