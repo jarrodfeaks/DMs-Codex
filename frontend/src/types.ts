@@ -21,6 +21,13 @@ interface Campaign {
     name: string;
 }
 
+interface Player {
+    _id: string;
+    name: string;
+    level: number;
+    class: string;
+}
+
 enum AssistantMode {
     Rules,
     Encounter,
@@ -34,5 +41,5 @@ interface Message {
 }
 
 export { LoginStatus, AssistantMode };
-export type { User, Campaign, Message };
+export type { User, Campaign, Player, Message };
 

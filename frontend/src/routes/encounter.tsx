@@ -20,13 +20,7 @@ import EncounterAddFromAI from "../components/modals/EncounterAddFromAI";
 import CharacterConditions from "../components/modals/CharacterConditions";
 import EncounterDefenses from "../components/modals/EncounterDefenses";
 import { missedCombatLogString, formatNumber } from "../utils";
-
-interface Player {
-    id: string,
-    name: string;
-    level: number;
-    class: string;
-}
+import { Player } from "../types.ts";
 
 export default function Encounter() {
     const [hitPoints, setHitPoints] = useState("30/50");
@@ -141,9 +135,16 @@ export default function Encounter() {
         { name: 'Jarrod Feaks', initiative: 8, hp: 0, maxHp: 50, ac: 23 },
     ];
 
-    const handleOpenPlayerList = () => dialogs.open(EncounterAddFromPlayers);
+    const handleOpenPlayerList = async () => {
+        const player = await dialogs.open(EncounterAddFromPlayers);
+        if (player) addPlayerToQueue(player);
+    };
 
-    const handleOpenBestiary = () => dialogs.open(EncounterAddFromBestiary);
+    const handleOpenBestiary = async () => {
+        const monster = await dialogs.open(EncounterAddFromBestiary);
+        // monster needs to be converted to player type
+        if (monster) addPlayerToQueue(monster);
+    }
 
     const handleOpenAIGenerate = () => dialogs.open(EncounterAddFromAI);
 
@@ -154,7 +155,7 @@ export default function Encounter() {
         }));
     };
 
-    const buttonContainerRef = useRef(null);
+    const buttonContainerRef = useRef<HTMLElement>(null);
 
     const handleAddInitiative = () => {
         setShowButtons(true);
@@ -165,23 +166,13 @@ export default function Encounter() {
         setSuggestion('5 goblins with spears');
     };
 
-    // Handle modal open/close functions
-    const handleOpenPlayerList = () => setOpenPlayerList(true);
-    const handleClosePlayerList = () => setOpenPlayerList(false);
-
-    const handleOpenBestiary = () => setOpenBestiary(true);
-    const handleCloseBestiary = () => setOpenBestiary(false);
-
-    const handleOpenAIGenerate = () => setOpenAI(true);
-    const handleCloseAIGenerate = () => setOpenAI(false);
-
     const addPlayerToQueue = (player: Player) => {
         setPlayers([...players, player]);
     };
 
     useEffect(() => {
-        function handleClickOutside(event) {
-            if (buttonContainerRef.current && !buttonContainerRef.current.contains(event.target)) {
+        function handleClickOutside(event: MouseEvent) {
+            if (buttonContainerRef.current && !buttonContainerRef.current.contains(event.target as Node)) {
                 setShowButtons(false); // Collapse buttons
             }
         }
@@ -267,7 +258,7 @@ export default function Encounter() {
                 <Typography variant="h6" sx={sxProps.columnTitle}>INITIATIVE</Typography>
                 {players.map((character, index) => (
                     <Card
-                        key={character.id}
+                        key={character._id}
                         sx={{ ...sxProps.columnCard, ...sxProps.initiativeItem, ...(isActive(character.name) && sxProps.initiativeItemActive) }}
                     >
                         <Typography>{index + 1}. {character.name}</Typography>
@@ -320,18 +311,6 @@ export default function Encounter() {
                     </Collapse>
                 </Box>
       </Box>
-
-      <EncounterAddFromPlayers
-        open={openPlayerList}
-        onClose={handleClosePlayerList}
-        onAddPlayer={addPlayerToQueue}
-      />
-
-      <EncounterAddFromBestiary
-        open={openBestiary}
-        onClose={handleCloseBestiary}
-        onAddPlayer={addPlayerToQueue}
-      />
 
             <Box sx={sxProps.encounterColumn}>
                 <Typography variant="h6" sx={sxProps.columnTitle}>{currentCharacterTurn}</Typography>

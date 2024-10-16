@@ -1,26 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, List, ListItem, ListItemText, IconButton, Paper, Dialog } from '@mui/material';
-import { Casino as CasinoIcon } from '@mui/icons-material';
+import { useState, useEffect } from 'react';
+import {
+  Box,
+  Typography,
+  Button,
+  List,
+  ListItemText,
+  Paper,
+  Dialog,
+  ListItemButton
+} from '@mui/material';
+import { apiService } from "../../services/apiService.ts";
+import { Player } from "../../types.ts";
 
-interface Player {
-  id: string;
-  name: string;
-  level: number;
-  class: string;
-}
-
-function EncounterAddFromPlayers({ open, onClose, onAddPlayer }: { open: boolean; onClose: () => void; onAddPlayer: (player: Player) => void }) {
+function EncounterAddFromPlayers({ open, onClose }: { open: boolean; onClose: (player?: Player) => void }) {
   const [playerList, setPlayerList] = useState<Player[]>([]);
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
 
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
-        const response = await fetch('http://localhost:5000/players');
-        const data = await response.json();
-        if (data) {
-          setPlayerList(data);
-          console.log(data);
+        const response = await apiService.get("/players");
+        if (response) {
+          setPlayerList(response);
+          console.log(response);
         } else {
           console.error("Players data is missing in response");
         }
@@ -30,16 +32,15 @@ function EncounterAddFromPlayers({ open, onClose, onAddPlayer }: { open: boolean
     };
     fetchPlayers();
   }, []);
-  
+
   const handleAddToQueue = () => {
     if (selectedPlayer) {
-      onAddPlayer(selectedPlayer); // Call the parent callback to add the player
-      setSelectedPlayer(null); // Clear the selection
+      onClose(selectedPlayer);
     }
   };
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={() => onClose()}>
       <Box sx={{ width: 400, bgcolor: 'background.paper', p: 2 }}>
         <Paper sx={{ p: 2, mt: 2 }}>
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
@@ -47,14 +48,14 @@ function EncounterAddFromPlayers({ open, onClose, onAddPlayer }: { open: boolean
           </Typography>
           <List>
             {playerList.map((player) => (
-              <ListItem
-                key={player.id}
-                selected={selectedPlayer?.id === player.id}
+              <ListItemButton
+                key={player._id}
+                selected={selectedPlayer?._id === player._id}
                 onClick={() => setSelectedPlayer(player)}
                 sx={{ cursor: 'pointer' }}
               >
                 <ListItemText primary={player.name} secondary={`Level ${player.level} ${player.class}`} />
-              </ListItem>
+              </ListItemButton>
             ))}
           </List>
           <Button
