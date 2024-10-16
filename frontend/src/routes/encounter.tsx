@@ -403,7 +403,8 @@ export default function Encounter() {
                             {/* todo: sync with bonus modifier backend */}
                             <Typography>{formatNumber(bonusModifier)}</Typography>
                             {/* WIP - Only open the modal if the attack roll is successful */}
-                            <Button onClick={handleAttackOpen} variant="contained" disableElevation color="primary" onClick={handleExecute}>EXECUTE</Button>
+                            {/*<Button variant="contained" disableElevation color="primary" onClick={handleExecute}>EXECUTE</Button>*/}
+                            <Button onClick={handleAttackOpen} variant="contained" disableElevation color="primary">EXECUTE</Button>
                             <AttackModal open={attackModalOpen} onClose={handleAttackClose}></AttackModal>
                         </Box>
                     </Box>
