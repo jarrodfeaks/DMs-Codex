@@ -21,6 +21,7 @@ import CharacterConditions from "../components/modals/CharacterConditions";
 import EncounterDefenses from "../components/modals/EncounterDefenses";
 import { missedCombatLogString, formatNumber } from "../utils";
 import { Player } from "../types.ts";
+import AttackModal from "../components/modals/AttackModal";
 
 export default function Encounter() {
     const [hitPoints, setHitPoints] = useState("30/50");
@@ -56,6 +57,10 @@ export default function Encounter() {
     const [immunitiesModalOpen, setImmunitiesModalOpen] = useState(false);
     const handleImmunitiesOpen = () => setImmunitiesModalOpen(true);
     const handleImmunitiesClose = () => setImmunitiesModalOpen(false);
+
+    const [attackModalOpen, setAttackModalOpen] = useState(false);
+    const handleAttackOpen = () => setAttackModalOpen(true);
+    const handleAttackClose = () => setAttackModalOpen(false);
 
     const [currentCharacterTurn, setCurrentCharacterTurn] = useState<string>('Justin Tran');
 
@@ -397,7 +402,10 @@ export default function Encounter() {
                             <TextField value={accuracyDice} onChange={handleAccuracyDiceChange} type="number" size="small" sx={sxProps.rollInput} />
                             {/* todo: sync with bonus modifier backend */}
                             <Typography>{formatNumber(bonusModifier)}</Typography>
-                            <Button variant="contained" disableElevation color="primary" onClick={handleExecute}>EXECUTE</Button>
+                            {/* WIP - Only open the modal if the attack roll is successful */}
+                            {/*<Button variant="contained" disableElevation color="primary" onClick={handleExecute}>EXECUTE</Button>*/}
+                            <Button onClick={handleAttackOpen} variant="contained" disableElevation color="primary">EXECUTE</Button>
+                            <AttackModal open={attackModalOpen} onClose={handleAttackClose}></AttackModal>
                         </Box>
                     </Box>
                 </Card>
