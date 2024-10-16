@@ -5,6 +5,7 @@ function EncounterAddFromBestiary ({open, onClose}: {open: boolean, onClose: () 
   
   const [monsters, setMonsters] = useState([]);
   const [selectedMonster, setSelectedMonster] = useState('');
+  const [monsterDetails, setMonsterDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const apiUrl = 'https://www.dnd5eapi.co/api/monsters';
@@ -50,9 +51,25 @@ function EncounterAddFromBestiary ({open, onClose}: {open: boolean, onClose: () 
     loadMonsters();
   }, []);
 
-  const handleSelectMonster = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedMonster(event.target.value);
+  const loadMonsterDetails = async (monsterName: string) => {
+    const response = await fetch(`${apiUrl}/${monsterName}`);
+    const data = await response.json();
+    setMonsterDetails(data);
+    console.log(monsterDetails);
   };
+
+  // Handle when the user selects a monster
+  const handleSelectMonster = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = event.target.value;
+    setSelectedMonster(selected);
+  };
+
+  // useEffect to trigger fetching detailed monster data once the selectedMonster state changes
+  useEffect(() => {
+    if (selectedMonster) {
+      loadMonsterDetails(selectedMonster);
+    }
+  }, [selectedMonster]);
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -92,7 +109,7 @@ function EncounterAddFromBestiary ({open, onClose}: {open: boolean, onClose: () 
                       <List>
                         {monsters.map((monster) => (
                           <ListItem key={monster.index}>
-                            <FormControlLabel value={monster.name} control={<Radio/>} label={
+                            <FormControlLabel value={monster.index} control={<Radio/>} label={
                               <Typography>{monster.name} ({monster.challenge_rating})</Typography>
                             }/>
                           </ListItem>
