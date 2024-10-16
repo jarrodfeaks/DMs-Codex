@@ -19,7 +19,10 @@ interface Weapon {
 
 //const damageTypes = ["None", "Bludgeoning", "Piercing", "Slashing", "Lightning", "Thunder", "Poison", "Cold", "Radiant", "Fire", "Necrotic", "Acid", "Psychic", "Force"];
 
-const DashboardCharacterSheet: FC = () => {
+const DashboardCharacterSheet: FC<{importData?: unknown}> = ({importData}) => {
+
+  console.log("Import data: ");
+  console.log(importData);
 
   const [equipment, setEquipment] = useState<string[]>([]);
   const [newEquipment, setNewEquipment] = useState('');
