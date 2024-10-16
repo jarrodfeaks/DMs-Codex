@@ -2,6 +2,7 @@ import { Button, Typography, TextField, Box, List, ListItem, ListItemButton, Lis
 import { useState } from "react";
 import ImportCharacterModal from "../modals/DashboardImportCharacter.tsx";
 import { useDialogs } from "@toolpad/core/useDialogs";
+import { apiService } from "../../services/apiService.ts";
 
 // Temp until backend stuff gets added?
 interface Player {
@@ -49,10 +50,9 @@ export default function DashboardMain(
         }
     };
 
-    const onDeleteCharacter = () => {
+    const onDeleteCharacter = async () => {
         if (selectedPlayerId !== null) {
-            // Delete the selected player
-            // Maybe a confirm modal is needed here
+            await apiService.delete(`/players/${selectedPlayerId}`);
         }
     };
 
