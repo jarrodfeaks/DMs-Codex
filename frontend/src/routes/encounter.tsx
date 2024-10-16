@@ -14,6 +14,7 @@ import {
 import {useState, useRef, useEffect} from "react";
 import AddIcon from "@mui/icons-material/Add";
 import EncounterAddFromPlayers from "../components/modals/EncounterAddFromPlayers";
+import EncounterAddFromBestiary from "../components/modals/EncounterAddFromBestiary";
 
 interface Player {
     id: string,
@@ -188,6 +189,12 @@ export default function Encounter() {
       <EncounterAddFromPlayers
         open={openPlayerList}
         onClose={handleClosePlayerList}
+        onAddPlayer={addPlayerToQueue}
+      />
+
+      <EncounterAddFromBestiary
+        open={openBestiary}
+        onClose={handleCloseBestiary}
         onAddPlayer={addPlayerToQueue}
       />
 
