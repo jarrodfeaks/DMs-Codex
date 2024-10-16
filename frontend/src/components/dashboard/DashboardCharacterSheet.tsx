@@ -99,6 +99,60 @@ const DashboardCharacterSheet: FC = () => {
     // });
   };
 
+  const handleSave = async () => {
+    console.log("Saving...");
+    // const playerData = {
+    //   //level: (document.getElementById('characterLevel') as HTMLInputElement).value,
+    //   level: 10,
+    //   experience: 2,
+    //   armorClass: 2,
+    //   // race: (document.getElementById('characterRace') as HTMLInputElement).value,
+    //   // class: (document.getElementById('characterName') as HTMLInputElement).value,
+    //   race: 'dragon',
+    //   class: 'knight',
+    //   equipment: [],
+    //   deathSavingThrows: { success: 0, fail: 0 },
+    // }
+
+    // console.log(playerData);
+    const testPlayerData = {
+      name: "Deez",
+      level: 5,
+      experience: 1200,
+      armorClass: 16,
+      race: 'Dragonborn',
+      class: 'Paladin',
+      equipment: Object.fromEntries(
+        new Map([
+          ['sword', 1],
+          ['shield', 1],
+          ['potion', 3],
+        ])
+      ), // Converts Map to a plain object for JSON serialization
+      deathSavingThrows: [true, false, false],
+    };
+
+    console.log(testPlayerData)
+    try {
+      const mongoDbResponse = await fetch(`http://localhost:5000/players`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(testPlayerData),
+      });
+
+      if (!mongoDbResponse.ok) {
+        const errorData = await mongoDbResponse.json();
+        console.error('Backend Error Response:', errorData); // Log full backend error
+        throw new Error(`Error adding player to database: ${mongoDbResponse.statusText}`);
+      }
+      console.log('Player added to database:', mongoDbResponse);
+    } catch (error) {
+      console.error('Error adding player to database:', error);
+    }
+  }
+
   const sxProps = {
     mainContainer: {
       display: "flex",
@@ -392,7 +446,7 @@ const DashboardCharacterSheet: FC = () => {
 
       {/* Container for the save and cancel buttons */}
       <Box sx={sxProps.horizontalButtonsContainer}>
-        <Button variant='contained'>
+        <Button variant='contained' onClick={handleSave}>
           Save
         </Button>
         <Button variant='contained'>
