@@ -8,7 +8,7 @@ import {
     TextField,
     Typography
 } from "@mui/material";
-import {useState} from "react";
+import { useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import { useDialogs } from "@toolpad/core/useDialogs";
 import EncounterAddFromPlayers from "../components/modals/EncounterAddFromPlayers";
@@ -19,6 +19,10 @@ import EncounterDefenses from "../components/modals/EncounterDefenses";
 import { missedCombatLogString, formatNumber } from "../utils";
 
 export default function Encounter() {
+    const [hitPoints, setHitPoints] = useState("30/50");
+    const [originalHitPoints, setOriginalHitPoints] = useState(hitPoints);
+    const [tempHP, setTempHP] = useState(10);
+    const [armorClass, setArmorClass] = useState(21);
 
     const dialogs = useDialogs();
 
@@ -41,7 +45,7 @@ export default function Encounter() {
         '• Sydney Melendres tries to opportunity attack Joseph Kizana with their Greatsword but misses!',
         '• Mosaab Saleem deals 15 damage to Justin Tran with their Shortsword!',
     ]); // Test data
-    
+
     const [immunitiesModalOpen, setImmunitiesModalOpen] = useState(false);
     const handleImmunitiesOpen = () => setImmunitiesModalOpen(true);
     const handleImmunitiesClose = () => setImmunitiesModalOpen(false);
@@ -56,7 +60,7 @@ export default function Encounter() {
     const [selectedTargets, setSelectedTargets] = useState<string>('Mosaab Saleem');
 
     const handleConditionsChange = (conditions: string[]) => {
-      setSelectedConditions(conditions); 
+        setSelectedConditions(conditions);
     };
 
     const handleAccuracyDiceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,16 +83,40 @@ export default function Encounter() {
         }
     };
 
+    const handleHitPointsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setHitPoints(e.target.value);
+    };
+
+    const handleHitPointsBlur = () => {
+        const [currentStr, maxStr] = hitPoints.split('/');
+        const currentVal = parseInt(currentStr, 10);
+        const maxVal = parseInt(maxStr, 10);
+
+        if (isNaN(currentVal) || isNaN(maxVal)) {
+            setHitPoints(originalHitPoints);
+        } else {
+            setOriginalHitPoints(hitPoints);
+        }
+    };
+
+    const handleTempHPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setTempHP(parseInt(e.target.value));
+    };
+
+    const handleArmorClassChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setArmorClass(parseInt(e.target.value));
+    };
+
     const handleImmunitiesChange = (conditions: string[]) => {
-      setSelectedImmunities(conditions);
+        setSelectedImmunities(conditions);
     };
 
     const handleResistancesChange = (conditions: string[]) => {
-      setSelectedResistances(conditions);
+        setSelectedResistances(conditions);
     };
-  
+
     const handleVulnerabilitiesChange = (conditions: string[]) => {
-      setSelectedVulnerabilities(conditions);
+        setSelectedVulnerabilities(conditions);
     };
 
     const initiativeOrder = [
@@ -204,9 +232,34 @@ export default function Encounter() {
                 <Typography variant="h6" sx={sxProps.columnTitle}>{currentCharacterTurn}</Typography>
                 <Card sx={sxProps.columnCard}>
                     <Typography variant="subtitle2">Status</Typography>
-                    <Typography>Hit Points: 30/50</Typography>
-                    <Typography>Temp HP: 10</Typography>
-                    <Typography>AC: 21</Typography>
+                    <Typography>
+                        Hit Points:
+                        <TextField
+                            type="text"
+                            value={hitPoints}
+                            onChange={handleHitPointsChange}
+                            onBlur={handleHitPointsBlur}
+                            size="small"
+                        />
+                    </Typography>
+                    <Typography>
+                        Temp HP:
+                        <TextField
+                            type="number"
+                            value={tempHP}
+                            onChange={handleTempHPChange}
+                            size="small"
+                        />
+                    </Typography>
+                    <Typography>
+                        AC:
+                        <TextField
+                            type="number"
+                            value={armorClass}
+                            onChange={handleArmorClassChange}
+                            size="small"
+                        />
+                    </Typography>
                     <Box sx={sxProps.deathSaves}>
                         <Typography>☠</Typography>
                         <Box>□□□□□</Box>
@@ -245,7 +298,7 @@ export default function Encounter() {
                         </Box>
                         <Box sx={sxProps.actionItem}>
                             <Typography>Weapon</Typography>
-                            <Select value = {selectedWeapon} defaultValue="Greataxe" size="small" fullWidth>
+                            <Select value={selectedWeapon} defaultValue="Greataxe" size="small" fullWidth>
                                 <MenuItem value="Greataxe">Greataxe</MenuItem>
                             </Select>
                         </Box>
