@@ -4,6 +4,7 @@ import cors from "cors";
 import db from "./db";
 import mongoose from "mongoose";
 import playerRoutes from './routes/playerRoutes';
+import aiRoutes from "./routes/aiRoutes";
 import monsterRoutes from './routes/monsterRoutes';
 import campaignRoutes from './routes/campaignRoutes';
 import encounterRoutes from './routes/encounterRoutes';
@@ -62,6 +63,7 @@ app.get("/test", (req, res) => {
 });
 
 app.use("/players", playerRoutes);
+app.use("/ai", aiRoutes);
 app.use("/monsters", monsterRoutes);
 app.use("/campaigns", campaignRoutes);
 app.use("/encounters", encounterRoutes);

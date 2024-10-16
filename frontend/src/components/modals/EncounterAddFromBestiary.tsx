@@ -6,6 +6,7 @@ function EncounterAddFromBestiary({ open, onClose }: { open: boolean, onClose: (
 
   const [monsters, setMonsters] = useState([]);
   const [selectedMonster, setSelectedMonster] = useState('');
+  const [monsterDetails, setMonsterDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const apiUrl = 'https://www.dnd5eapi.co/api/monsters';
@@ -51,9 +52,25 @@ function EncounterAddFromBestiary({ open, onClose }: { open: boolean, onClose: (
     loadMonsters();
   }, []);
 
-  const handleSelectMonster = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedMonster(event.target.value);
+  const loadMonsterDetails = async (monsterName: string) => {
+    const response = await fetch(`${apiUrl}/${monsterName}`);
+    const data = await response.json();
+    setMonsterDetails(data);
+    console.log(monsterDetails);
   };
+
+  // Handle when the user selects a monster
+  const handleSelectMonster = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = event.target.value;
+    setSelectedMonster(selected);
+  };
+
+  // useEffect to trigger fetching detailed monster data once the selectedMonster state changes
+  useEffect(() => {
+    if (selectedMonster) {
+      loadMonsterDetails(selectedMonster);
+    }
+  }, [selectedMonster]);
 
   const handleAddMonsterToQueue = async () => {
     const formattedMonster = selectedMonster.toLowerCase().replace(/\s+/g, '-');
@@ -70,7 +87,7 @@ function EncounterAddFromBestiary({ open, onClose }: { open: boolean, onClose: (
         },
         body: JSON.stringify(formattedMonsterForMongo),
       });
-      
+
       if (!mongoDbResponse.ok) {
         throw new Error(`Error adding monster to database: ${mongoDbResponse.statusText}`);
       }
@@ -115,46 +132,46 @@ function EncounterAddFromBestiary({ open, onClose }: { open: boolean, onClose: (
                         ))}
                       </Select>
                     </FormControl> */}
-                <RadioGroup value={selectedMonster} onChange={handleSelectMonster}>
-                  <List>
-                    {monsters.map((monster) => (
-                      <ListItem key={monster.index}>
-                        <FormControlLabel value={monster.name} control={<Radio />} label={
-                          <Typography>{monster.name} ({monster.challenge_rating})</Typography>
-                        } />
-                      </ListItem>
-                    ))}
-                  </List>
-                </RadioGroup>
+                    <RadioGroup value={selectedMonster} onChange={handleSelectMonster}>
+                      <List>
+                        {monsters.map((monster) => (
+                          <ListItem key={monster.index}>
+                            <FormControlLabel value={monster.index} control={<Radio/>} label={
+                              <Typography>{monster.name} ({monster.challenge_rating})</Typography>
+                            }/>
+                          </ListItem>
+                        ))}
+                      </List>
+                    </RadioGroup>
+                  </Box>
+                )}
+                {selectedMonster && (
+                  <p>
+                    Selected Monster: <strong>{selectedMonster}</strong>
+                  </p>
+                )}
               </Box>
-            )}
-            {selectedMonster && (
-              <p>
-                Selected Monster: <strong>{selectedMonster}</strong>
-              </p>
-            )}
+              <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              onClick={handleAddMonsterToQueue}
+              >
+              Add to initiative queue
+              </Button>
+          </Paper>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+              <Button variant="outlined" sx={{ flex: 1, mr: 1 }}>
+              +
+              </Button>
+              <Button variant="outlined" sx={{ flex: 1, mx: 1 }}>
+              -
+              </Button>
+              <Button variant="outlined" sx={{ flex: 1, ml: 1 }}>
+              Next
+              </Button>
           </Box>
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            onClick={handleAddMonsterToQueue}
-          >
-            Add to initiative queue
-          </Button>
-        </Paper>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-          <Button variant="outlined" sx={{ flex: 1, mr: 1 }}>
-            +
-          </Button>
-          <Button variant="outlined" sx={{ flex: 1, mx: 1 }}>
-            -
-          </Button>
-          <Button variant="outlined" sx={{ flex: 1, ml: 1 }}>
-            Next
-          </Button>
         </Box>
-      </Box>
     </Dialog>
   );
 };
