@@ -29,5 +29,5 @@ const encounterSchema = new Schema<IEncounter>({
     }
 );
 
-const Encounter = model<IEncounter>('Character', encounterSchema);
+const Encounter = model<IEncounter>('Encounter', encounterSchema);
 export { Encounter, encounterSchema, IEncounter };
