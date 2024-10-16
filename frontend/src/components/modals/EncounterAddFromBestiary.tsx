@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CircularProgress, Radio, RadioGroup, Box, Typography, Button, List, ListItem, Paper, Dialog, FormControlLabel } from '@mui/material';
 import { formatMonsterForMongo } from '../../utils';
+import { apiService } from "../../services/apiService.ts";
 
 function EncounterAddFromBestiary({ open, onClose }: { open: boolean, onClose: () => void }) {
 
@@ -80,17 +81,7 @@ function EncounterAddFromBestiary({ open, onClose }: { open: boolean, onClose: (
     const formattedMonsterForMongo = formatMonsterForMongo(monsterDetails);
     try {
       // Add monster to database
-      const mongoDbResponse = await fetch(`http://localhost:5000/monsters`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formattedMonsterForMongo),
-      });
-
-      if (!mongoDbResponse.ok) {
-        throw new Error(`Error adding monster to database: ${mongoDbResponse.statusText}`);
-      }
+      const mongoDbResponse = await apiService.post("/monsters", formattedMonsterForMongo);
       console.log('Monster added to database:', mongoDbResponse);
     } catch (error) {
       console.error('Error adding monster to database:', error);
