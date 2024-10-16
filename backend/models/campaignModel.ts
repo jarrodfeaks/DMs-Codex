@@ -1,7 +1,7 @@
 import { Schema, model, ObjectId } from 'mongoose';
 
 interface ICampaign {
-    dm_id: string;
+    dmId: string;
     name: string;
     description: string;
     encounters: ObjectId[];
@@ -10,7 +10,7 @@ interface ICampaign {
 }
 
 const campaignSchema = new Schema<ICampaign>({
-    dm_id: { type: String },
+    dmId: { type: String },
     name: { type: String, required: true },
     description: { type: String },
     encounters: [{ type: Schema.Types.ObjectId, ref: 'Encounter' }],
@@ -22,5 +22,5 @@ const campaignSchema = new Schema<ICampaign>({
     }
 );
 
-const Campaign = model<ICampaign>('Character', campaignSchema);
+const Campaign = model<ICampaign>('Campaign', campaignSchema);
 export { Campaign, campaignSchema, ICampaign };

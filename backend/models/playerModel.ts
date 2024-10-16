@@ -1,7 +1,6 @@
 import { Schema, model } from 'mongoose';
 import { ICharacter, characterSchema } from './characterModel';
 import { Class, Race } from '../../shared/enums';
-import { Effect } from './effectModel';
 
 interface IPlayer extends ICharacter {
     level: number;    
@@ -30,6 +29,6 @@ const playerSchema = new Schema<IPlayer>(
 
 playerSchema.add(characterSchema.obj);
 
-const Player = model('Player', playerSchema);
+const Player = model<IPlayer>('Player', playerSchema);
 
 export { IPlayer, Player };

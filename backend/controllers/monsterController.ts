@@ -1,23 +1,12 @@
 import { Request, Response } from 'express';
 import { IMonster, Monster } from '../models/monsterModel';
-import { Schema } from 'mongoose';
-import { CreateEffect, DeleteEffect } from '../src/effectUtils';
 
 // @desc Get all monsters
 // @route GET /monsters
 // @access Public
 const getAllMonsters = async (req: Request, res: Response) => {
     try {
-        const monsters = await Monster.find({}).populate([
-            {
-                path: 'weapons',
-                select: '-_id'
-            },
-            {
-                path: 'effects',
-                select: '-_id'
-            }
-        ]) as IMonster[];
+        const monsters = await Monster.find({}).populate('weapons') as IMonster[];
         res.status(200).send(monsters);
     } catch (error: any) {
         res.status(500).send(error.message);
@@ -30,20 +19,11 @@ const getAllMonsters = async (req: Request, res: Response) => {
 const getMonsterInformation = async (req: Request, res: Response) => {
     try {
         const monsterId = req.params.id;
-        const monster = await Monster.findById(monsterId)
-            .populate({
-                path: 'effects',
-                select: '-_id'
-            })
-            .populate({
-                path: 'weapons',
-                select: '_id name type damage'
-            });
-
+        const monster = await Monster.findById(monsterId).populate('weapons');
         if (monster) {
             res.status(200).json(monster);
         } else {
-            res.status(404).json({ message: 'Monster not found' });
+            res.status(404).send({ message: 'Monster not found' });
         }
     } catch (error: any) {
         res.status(500).send(error.message);
@@ -60,7 +40,7 @@ const getMonsterEncounterBrief = async (req: Request, res: Response) => {
         if (monster) {
             res.status(200).json(monster);
         } else {
-            res.status(404).json({ message: 'Monster not found' });
+            res.status(404).send({ message: 'Monster not found' });
         }
     } catch (error: any) {
         res.status(500).send(error.message);
@@ -68,18 +48,20 @@ const getMonsterEncounterBrief = async (req: Request, res: Response) => {
 };
 
 // @desc Create a new monster
-// @route POST /monsters/
+// @route POST /monsters
 // @access Public
 const createMonster = async (req: Request, res: Response) => {
     try {
         const newMonster = req.body as IMonster;
-        // Assign monster with new empty effect
-        const effectId = await CreateEffect();
-        newMonster.effectId = effectId as unknown as Schema.Types.ObjectId;
         const savedMonster = await Monster.create(newMonster);
-        res.status(201).json(savedMonster._id);
+        res.status(201).json(savedMonster);
     } catch (error: any) {
-        res.status(400).json({ message: error.message });
+        console.error('Error creating monster:', {
+            message: error.message,
+            stack: error.stack,
+            body: req.body,
+        });
+        res.status(400).send({ message: 'Error creating monster', error: error.message });
     }
 };
 
@@ -94,7 +76,7 @@ const updateMonster = async (req: Request, res: Response) => {
         if (updatedMonster) {
             res.status(200).json(updatedMonster._id);
         } else {
-            res.status(404).json({ message: 'Monster not found' });
+            res.status(404).send({ message: 'Monster not found' });
         }
     } catch (error: any) {
         res.status(500).send(error.message);
@@ -110,28 +92,13 @@ const deleteMonster = async (req: Request, res: Response) => {
         const deletedMonster = await Monster.findByIdAndDelete(monsterId);
 
         if (deletedMonster) {
-            await DeleteEffect(deletedMonster.effectId);
             res.status(200).json({ message: 'Monster deleted successfully' });
         } else {
-            res.status(404).json({ message: 'Monster not found' });
+            res.status(404).send({ message: 'Monster not found' });
         }
     } catch (error: any) {
         res.status(500).send(error.message);
     }
 };
 
-const getMonsterEffects = async (req: Request, res: Response) => {
-    try {
-        const monsterId = req.params.id;
-        const monster = await Monster.findById(monsterId).populate({ path: 'effects', select: '-_id' });
-        if (monster) {
-            res.status(200).json(monster.effectId);
-        } else {
-            res.status(404).json({ message: 'Monster not found' });
-        }
-    } catch (error: any) {
-        res.status(500).send(error.message);
-    }
-}
-
-export { createMonster, deleteMonster, getAllMonsters, getMonsterEncounterBrief, getMonsterEffects, getMonsterInformation, updateMonster };
+export { createMonster, deleteMonster, getAllMonsters, getMonsterEncounterBrief, getMonsterInformation, updateMonster };

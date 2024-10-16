@@ -18,7 +18,7 @@ const monsterSchema = new Schema<IMonster>({
     proficiencyBonus: { type: Number, required: true, default: 0}
 });
 
-monsterSchema.add(characterSchema);
+monsterSchema.add(characterSchema.obj);
 
 const Monster = model<IMonster>('Monster', monsterSchema);
 

@@ -34,6 +34,6 @@ const turnSchema = new Schema<ITurn>(
     }
 );
 
-const Turn = model('Turn', turnSchema);
+const Turn = model<ITurn>('Turn', turnSchema);
 
 export { ITurn, Turn };

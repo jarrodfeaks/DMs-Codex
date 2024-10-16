@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import { getAllMonsters, getMonsterInformation, getMonsterEncounterBrief, getMonsterEffects, createMonster, updateMonster, deleteMonster } from '../controllers/monsterController';
+import { getAllMonsters, getMonsterInformation, getMonsterEncounterBrief, createMonster, updateMonster, deleteMonster } from '../controllers/monsterController';
 
 const router: Router = express.Router();
 
@@ -12,7 +12,5 @@ router.route('/:id')
     .delete(deleteMonster);
 router.route('/:id/encounter/brief')
     .get(getMonsterEncounterBrief);
-router.route('/:id/effects')
-    .get(getMonsterEffects);
 
 export default router;

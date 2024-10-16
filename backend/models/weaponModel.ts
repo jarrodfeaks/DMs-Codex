@@ -10,6 +10,14 @@ interface IWeapon {
     damageDice: [Dice, number];
 }
 
+function validateDamageDice(value: any): boolean {
+    if (!Array.isArray(value) || value.length !== 2) {
+        return false;
+    }
+    const [diceType, quantity] = value;
+    return Object.values(Dice).includes(diceType) && typeof quantity === 'number' && quantity > 0;
+}
+
 const weaponSchema = new Schema<IWeapon>({
     name: { type: String, required: true },
     hitModifier: { type: Number, required: true, default: 0 },
@@ -19,12 +27,11 @@ const weaponSchema = new Schema<IWeapon>({
     damageDice: {
         type: [Schema.Types.Mixed],
         validate: {
-            validator: function (value: any) {
-                return Array.isArray(value) && value.length === 2 && typeof value[1] === 'string' && typeof value[0] === 'number';
-            },
-            message: 'damageDice must be an array with [dice, amount]'
-        }
-    },
+            validator: validateDamageDice,
+            message: props => `${props.value} is not a valid damage dice array.`
+        },
+        required: true
+    }
 },
     {
         timestamps: true

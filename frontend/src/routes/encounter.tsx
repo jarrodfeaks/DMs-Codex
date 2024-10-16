@@ -13,8 +13,13 @@ import {
 } from "@mui/material";
 import {useState, useRef, useEffect} from "react";
 import AddIcon from "@mui/icons-material/Add";
+import { useDialogs } from "@toolpad/core/useDialogs";
 import EncounterAddFromPlayers from "../components/modals/EncounterAddFromPlayers";
 import EncounterAddFromBestiary from "../components/modals/EncounterAddFromBestiary";
+import EncounterAddFromAI from "../components/modals/EncounterAddFromAI";
+import CharacterConditions from "../components/modals/CharacterConditions";
+import EncounterDefenses from "../components/modals/EncounterDefenses";
+import { missedCombatLogString, formatNumber } from "../utils";
 
 interface Player {
     id: string,
@@ -24,15 +29,123 @@ interface Player {
 }
 
 export default function Encounter() {
+    const [hitPoints, setHitPoints] = useState("30/50");
+    const [originalHitPoints, setOriginalHitPoints] = useState(hitPoints);
+    const [tempHP, setTempHP] = useState(10);
+    const [armorClass, setArmorClass] = useState(21);
+
+    const dialogs = useDialogs();
+
+    const [difficulty, setDifficulty] = useState('');
+    const [creatureCount, setCreatureCount] = useState('');
+    const [setting, setSetting] = useState('');
     const [suggestion, setSuggestion] = useState('5 goblins with spears');
     const [showButtons, setShowButtons] = useState(false);
     const [formatsByCharacter, setFormatsByCharacter] = useState({});
     const [players, setPlayers] = useState<Player[]>([]);  // Store players added to initiative queue
 
-    // Modal states
-    const [openPlayerList, setOpenPlayerList] = useState(false);
-    const [openBestiary, setOpenBestiary] = useState(false);
-    const [openAI, setOpenAI] = useState(false);
+    const [conditionsModalOpen, setConditionsModalOpen] = useState(false);
+    const handleConditionsOpen = () => setConditionsModalOpen(true);
+    const handleConditionsClose = () => setConditionsModalOpen(false);
+
+    // Temporary state for bonus modifier and accuracy dice
+    const [bonusModifier, setBonusModifier] = useState<number>(2);
+    const [accuracyDice, setAccuracyDice] = useState<number>(1);
+    const [combatLog, setCombatLog] = useState<string[]>([
+        '• Jarrod Feaks succeeded 2/3 Death Saving Throws!',
+        '• TURN 3',
+        '• Joseph Kizana used Dash.',
+        '• Sydney Melendres tries to opportunity attack Joseph Kizana with their Greatsword but misses!',
+        '• Mosaab Saleem deals 15 damage to Justin Tran with their Shortsword!',
+    ]); // Test data
+
+    const [immunitiesModalOpen, setImmunitiesModalOpen] = useState(false);
+    const handleImmunitiesOpen = () => setImmunitiesModalOpen(true);
+    const handleImmunitiesClose = () => setImmunitiesModalOpen(false);
+
+    const [currentCharacterTurn, setCurrentCharacterTurn] = useState<string>('Justin Tran');
+
+    const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+    const [selectedImmunities, setSelectedImmunities] = useState<string[]>([]);
+    const [selectedResistances, setSelectedResistances] = useState<string[]>([]);
+    const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>([]);
+    const [selectedWeapon, setSelectedWeapon] = useState<string>('Greataxe');
+    const [selectedTargets, setSelectedTargets] = useState<string>('Mosaab Saleem');
+
+    const handleConditionsChange = (conditions: string[]) => {
+        setSelectedConditions(conditions);
+    };
+
+    const handleAccuracyDiceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setAccuracyDice(parseInt(event.target.value));
+    };
+
+    const addCombatLogEntry = (entry: string) => {
+        setCombatLog([...combatLog, entry]);
+    };
+
+    const handleExecute = () => {
+        const accuracyDiceValue = accuracyDice ?? 0;
+        // 10 is temporary, should be replaced with the actual AC of the target
+        if (accuracyDiceValue + bonusModifier >= 10) {
+            console.log('Damage Mod Pop Up!');
+            return;
+        }
+        else {
+            addCombatLogEntry(missedCombatLogString(currentCharacterTurn, selectedWeapon, selectedTargets));
+        }
+    };
+
+    const handleHitPointsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setHitPoints(e.target.value);
+    };
+
+    const handleHitPointsBlur = () => {
+        const [currentStr, maxStr] = hitPoints.split('/');
+        const currentVal = parseInt(currentStr, 10);
+        const maxVal = parseInt(maxStr, 10);
+
+        if (isNaN(currentVal) || isNaN(maxVal)) {
+            setHitPoints(originalHitPoints);
+        } else {
+            setOriginalHitPoints(hitPoints);
+        }
+    };
+
+    const handleTempHPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setTempHP(parseInt(e.target.value));
+    };
+
+    const handleArmorClassChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setArmorClass(parseInt(e.target.value));
+    };
+
+    const handleImmunitiesChange = (conditions: string[]) => {
+        setSelectedImmunities(conditions);
+    };
+
+    const handleResistancesChange = (conditions: string[]) => {
+        setSelectedResistances(conditions);
+    };
+
+    const handleVulnerabilitiesChange = (conditions: string[]) => {
+        setSelectedVulnerabilities(conditions);
+    };
+
+    const initiativeOrder = [
+        { name: 'Joseph Kizana', initiative: 20, hp: 40, maxHp: 50, ac: 19 },
+        { name: 'Mosaab Saleem', initiative: 19, hp: 50, maxHp: 50, ac: 20 },
+        { name: 'Sydney Melendres', initiative: 16, hp: 25, maxHp: 50, ac: 15 },
+        { name: 'Justin Tran', initiative: 12, hp: 40, maxHp: 50, ac: 21 },
+        { name: 'Samuel Coa', initiative: 9, hp: 0, maxHp: 30, ac: 12 },
+        { name: 'Jarrod Feaks', initiative: 8, hp: 0, maxHp: 50, ac: 23 },
+    ];
+
+    const handleOpenPlayerList = () => dialogs.open(EncounterAddFromPlayers);
+
+    const handleOpenBestiary = () => dialogs.open(EncounterAddFromBestiary);
+
+    const handleOpenAIGenerate = () => dialogs.open(EncounterAddFromAI);
 
     const handleFormat = (name, event, newFormats) => {
         setFormatsByCharacter(prev => ({
@@ -115,7 +228,29 @@ export default function Encounter() {
             justifyContent: "center",
             alignItems: "center",
         },
+        deathSaves: {
+            display: "flex",
+            alignItems: "center",
+            gap: 0.5
+        },
         actionGroup: {
+            display: "flex",
+            flexDirection: "column",
+            gap: 1
+        },
+        actionItem: {
+            display: "flex",
+            alignItems: "center",
+            gap: 1
+        },
+        rollInput: {
+            width: 100,
+        },
+        combatLogScrollArea: {
+            height: 150,
+            overflowY: "auto"
+        },
+        targetSection: {
             display: "flex",
             flexDirection: "column",
             gap: 1
@@ -142,7 +277,7 @@ export default function Encounter() {
                             onChange={(event, newFormats) => handleFormat(character.name, event, newFormats)}
                             sx={{ maxHeight: '40px' }}>
                             {['action', 'bonus', 'reaction'].map(type => (
-                                <ToggleButton 
+                                <ToggleButton
                                     key={type}
                                     value={type}
                                     sx={{
@@ -199,12 +334,37 @@ export default function Encounter() {
       />
 
             <Box sx={sxProps.encounterColumn}>
-                <Typography variant="h6" sx={sxProps.columnTitle}>JUSTIN TRAN</Typography>
+                <Typography variant="h6" sx={sxProps.columnTitle}>{currentCharacterTurn}</Typography>
                 <Card sx={sxProps.columnCard}>
                     <Typography variant="subtitle2">Status</Typography>
-                    <Typography>Hit Points: 30/50</Typography>
-                    <Typography>Temp HP: 10</Typography>
-                    <Typography>AC: 21</Typography>
+                    <Typography>
+                        Hit Points:
+                        <TextField
+                            type="text"
+                            value={hitPoints}
+                            onChange={handleHitPointsChange}
+                            onBlur={handleHitPointsBlur}
+                            size="small"
+                        />
+                    </Typography>
+                    <Typography>
+                        Temp HP:
+                        <TextField
+                            type="number"
+                            value={tempHP}
+                            onChange={handleTempHPChange}
+                            size="small"
+                        />
+                    </Typography>
+                    <Typography>
+                        AC:
+                        <TextField
+                            type="number"
+                            value={armorClass}
+                            onChange={handleArmorClassChange}
+                            size="small"
+                        />
+                    </Typography>
                     <Box sx={sxProps.deathSaves}>
                         <Typography>☠</Typography>
                         <Box>□□□□□</Box>
@@ -212,11 +372,17 @@ export default function Encounter() {
                 </Card>
                 <Card sx={sxProps.columnCard}>
                     <Typography variant="subtitle2">Conditions</Typography>
-                    <IconButton size="small"><AddIcon /></IconButton>
+                    <IconButton size="small" onClick={handleConditionsOpen}><AddIcon /></IconButton>
+                    <Typography>{selectedConditions.length > 0 ? selectedConditions.join(', ') : 'No conditions'}</Typography>
+                    <CharacterConditions open={conditionsModalOpen} onClose={handleConditionsClose} onConditionsChange={handleConditionsChange}></CharacterConditions>
                 </Card>
                 <Card sx={sxProps.columnCard}>
                     <Typography variant="subtitle2">Defenses</Typography>
-                    <IconButton size="small"><AddIcon /></IconButton>
+                    <IconButton size="small" onClick={handleImmunitiesOpen}><AddIcon /></IconButton>
+                    <Typography>{selectedImmunities.length > 0 ? 'Immunities: ' + selectedImmunities.join(', ') : 'No immunities'}</Typography>
+                    <Typography>{selectedResistances.length > 0 ? 'Resistances: ' + selectedResistances.join(', ') : 'No resistances'}</Typography>
+                    <Typography>{selectedVulnerabilities.length > 0 ? 'Vulnerabilities: ' + selectedVulnerabilities.join(', ') : 'No Vulnerabilities'}</Typography>
+                    <EncounterDefenses open={immunitiesModalOpen} onClose={handleImmunitiesClose} onImmunitiesChange={handleImmunitiesChange} onResistancesChange={handleResistancesChange} onVulnerabilitiesChange={handleVulnerabilitiesChange}></EncounterDefenses>
                 </Card>
                 <Card sx={sxProps.columnCard}>
                     <Box sx={sxProps.actionGroup}>
@@ -237,21 +403,22 @@ export default function Encounter() {
                         </Box>
                         <Box sx={sxProps.actionItem}>
                             <Typography>Weapon</Typography>
-                            <Select defaultValue="Greataxe" size="small" fullWidth>
+                            <Select value={selectedWeapon} defaultValue="Greataxe" size="small" fullWidth>
                                 <MenuItem value="Greataxe">Greataxe</MenuItem>
                             </Select>
                         </Box>
                         <Box sx={sxProps.actionItem}>
                             <Typography>Target</Typography>
-                            <Select defaultValue="Mosaab Saleem" size="small" fullWidth>
+                            <Select value={selectedTargets} defaultValue="Mosaab Saleem" size="small" fullWidth>
                                 <MenuItem value="Mosaab Saleem">Mosaab Saleem</MenuItem>
                             </Select>
                         </Box>
                         <Box sx={sxProps.actionItem}>
                             <Typography>Roll</Typography>
-                            <TextField type="number" defaultValue="10" size="small" sx={sxProps.rollInput} />
-                            <Typography>+ 5</Typography>
-                            <Button variant="contained" disableElevation color="primary">EXECUTE</Button>
+                            <TextField value={accuracyDice} onChange={handleAccuracyDiceChange} type="number" size="small" sx={sxProps.rollInput} />
+                            {/* todo: sync with bonus modifier backend */}
+                            <Typography>{formatNumber(bonusModifier)}</Typography>
+                            <Button variant="contained" disableElevation color="primary" onClick={handleExecute}>EXECUTE</Button>
                         </Box>
                     </Box>
                 </Card>
@@ -267,11 +434,11 @@ export default function Encounter() {
                 <Box>
                     <Card sx={sxProps.columnCard}>
                         <Box sx={sxProps.combatLogScrollArea}>
-                            <Typography variant="body2">• Jarrod Feaks succeeded 2/3 Death Saving Throws!</Typography>
-                            <Typography variant="body2">• TURN 3</Typography>
-                            <Typography variant="body2">• Joseph Kizana used Dash.</Typography>
-                            <Typography variant="body2">• Sydney Melendres tries to opportunity attack Joseph Kizana with their Greatsword but misses!</Typography>
-                            <Typography variant="body2">• Mosaab Saleem deals 15 damage to Justin Tran with their Shortsword!</Typography>
+                            {combatLog.map((logEntry, index) => (
+                                <Typography key={index} variant="body2">
+                                    {logEntry}
+                                </Typography>
+                            ))}
                         </Box>
                         <TextField placeholder="Type here..." size="small" fullWidth />
                     </Card>
