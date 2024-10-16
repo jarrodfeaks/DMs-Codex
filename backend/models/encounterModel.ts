@@ -7,7 +7,7 @@ interface IEncounter {
     players: ObjectId[];
     monsters: ObjectId[];
     initiative_order: { entity_id: ObjectId; initiative_score: number }[];
-    combat_log: string;
+    combat_log: string[];
 }
 
 const encounterSchema = new Schema<IEncounter>({
@@ -22,7 +22,7 @@ const encounterSchema = new Schema<IEncounter>({
             initiative_score: { type: Number, required: true }
         }
     ],
-    combat_log: { type: String, required: false, default: '' }
+    combat_log: { type: [String], required: false, default: [] }
 },
     {
         timestamps: true

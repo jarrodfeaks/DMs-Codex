@@ -48,15 +48,20 @@ const getMonsterEncounterBrief = async (req: Request, res: Response) => {
 };
 
 // @desc Create a new monster
-// @route POST /monsters/
+// @route POST /monsters
 // @access Public
 const createMonster = async (req: Request, res: Response) => {
     try {
         const newMonster = req.body as IMonster;
         const savedMonster = await Monster.create(newMonster);
-        res.status(201).json(savedMonster._id);
+        res.status(201).json(savedMonster);
     } catch (error: any) {
-        res.status(400).send({ message: error.message });
+        console.error('Error creating monster:', {
+            message: error.message,
+            stack: error.stack,
+            body: req.body,
+        });
+        res.status(400).send({ message: 'Error creating monster', error: error.message });
     }
 };
 
