@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { CircularProgress, Radio, RadioGroup, Box, Typography, Button, List, ListItem, Paper, Dialog, FormControlLabel } from '@mui/material';
 import { formatMonsterForMongo } from '../../utils';
 import { apiService } from "../../services/apiService.ts";
 
-function EncounterAddFromBestiary({ open, onClose }: { open: boolean, onClose: () => void }) {
+function EncounterAddFromBestiary({ open, onClose }: { open: boolean, onClose: (monster?: unknown) => void }) {
 
   const [monsters, setMonsters] = useState([]);
   const [selectedMonster, setSelectedMonster] = useState('');
@@ -77,8 +77,7 @@ function EncounterAddFromBestiary({ open, onClose }: { open: boolean, onClose: (
     const formattedMonster = selectedMonster.toLowerCase().replace(/\s+/g, '-');
     // Fetch specific monster details
     const apiResponse = await fetch(`${apiUrl}/${formattedMonster}`);
-    const monsterDetails = await apiResponse.json();
-    const formattedMonsterForMongo = formatMonsterForMongo(monsterDetails);
+    const formattedMonsterForMongo = formatMonsterForMongo(await apiResponse.json());
     try {
       // Add monster to database
       const mongoDbResponse = await apiService.post("/monsters", formattedMonsterForMongo);
@@ -86,11 +85,11 @@ function EncounterAddFromBestiary({ open, onClose }: { open: boolean, onClose: (
     } catch (error) {
       console.error('Error adding monster to database:', error);
     }
-      // todo: add monster to initiative queue
+      onClose(monsterDetails);
   };
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={() => onClose()}>
       <Box sx={{ width: 500, bgcolor: 'background.paper', p: 2 }}>
         <Paper sx={{ p: 1, mb: 2 }}>
           <Typography variant="h6">
@@ -147,6 +146,7 @@ function EncounterAddFromBestiary({ open, onClose }: { open: boolean, onClose: (
               color="primary"
               fullWidth
               onClick={handleAddMonsterToQueue}
+              disabled={!monsterDetails}
               >
               Add to initiative queue
               </Button>

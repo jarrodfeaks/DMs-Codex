@@ -2,13 +2,16 @@ import {
     Box,
     Button,
     Card,
+    Collapse,
     IconButton,
     MenuItem,
     Select,
     TextField,
+    ToggleButton,
+    ToggleButtonGroup,
     Typography
 } from "@mui/material";
-import { useState } from "react";
+import {useState, useRef, useEffect} from "react";
 import AddIcon from "@mui/icons-material/Add";
 import { useDialogs } from "@toolpad/core/useDialogs";
 import EncounterAddFromPlayers from "../components/modals/EncounterAddFromPlayers";
@@ -17,6 +20,7 @@ import EncounterAddFromAI from "../components/modals/EncounterAddFromAI";
 import CharacterConditions from "../components/modals/CharacterConditions";
 import EncounterDefenses from "../components/modals/EncounterDefenses";
 import { missedCombatLogString, formatNumber } from "../utils";
+import { Player } from "../types.ts";
 
 export default function Encounter() {
     const [hitPoints, setHitPoints] = useState("30/50");
@@ -30,6 +34,9 @@ export default function Encounter() {
     const [creatureCount, setCreatureCount] = useState('');
     const [setting, setSetting] = useState('');
     const [suggestion, setSuggestion] = useState('5 goblins with spears');
+    const [showButtons, setShowButtons] = useState(false);
+    const [formatsByCharacter, setFormatsByCharacter] = useState({});
+    const [players, setPlayers] = useState<Player[]>([]);  // Store players added to initiative queue
 
     const [conditionsModalOpen, setConditionsModalOpen] = useState(false);
     const handleConditionsOpen = () => setConditionsModalOpen(true);
@@ -128,16 +135,56 @@ export default function Encounter() {
         { name: 'Jarrod Feaks', initiative: 8, hp: 0, maxHp: 50, ac: 23 },
     ];
 
-    const handleOpenPlayerList = () => dialogs.open(EncounterAddFromPlayers);
+    const handleOpenPlayerList = async () => {
+        const player = await dialogs.open(EncounterAddFromPlayers);
+        if (player) addPlayerToQueue(player);
+    };
 
-    const handleOpenBestiary = () => dialogs.open(EncounterAddFromBestiary);
+    const handleOpenBestiary = async () => {
+        const monster = await dialogs.open(EncounterAddFromBestiary);
+        // monster needs to be converted to player type
+        if (monster) addPlayerToQueue(monster);
+    }
 
     const handleOpenAIGenerate = () => dialogs.open(EncounterAddFromAI);
+
+    const handleFormat = (name, event, newFormats) => {
+        setFormatsByCharacter(prev => ({
+            ...prev,
+            [name]: newFormats || []
+        }));
+    };
+
+    const buttonContainerRef = useRef<HTMLElement>(null);
+
+    const handleAddInitiative = () => {
+        setShowButtons(true);
+    };
 
     const handleGenerateSuggestion = () => {
         // In a real application, this would call an AI service
         setSuggestion('5 goblins with spears');
     };
+
+    const addPlayerToQueue = (player: Player) => {
+        setPlayers([...players, player]);
+    };
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (buttonContainerRef.current && !buttonContainerRef.current.contains(event.target as Node)) {
+                setShowButtons(false); // Collapse buttons
+            }
+        }
+
+        // Bind event listener to detect clicks outside the button container
+        document.addEventListener("mousedown", handleClickOutside);
+
+        // Clean up the event listener on unmount
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     const sxProps = {
         encounterScreen: {
@@ -199,34 +246,71 @@ export default function Encounter() {
             flexDirection: "column",
             gap: 1
         }
-    }
+    };
 
-    // Check if the character is active in the initiative order
     const isActive = (name: string): boolean => {
         return name === 'Justin Tran';
-    }
+    };
 
     return (
         <Box sx={sxProps.encounterScreen}>
-
             <Box sx={sxProps.encounterColumn}>
                 <Typography variant="h6" sx={sxProps.columnTitle}>INITIATIVE</Typography>
-                {initiativeOrder.map((character, index) => (
+                {players.map((character, index) => (
                     <Card
-                        key={character.name}
+                        key={character._id}
                         sx={{ ...sxProps.columnCard, ...sxProps.initiativeItem, ...(isActive(character.name) && sxProps.initiativeItemActive) }}
                     >
-                        <Typography>{index + 1}{character.name}</Typography>
-                        <Typography>{character.initiative} {character.hp}/{character.maxHp} {character.ac}</Typography>
-                        <Button variant="contained" disableElevation size="small">ACTION</Button>
-                        <Button size="small">BONUS</Button>
-                        <Button size="small">REACTION</Button>
+                        <Typography>{index + 1}. {character.name}</Typography>
+                        <Typography>Level {character.level} {character.class}</Typography>
+                        <ToggleButtonGroup
+                            value={formatsByCharacter[character.name] || []}
+                            onChange={(event, newFormats) => handleFormat(character.name, event, newFormats)}
+                            sx={{ maxHeight: '40px' }}>
+                            {['action', 'bonus', 'reaction'].map(type => (
+                                <ToggleButton
+                                    key={type}
+                                    value={type}
+                                    sx={{
+                                        backgroundColor: (formatsByCharacter[character.name] || []).includes(type)
+                                            ? 'primary.dark' //when selected
+                                            : 'primary.main', //not selcted
+                                        color: (formatsByCharacter[character.name] || []).includes(type)
+                                            ? 'black' //selected
+                                            : 'white', //notselected
+                                        '&:hover': {
+                                            backgroundColor: (formatsByCharacter[character.name] || []).includes(type)
+                                                ? 'primary.main' //hoverselected
+                                                : 'primary.dark',
+                                            color: 'white' //hovertext
+                                        }
+                                    }}>
+                                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                                </ToggleButton>
+                            ))}
+                        </ToggleButtonGroup>
                     </Card>
                 ))}
-                <Card sx={{ ...sxProps.columnCard, ...sxProps.addCharacter }}>
-                    <IconButton size="small"><AddIcon /></IconButton>
+                <Card sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 1, borderRadius: 0.5 }}>
+                    <IconButton size="small" >
+                        <AddIcon onClick={handleAddInitiative}/>
+                    </IconButton>
                 </Card>
-            </Box>
+
+                <Box ref={buttonContainerRef}>
+                    <Collapse in={showButtons}>
+                        <Button onClick={handleOpenPlayerList} variant="contained" color="primary" sx={{ width: '100%', marginTop: '5px', marginBottom: '5px' }}>
+                            Add from player list
+                        </Button>
+                        <Button onClick={handleOpenBestiary} variant="contained" color="primary" sx={{ width: '100%', marginTop: '5px', marginBottom: '5px' }}>
+                            Add from bestiary
+                        </Button>
+                        <Button onClick={handleOpenAIGenerate} variant="contained" color="primary" sx={{ width: '100%', marginTop: '5px', marginBottom: '5px' }}>
+                            AI Generate Encounter!
+                        </Button>
+                    </Collapse>
+                </Box>
+      </Box>
 
             <Box sx={sxProps.encounterColumn}>
                 <Typography variant="h6" sx={sxProps.columnTitle}>{currentCharacterTurn}</Typography>
@@ -337,11 +421,6 @@ export default function Encounter() {
                         </Box>
                         <TextField placeholder="Type here..." size="small" fullWidth />
                     </Card>
-                    {/* not needed anymore since smart assistant has been moved to another page */}
-                    {/*<Box className="combat-buttons">*/}
-                    {/*    <Button variant="contained" color="primary">COMBAT LOG</Button>*/}
-                    {/*    <Button variant="contained" color="primary">SMART ASSISTANT</Button>*/}
-                    {/*</Box>*/}
                 </Box>
 
                 <Box sx={sxProps.targetSection}>
@@ -365,12 +444,6 @@ export default function Encounter() {
                         <IconButton size="small"><AddIcon /></IconButton>
                     </Card>
                 </Box>
-            </Box>
-
-            <Box sx={{ position: "absolute", bottom: 1, left: 1, display: "flex", flexDirection: "column", gap: 1 }}>
-                <Button onClick={handleOpenPlayerList} variant="contained" color="primary">Add from player list</Button>
-                <Button onClick={handleOpenBestiary} variant="contained" color="primary">Add from bestiary</Button>
-                <Button onClick={handleOpenAIGenerate} variant="contained" color="primary">AI Generate Encounter!</Button>
             </Box>
         </Box>
     );
