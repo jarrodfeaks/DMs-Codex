@@ -1,5 +1,5 @@
-import React, {FC, useState} from 'react';
-import {TextField, Box, Typography, Button, List, ListItem, ListItemText, Table, TableRow, TableHead, TableCell, TableBody} from "@mui/material";
+import React, {FC, useEffect, useState} from 'react';
+import {TextField, Box, Typography, Button, List, ListItem, ListItemText, Table, TableRow, TableHead, TableCell, TableBody, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent} from "@mui/material";
 import DashboardCharacterSheetSkill from './DashboardCharacterSheetSkill.tsx';
 import { useDialogs } from '@toolpad/core/useDialogs';
 import theme from '../../assets/theme.ts';
@@ -19,7 +19,58 @@ interface Weapon {
 
 //const damageTypes = ["None", "Bludgeoning", "Piercing", "Slashing", "Lightning", "Thunder", "Poison", "Cold", "Radiant", "Fire", "Necrotic", "Acid", "Psychic", "Force"];
 
-const DashboardCharacterSheet: FC = () => {
+const DashboardCharacterSheet: FC<{importData?: unknown}> = ({importData}) => {
+  const [classes, setClasses] = useState([]);
+  const [selectedClass, setSelectedClass] = useState('');
+
+  const loadClasses = async () => {
+    // const storedClasses = localStorage.getItem('classes');
+    // if (storedClasses){
+    //   setClasses(storedClasses);
+    // }
+    // else {
+      try {
+        const response = await fetch('https://www.dnd5eapi.co/api/classes');
+        const data = await response.json();
+        localStorage.setItem('classes', JSON.stringify(data));
+        setClasses(data.results); // Set the monster data in state
+      } catch (error) {
+        console.error('Error fetching monsters:', error);
+      }
+    // }
+  }
+
+  const [races, setRaces] = useState([]);
+  const [selectedRace, setSelectedRace] = useState('');
+
+  const loadRaces = async () => {
+    // const storedClasses = localStorage.getItem('classes');
+    // if (storedClasses){
+    //   setClasses(storedClasses);
+    // }
+    // else {
+      try {
+        const response = await fetch('https://www.dnd5eapi.co/api/races');
+        const data = await response.json();
+        setRaces(data.results); // Set the monster data in state
+      } catch (error) {
+        console.error('Error fetching monsters:', error);
+      }
+    // }
+  }
+
+  useEffect(() => {
+    loadClasses();
+    loadRaces();
+  }, []);
+
+  const handleRaceChange = (event: SelectChangeEvent<{ value: unknown }>) => {
+    setSelectedRace(event.target.value as string);
+  };
+
+  const handleClasChange = (event: SelectChangeEvent<{ value: unknown }>) => {
+    setSelectedClass(event.target.value as string);
+  };
 
   const [equipment, setEquipment] = useState<string[]>([]);
   const [newEquipment, setNewEquipment] = useState('');
@@ -57,7 +108,7 @@ const DashboardCharacterSheet: FC = () => {
   const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>([]);
 
   const handleConditionsChange = (conditions: string[]) => {
-    setSelectedConditions(conditions); 
+    setSelectedConditions(conditions);
   };
 
   const handleImmunitiesChange = (conditions: string[]) => {
@@ -105,7 +156,7 @@ const DashboardCharacterSheet: FC = () => {
       flexDirection: "column"
     },
     titleContainer: {
-      display: "flex", 
+      display: "flex",
       flexDirection: "column",
       border: "2px solid",
       borderColor: "#FFFFF0",
@@ -115,15 +166,15 @@ const DashboardCharacterSheet: FC = () => {
       paddingBottom: 2
     },
     horizontaltitleContainer: {
-      display: "flex", 
-      flexDirection: "row", 
+      display: "flex",
+      flexDirection: "row",
       border: "2px solid",
       borderColor: "#FFFFF0",
       borderRadius: "10px",
       alignItems: "center",
       marginBottom: 2,
       paddingBottom: 2
-    },    
+    },
     subContainer: {
       display: "flex",
       flexDirection: "row",
@@ -155,8 +206,8 @@ const DashboardCharacterSheet: FC = () => {
       margin: 2
     },
     initiativeArmorContainer: {
-      display: "flex", 
-      justifyContent: "center", 
+      display: "flex",
+      justifyContent: "center",
       border: "2px solid",
       borderColor: "#FFFFF0",
       borderRadius: "10px",
@@ -167,8 +218,8 @@ const DashboardCharacterSheet: FC = () => {
       paddingTop: 2
     },
     horizontalButtonsContainer: {
-      display: "flex", 
-      flexDirection: "row", 
+      display: "flex",
+      flexDirection: "row",
       justifyContent: "center",
       gap: "30%",
       paddingTop: 2,
@@ -180,7 +231,7 @@ const DashboardCharacterSheet: FC = () => {
       paddingBottom: 2
     },
     modalContainer: {
-      display: "flex", 
+      display: "flex",
       flexDirection: "column",
       //border: "2px solid",
       //borderColor: "#FFFFF0",
@@ -199,9 +250,42 @@ const DashboardCharacterSheet: FC = () => {
       <Box sx={sxProps.titleContainer}>
         <Typography variant='h4'>Character</Typography>
         <Box sx={sxProps.subContainer}>
-          <TextField id='characterName' label='Character Name'/>
-          <TextField id='characterRace' label='Character Race'/>
-          <TextField id='characterLevel' label='Character Level' type='number'/>
+          <TextField id='characterName' label='Name'/>
+
+          <FormControl sx={{minWidth: '25%'}}>
+            <InputLabel id="race-select-label">Select Race</InputLabel>
+            <Select
+              labelId="race-select-label"
+              id="race-select"
+              //value={selectedRace}
+              label="Select a Race"
+              onChange={handleRaceChange}
+            >
+              {races.map((race) => (
+                <MenuItem key={race.index} value={race.name}>
+                  {race.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl sx={{minWidth: '25%'}}>
+            <InputLabel id="class-select-label">Select Class</InputLabel>
+            <Select
+              labelId="class-select-label"
+              id="class-select"
+              //value={selectedClass}
+              label="Select a Class"
+              onChange={handleClasChange}
+            >
+              {classes.map((clas) => ( //JS didn't like using the name class
+                <MenuItem key={clas.index} value={clas.name}>
+                  {clas.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <TextField id='characterLevel' label='Level' type='number'/>
         </Box>
       </Box>
 

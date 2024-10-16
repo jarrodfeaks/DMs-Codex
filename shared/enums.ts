@@ -97,6 +97,7 @@ enum MonsterType {
 
 enum MovementType {
     Burrow = "Burrow",
+    Walk = "Walk",
     Climb = "Climb",
     Fly = "Fly",
     Swim = "Swim",

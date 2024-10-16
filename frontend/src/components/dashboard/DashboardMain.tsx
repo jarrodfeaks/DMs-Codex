@@ -1,7 +1,8 @@
 import { Button, Typography, TextField, Box, List, ListItem, ListItemButton, ListItemText, Paper } from "@mui/material";
 import { useState } from "react";
-import ImportCharacterModal from "../modals/ImportCharacterModal.tsx";
+import ImportCharacterModal from "../modals/DashboardImportCharacter.tsx";
 import { useDialogs } from "@toolpad/core/useDialogs";
+import { apiService } from "../../services/apiService.ts";
 
 // Temp until backend stuff gets added?
 interface Player {
@@ -12,7 +13,7 @@ interface Player {
 }
 
 export default function DashboardMain(
-    { onCreateCharacter }: { onCreateCharacter: () => void }) {
+    { onCreateCharacter }: { onCreateCharacter: (importData?: unknown) => void }) {
 
     const dialogs = useDialogs();
 
@@ -35,9 +36,12 @@ export default function DashboardMain(
         { id: 12, name: "Player 12", level: 12, playerClass: "Wizard" },
     ];
 
-    const onImportCharacter = () => {
-        // Open Import Character modal
-        dialogs.open(ImportCharacterModal);
+    const onImportCharacter = async () => {
+        const result = await dialogs.open(ImportCharacterModal);
+        // only returns a result if the import was successful
+        if (result) {
+            onCreateCharacter(result);
+        }
     };
 
     const onEditCharacter = () => {
@@ -46,10 +50,9 @@ export default function DashboardMain(
         }
     };
 
-    const onDeleteCharacter = () => {
+    const onDeleteCharacter = async () => {
         if (selectedPlayerId !== null) {
-            // Delete the selected player
-            // Maybe a confirm modal is needed here
+            await apiService.delete(`/players/${selectedPlayerId}`);
         }
     };
 
@@ -129,7 +132,7 @@ export default function DashboardMain(
             <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
                 <Button
                     variant="outlined"
-                    onClick={onCreateCharacter}
+                    onClick={() => onCreateCharacter()} // pass undefined if no import data
                     sx={{ mt: 1, ml: 0.5, mr: 0.5 }}>
                     Create Character
                 </Button>

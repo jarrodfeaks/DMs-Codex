@@ -1,14 +1,30 @@
-import { Box, Button, Dialog, Typography } from "@mui/material";
+import { Alert, Box, Button, Dialog, Typography } from "@mui/material";
 import { useState } from "react";
+import { apiService } from "../../services/apiService.ts";
+import AttachmentIcon from '@mui/icons-material/Attachment';
 
-export default function ImportCharacterModal({ open, onClose }: { open: boolean, onClose: () => void }) {
+export default function DashboardImportCharacter({ open, onClose }: { open: boolean, onClose: (result?: unknown) => Promise<void> }) {
 
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+    const [importing, setImporting] = useState(false);
+    const [importError, setImportError] = useState<string | null>(null);
+
     const onImport = async () => {
-        onClose();
-        setSelectedFile(null);
-        // Read PDF data, go to the Character Sheet screen, and fill in with data
+        if (!selectedFile) return;
+        setImporting(true);
+        setImportError(null);
+        try {
+            const fd = new FormData();
+            fd.append('file', selectedFile);
+            const res = await apiService.post("/ai/import-character", fd);
+            onClose(res);
+        } catch (err) {
+            const message = err instanceof Error ? err.message : "Unknown error";
+            setImportError(`Failed to import character sheet: ${message}`);
+        } finally {
+            setImporting(false);
+        }
     };
 
     // PDF upload
@@ -19,7 +35,6 @@ export default function ImportCharacterModal({ open, onClose }: { open: boolean,
     };
 
     const onCancel = () => {
-        setSelectedFile(null);
         onClose();
     };
 
@@ -41,7 +56,7 @@ export default function ImportCharacterModal({ open, onClose }: { open: boolean,
                 </Typography>
 
                 {/* PDF Upload */}
-                <Box sx={{ mb: 2 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <Button variant="outlined" component="label">
                         Upload PDF
                         <input
@@ -52,24 +67,28 @@ export default function ImportCharacterModal({ open, onClose }: { open: boolean,
                         />
                     </Button>
                     {selectedFile && (
-                        <Typography sx={{ mt: 1, display: 'inline-block' }}>
-                            {selectedFile.name}
-                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <AttachmentIcon />
+                            <Typography variant="body2">{selectedFile.name}</Typography>
+                        </Box>
+                    )}
+                    {importError && (
+                        <Alert variant="outlined" severity="error" sx={{ mt: 1 }}>{importError}</Alert>
                     )}
                 </Box>
 
                 {/* Import Button */}
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
-                    <Button onClick={onCancel} color="error">
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 4 }}>
+                    <Button onClick={onCancel}>
                         Cancel
                     </Button>
                     <Button
                         onClick={onImport}
                         variant="contained"
                         color="primary"
-                        disabled={!selectedFile}
+                        disabled={!selectedFile || importing}
                     >
-                        Import
+                        {importing ? "Importing..." : "Import"}
                     </Button>
                 </Box>
             </Box>
