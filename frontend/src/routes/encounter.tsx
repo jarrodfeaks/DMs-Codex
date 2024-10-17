@@ -28,6 +28,7 @@ import EncounterDefenses from "../components/modals/EncounterDefenses";
 import { missedCombatLogString } from "../utils";
 import { Player } from "../types.ts";
 import AttackModal from "../components/modals/AttackModal";
+import {apiService} from "../services/apiService.ts";
 
 export default function Encounter() {
     const [hitPoints, setHitPoints] = useState("30/50");
@@ -75,13 +76,13 @@ export default function Encounter() {
     };
 
     const [currentPlayer, setCurrentPlayer] = useState(null);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchCurrentPlayer = async () => {
             try {
                 // Assuming 'Justin Tran' is the current player and has an ID of '123'
-                const response = await axios.get('/api/players/current/123');
+                const response = await apiService.get('/api/players/current/123');
                 setCurrentPlayer(response.data);
                 setLoadingStatus(false);
                 setLoadingConditions(false);
@@ -164,35 +165,35 @@ export default function Encounter() {
     const handleImmunitiesChange = (conditions: string[]) => {
         setSelectedImmunities(conditions);
     };
-    
+
     const handleResistancesChange = (conditions: string[]) => {
         setSelectedResistances(conditions);
     };
-    
+
     const handleVulnerabilitiesChange = (conditions: string[]) => {
         setSelectedVulnerabilities(conditions);
     };
 
     const handleDeleteCondition = (conditionToDelete: string) => {
-        setSelectedConditions(prevConditions => 
+        setSelectedConditions(prevConditions =>
             prevConditions.filter(condition => condition !== conditionToDelete)
         );
     };
 
     const handleDeleteImmunity = (immunityToDelete: string) => {
-        setSelectedImmunities(prevImmunities => 
+        setSelectedImmunities(prevImmunities =>
             prevImmunities.filter(immunity => immunity !== immunityToDelete)
         );
     };
 
     const handleDeleteResistance = (resistanceToDelete: string) => {
-        setSelectedResistances(prevResistances => 
+        setSelectedResistances(prevResistances =>
             prevResistances.filter(resistance => resistance !== resistanceToDelete)
         );
     };
 
     const handleDeleteVulnerability = (vulnerabilityToDelete: string) => {
-        setSelectedVulnerabilities(prevVulnerabilities => 
+        setSelectedVulnerabilities(prevVulnerabilities =>
             prevVulnerabilities.filter(vulnerability => vulnerability !== vulnerabilityToDelete)
         );
     };
@@ -213,7 +214,7 @@ export default function Encounter() {
         }));
       };
 
-      
+
 
     const handleOpenPlayerList = async () => {
         const player = await dialogs.open(EncounterAddFromPlayers);
@@ -368,32 +369,32 @@ export default function Encounter() {
     const handleCurrentConditionsChange = (conditions) => {
         setCurrentConditions(conditions);
     };
-    
+
     const handleCurrentImmunitiesChange = (immunities) => {
         setCurrentImmunities(immunities);
     };
-    
+
     const handleCurrentResistancesChange = (resistances) => {
         setCurrentResistances(resistances);
     };
-    
+
     const handleCurrentVulnerabilitiesChange = (vulnerabilities) => {
         setCurrentVulnerabilities(vulnerabilities);
     };
-    
+
     // For target
     const handleTargetConditionsChange = (conditions) => {
         setTargetConditions(conditions);
     };
-    
+
     const handleTargetImmunitiesChange = (immunities) => {
         setTargetImmunities(immunities);
     };
-    
+
     const handleTargetResistancesChange = (resistances) => {
         setTargetResistances(resistances);
     };
-    
+
     const handleTargetVulnerabilitiesChange = (vulnerabilities) => {
         setTargetVulnerabilities(vulnerabilities);
     };
@@ -431,7 +432,7 @@ export default function Encounter() {
 
     const renderTargetStats = () => {
         if (!selectedTarget) return null;
-      
+
         return (
           <Box sx={sxProps.targetSection}>
             <Typography variant="h6">{selectedTarget.name}</Typography>
@@ -492,10 +493,10 @@ export default function Encounter() {
                     ) : (
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                             {selectedConditions.map((condition, index) => (
-                                <Chip 
-                                    key={index} 
-                                    label={condition} 
-                                    size="small" 
+                                <Chip
+                                    key={index}
+                                    label={condition}
+                                    size="small"
                                     color="primary"
                                     onDelete={() => handleDeleteCondition(condition)}
                                 />
@@ -503,9 +504,9 @@ export default function Encounter() {
                             {selectedConditions.length === 0 && <Typography>No conditions</Typography>}
                         </Box>
                     )}
-                    <CharacterConditions 
-                        open={conditionsModalOpen} 
-                        onClose={handleConditionsClose} 
+                    <CharacterConditions
+                        open={conditionsModalOpen}
+                        onClose={handleConditionsClose}
                         onConditionsChange={handleConditionsChange}
                         initialConditions={selectedConditions}
                     />
@@ -525,11 +526,11 @@ export default function Encounter() {
                                 <Typography variant="body2">Immunities</Typography>
                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
                                     {selectedImmunities.map((immunity, index) => (
-                                        <Chip 
-                                            key={index} 
-                                            label={immunity} 
-                                            size="small" 
-                                            color="primary" 
+                                        <Chip
+                                            key={index}
+                                            label={immunity}
+                                            size="small"
+                                            color="primary"
                                             onDelete={() => handleDeleteImmunity(immunity)}
                                         />
                                     ))}
@@ -540,11 +541,11 @@ export default function Encounter() {
                                 <Typography variant="body2">Resistances</Typography>
                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
                                     {selectedResistances.map((resistance, index) => (
-                                        <Chip 
-                                            key={index} 
-                                            label={resistance} 
-                                            size="small" 
-                                            color="primary" 
+                                        <Chip
+                                            key={index}
+                                            label={resistance}
+                                            size="small"
+                                            color="primary"
                                             onDelete={() => handleDeleteResistance(resistance)}
                                         />
                                     ))}
@@ -555,11 +556,11 @@ export default function Encounter() {
                                 <Typography variant="body2">Vulnerabilities</Typography>
                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
                                     {selectedVulnerabilities.map((vulnerability, index) => (
-                                        <Chip 
-                                            key={index} 
-                                            label={vulnerability} 
-                                            size="small" 
-                                            color="primary" 
+                                        <Chip
+                                            key={index}
+                                            label={vulnerability}
+                                            size="small"
+                                            color="primary"
                                             onDelete={() => handleDeleteVulnerability(vulnerability)}
                                         />
                                     ))}
@@ -568,11 +569,11 @@ export default function Encounter() {
                             </Box>
                         </>
                     )}
-                    <EncounterDefenses 
-                        open={defensesModalOpen} 
-                        onClose={handleDefensesClose} 
-                        onImmunitiesChange={handleImmunitiesChange} 
-                        onResistancesChange={handleResistancesChange} 
+                    <EncounterDefenses
+                        open={defensesModalOpen}
+                        onClose={handleDefensesClose}
+                        onImmunitiesChange={handleImmunitiesChange}
+                        onResistancesChange={handleResistancesChange}
                         onVulnerabilitiesChange={handleVulnerabilitiesChange}
                         initialImmunities={selectedImmunities}
                         initialResistances={selectedResistances}
@@ -644,7 +645,7 @@ export default function Encounter() {
                     </Collapse>
                 </Box>
             </Box>
-            
+
             {/* PLAYER SELECTED OR CURRENT TURN IN INITIATIVE ORDER IN QUEUE */}
             <Box sx={sxProps.encounterColumn}>
                 <Card sx={sxProps.columnCard}>
@@ -688,7 +689,7 @@ export default function Encounter() {
                         />
                     </Box>
                 </Card>
-                
+
                 {/* Conditions Box */}
                 <Card sx={sxProps.columnCard}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
@@ -697,10 +698,10 @@ export default function Encounter() {
                     </Box>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                         {selectedConditions.map((condition, index) => (
-                            <Chip 
-                                key={index} 
-                                label={condition} 
-                                size="small" 
+                            <Chip
+                                key={index}
+                                label={condition}
+                                size="small"
                                 color="primary"
                                 onDelete={() => handleDeleteCondition(condition)}
                             />
@@ -708,7 +709,7 @@ export default function Encounter() {
                         {selectedConditions.length === 0 && <Typography>No conditions</Typography>}
                     </Box>
                 </Card>
-                
+
                 {/* Defenses Box */}
                 <Card sx={sxProps.columnCard}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
@@ -719,11 +720,11 @@ export default function Encounter() {
                         <Typography variant="body2">Immunities</Typography>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
                             {selectedImmunities.map((immunity, index) => (
-                                <Chip 
-                                    key={index} 
-                                    label={immunity} 
-                                    size="small" 
-                                    color="primary" 
+                                <Chip
+                                    key={index}
+                                    label={immunity}
+                                    size="small"
+                                    color="primary"
                                     onDelete={() => handleDeleteImmunity(immunity)}
                                 />
                             ))}
@@ -734,11 +735,11 @@ export default function Encounter() {
                         <Typography variant="body2">Resistances</Typography>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
                             {selectedResistances.map((resistance, index) => (
-                                <Chip 
-                                    key={index} 
-                                    label={resistance} 
-                                    size="small" 
-                                    color="primary" 
+                                <Chip
+                                    key={index}
+                                    label={resistance}
+                                    size="small"
+                                    color="primary"
                                     onDelete={() => handleDeleteResistance(resistance)}
                                 />
                             ))}
@@ -749,11 +750,11 @@ export default function Encounter() {
                         <Typography variant="body2">Vulnerabilities</Typography>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
                             {selectedVulnerabilities.map((vulnerability, index) => (
-                                <Chip 
-                                    key={index} 
-                                    label={vulnerability} 
-                                    size="small" 
-                                    color="primary" 
+                                <Chip
+                                    key={index}
+                                    label={vulnerability}
+                                    size="small"
+                                    color="primary"
                                     onDelete={() => handleDeleteVulnerability(vulnerability)}
                                 />
                             ))}
@@ -765,11 +766,11 @@ export default function Encounter() {
                     <Box sx={sxProps.actionGroup}>
                         <Box sx={sxProps.actionItem}>
                             <Typography>Type</Typography>
-                            <TextField 
-                            placeholder="Type here..." 
-                            size="small" 
-                            fullWidth 
-                        />    
+                            <TextField
+                            placeholder="Type here..."
+                            size="small"
+                            fullWidth
+                        />
                         </Box>
                         <Box sx={sxProps.actionItem}>
                             <Typography>Action</Typography>
@@ -809,10 +810,10 @@ export default function Encounter() {
                                 </Typography>
                             ))}
                         </Box>
-                        <TextField 
-                            placeholder="Type here..." 
-                            size="small" 
-                            fullWidth 
+                        <TextField
+                            placeholder="Type here..."
+                            size="small"
+                            fullWidth
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="end">
@@ -822,7 +823,7 @@ export default function Encounter() {
                                     </InputAdornment>
                                 ),
                             }}
-                        />                    
+                        />
                     </Card>
                     {renderTargetStats()}
                 </Box>
