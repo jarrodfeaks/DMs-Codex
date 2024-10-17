@@ -154,4 +154,92 @@ enum Status {
     Exhaustion = "Exhaustion",
 }
 
-export { Action, Activity, Attribute, Class, DamageType, Dice, Initative, MonsterType, MovementType, Race, Skill, Status, };
+enum Weapon {
+    // Simple Melee Weapons
+    Club = "Club",
+    Dagger = "Dagger",
+    Greatclub = "Greatclub",
+    Handaxe = "Handaxe",
+    Javelin = "Javelin",
+    LightHammer = "Light Hammer",
+    Mace = "Mace",
+    Quarterstaff = "Quarterstaff",
+    Sickle = "Sickle",
+    Spear = "Spear",
+
+    // Simple Ranged Weapons
+    LightCrossbow = "Light Crossbow",
+    Dart = "Dart",
+    Shortbow = "Shortbow",
+    Sling = "Sling",
+
+    // Martial Melee Weapons
+    Battleaxe = "Battleaxe",
+    Flail = "Flail",
+    Glaive = "Glaive",
+    Greataxe = "Greataxe",
+    Greatsword = "Greatsword",
+    Halberd = "Halberd",
+    Lance = "Lance",
+    Longsword = "Longsword",
+    Maul = "Maul",
+    Morningstar = "Morningstar",
+    Pike = "Pike",
+    Rapier = "Rapier",
+    Scimitar = "Scimitar",
+    Shortsword = "Shortsword",
+    Trident = "Trident",
+    WarPick = "War Pick",
+    Warhammer = "Warhammer",
+    Whip = "Whip",
+
+    // Martial Ranged Weapons
+    Blowgun = "Blowgun",
+    HandCrossbow = "Hand Crossbow",
+    HeavyCrossbow = "Heavy Crossbow",
+    Longbow = "Longbow",
+    Net = "Net"
+}
+
+const WeaponCategories = {
+    "Simple Melee Weapons": [
+        Weapon.Club,
+        Weapon.Dagger,
+        Weapon.Greatclub,
+        Weapon.Handaxe
+    ],
+    "Simple Ranged Weapons": [
+        Weapon.LightCrossbow,
+        Weapon.Dart,
+        Weapon.Shortbow,
+        Weapon.Sling
+    ],
+    "Martial Melee Weapons": [
+        Weapon.Battleaxe,
+        Weapon.Flail,
+        Weapon.Glaive,
+        Weapon.Greataxe,
+        Weapon.Greatsword,
+        Weapon.Halberd,
+        Weapon.Lance,
+        Weapon.Longsword,
+        Weapon.Maul,
+        Weapon.Morningstar,
+        Weapon.Pike,
+        Weapon.Rapier,
+        Weapon.Scimitar,
+        Weapon.Shortsword,
+        Weapon.Trident,
+        Weapon.WarPick,
+        Weapon.Warhammer,
+        Weapon.Whip
+    ],
+    "Martial Ranged Weapons": [
+        Weapon.LightCrossbow,
+        Weapon.Dart,
+        Weapon.Shortbow,
+        Weapon.Sling
+    ]
+}
+
+export { Action, Activity, Attribute, Class, DamageType, Dice, Initative, MonsterType, MovementType, Race, Skill, Status, Weapon, WeaponCategories };

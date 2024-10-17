@@ -1,14 +1,19 @@
-import React, { useState } from 'react';
-import { Box, Typography, FormControlLabel, Switch, Dialog, Paper } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, Chip, Dialog, Paper } from '@mui/material';
 
 interface CharacterConditionsProps {
   open: boolean;
   onClose: () => void;
-  onConditionsChange: (conditions: string[]) => void; // Pass selected conditions back to parent
+  onConditionsChange: (conditions: string[]) => void;
+  initialConditions: string[];
 }
 
-const CharacterConditions: React.FC<CharacterConditionsProps> = ({ open, onClose, onConditionsChange }) => {
-  const [activeConditions, setActiveConditions] = useState<string[]>([]);
+const CharacterConditions: React.FC<CharacterConditionsProps> = ({ open, onClose, onConditionsChange, initialConditions }) => {
+  const [activeConditions, setActiveConditions] = useState<string[]>(initialConditions);
+
+  useEffect(() => {
+    setActiveConditions(initialConditions);
+  }, [initialConditions]);
 
   const conditions = [
     "Blinded", "Charmed", "Deafened", "Frightened", "Grappled", "Incapacitated",
@@ -16,13 +21,13 @@ const CharacterConditions: React.FC<CharacterConditionsProps> = ({ open, onClose
     "Stunned", "Unconscious"
   ];
 
-  const handleSwitchChange = (condition: string, checked: boolean) => {
-    const updatedConditions = checked
-      ? [...activeConditions, condition]
-      : activeConditions.filter((c) => c !== condition);
+  const handleChipClick = (condition: string) => {
+    const updatedConditions = activeConditions.includes(condition)
+      ? activeConditions.filter((c) => c !== condition)
+      : [...activeConditions, condition];
 
     setActiveConditions(updatedConditions);
-    onConditionsChange(updatedConditions); // Notify parent of change
+    onConditionsChange(updatedConditions);
   };
 
   return (
@@ -32,12 +37,13 @@ const CharacterConditions: React.FC<CharacterConditionsProps> = ({ open, onClose
           <Typography variant='h4'>Conditions</Typography>
         </Paper>
         <Paper sx={{ p: 1, mb: 2 }}>
-          <Box sx={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
             {conditions.map((condition) => (
-              <FormControlLabel
+              <Chip
                 key={condition}
-                control={<Switch checked={activeConditions.includes(condition)} onChange={(e) => handleSwitchChange(condition, e.target.checked)} />}
                 label={condition}
+                onClick={() => handleChipClick(condition)}
+                color={activeConditions.includes(condition) ? "primary" : "default"}
               />
             ))}
           </Box>
