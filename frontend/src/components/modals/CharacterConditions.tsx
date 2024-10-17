@@ -1,19 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Chip, Dialog, Paper } from '@mui/material';
 
-interface CharacterConditionsProps {
-  open: boolean;
-  onClose: () => void;
-  onConditionsChange: (conditions: string[]) => void;
-  initialConditions: string[];
-}
-
-const CharacterConditions: React.FC<CharacterConditionsProps> = ({ open, onClose, onConditionsChange, initialConditions }) => {
-  const [activeConditions, setActiveConditions] = useState<string[]>(initialConditions);
-
-  useEffect(() => {
-    setActiveConditions(initialConditions);
-  }, [initialConditions]);
+const CharacterConditions: React.FC<{ payload: string[], open: boolean, onClose: (result: string[]) => Promise<void> }> = ({ payload, open, onClose }) => {
+  const [activeConditions, setActiveConditions] = useState<string[]>(payload);
 
   const conditions = [
     "Blinded", "Charmed", "Deafened", "Frightened", "Grappled", "Incapacitated",
@@ -27,11 +16,10 @@ const CharacterConditions: React.FC<CharacterConditionsProps> = ({ open, onClose
       : [...activeConditions, condition];
 
     setActiveConditions(updatedConditions);
-    onConditionsChange(updatedConditions);
   };
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={() => onClose(activeConditions)}>
       <Box sx={{ bgcolor: 'background.paper', p: 2 }}>
         <Paper sx={{ p: 1, mb: 2 }}>
           <Typography variant='h4'>Conditions</Typography>

@@ -106,15 +106,6 @@ export default function Encounter() {
     const [formatsByCharacter, setFormatsByCharacter] = useState({});
     const [players, setPlayers] = useState<Player[]>([]);
 
-    const [conditionsModalOpen, setConditionsModalOpen] = useState(false);
-    const [defensesModalOpen, setDefensesModalOpen] = useState(false);
-    const handleConditionsOpen = () => setConditionsModalOpen(true);
-    const handleConditionsClose = () => setConditionsModalOpen(false);
-
-    const [attackModalOpen, setAttackModalOpen] = useState(false);
-    const handleAttackOpen = () => setAttackModalOpen(true);
-    const handleAttackClose = () => setAttackModalOpen(false);
-
     const [currentCharacterTurn, setCurrentCharacterTurn] = useState<string>('Justin Tran');
 
     const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
@@ -122,8 +113,24 @@ export default function Encounter() {
     const [selectedResistances, setSelectedResistances] = useState<string[]>([]);
     const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>([]);
 
-    const handleConditionsChange = (conditions: string[]) => {
+    const handleConditionsOpen = async () => {
+        const conditions = await dialogs.open(CharacterConditions, selectedConditions);
         setSelectedConditions(conditions);
+    };
+
+    const handleDefensesOpen = async () => {
+        const defenses = await dialogs.open(EncounterDefenses, { 
+            immunities: selectedImmunities, 
+            resistances: selectedResistances, 
+            vulnerabilities: selectedVulnerabilities 
+        });
+        setSelectedImmunities(defenses.immunities || []);
+        setSelectedResistances(defenses.resistances || []);
+        setSelectedVulnerabilities(defenses.vulnerabilities || []);
+    };
+
+    const handleAttackOpen = async () => {
+        await dialogs.open(AttackModal); // attack modal needs payload and result props
     };
 
     const handleAccuracyDiceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -160,18 +167,6 @@ export default function Encounter() {
         } else {
             setOriginalHitPoints(hitPoints);
         }
-    };
-
-    const handleImmunitiesChange = (conditions: string[]) => {
-        setSelectedImmunities(conditions);
-    };
-
-    const handleResistancesChange = (conditions: string[]) => {
-        setSelectedResistances(conditions);
-    };
-
-    const handleVulnerabilitiesChange = (conditions: string[]) => {
-        setSelectedVulnerabilities(conditions);
     };
 
     const handleDeleteCondition = (conditionToDelete: string) => {
@@ -427,9 +422,6 @@ export default function Encounter() {
         }
     };
 
-    const handleDefensesOpen = () => setDefensesModalOpen(true);
-    const handleDefensesClose = () => setDefensesModalOpen(false);
-
     const renderTargetStats = () => {
         if (!selectedTarget) return null;
 
@@ -504,12 +496,6 @@ export default function Encounter() {
                             {selectedConditions.length === 0 && <Typography>No conditions</Typography>}
                         </Box>
                     )}
-                    <CharacterConditions
-                        open={conditionsModalOpen}
-                        onClose={handleConditionsClose}
-                        onConditionsChange={handleConditionsChange}
-                        initialConditions={selectedConditions}
-                    />
                 </Card>
                 <Card sx={sxProps.columnCard}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
@@ -569,16 +555,6 @@ export default function Encounter() {
                             </Box>
                         </>
                     )}
-                    <EncounterDefenses
-                        open={defensesModalOpen}
-                        onClose={handleDefensesClose}
-                        onImmunitiesChange={handleImmunitiesChange}
-                        onResistancesChange={handleResistancesChange}
-                        onVulnerabilitiesChange={handleVulnerabilitiesChange}
-                        initialImmunities={selectedImmunities}
-                        initialResistances={selectedResistances}
-                        initialVulnerabilities={selectedVulnerabilities}
-                    />
                 </Card>
             </Box>
             </Card>

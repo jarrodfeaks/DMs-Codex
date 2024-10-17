@@ -85,43 +85,31 @@ const DashboardCharacterSheet: FC<{importData?: unknown}> = ({importData}) => {
     damageType: 'None'
   });
 
-  const [conditionsModalOpen, setConditionsModalOpen] = useState(false);
-  const handleConditionsOpen = () => setConditionsModalOpen(true);
-  const handleConditionsClose = () => setConditionsModalOpen(false);
-
-  const [resistancesModalOpen, setResistancesModalOpen] = useState(false);
-  const handleResistancesOpen = () => setResistancesModalOpen(true);
-  const handleResistancesClose = () => setResistancesModalOpen(false);
-
-  const [vulnerabilitiesModalOpen, setVulnerabilitiesModalOpen] = useState(false);
-  const handleVulnerabilitiesOpen = () => setVulnerabilitiesModalOpen(true);
-  const handleVulnerabilitiesClose = () => setVulnerabilitiesModalOpen(false);
-
-  const [immunitiesModalOpen, setImmunitiesModalOpen] = useState(false);
-  const handleImmunitiesOpen = () => setImmunitiesModalOpen(true);
-  const handleImmunitiesClose = () => setImmunitiesModalOpen(false);
-
   const dialogs = useDialogs();
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
   const [selectedImmunities, setSelectedImmunities] = useState<string[]>([]);
   const [selectedResistances, setSelectedResistances] = useState<string[]>([]);
   const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>([]);
 
-  const handleConditionsChange = (conditions: string[]) => {
-    setSelectedConditions(conditions);
-  };
+  const handleConditionsOpen = async () => {
+    const result = await dialogs.open(CharacterConditions, selectedConditions);
+    setSelectedConditions(result);
+  }
 
-  const handleImmunitiesChange = (conditions: string[]) => {
-    setSelectedImmunities(conditions);
-  };
+  const handleResistancesOpen = async () => {
+    const result = await dialogs.open(CharacterResistances, selectedResistances);
+    setSelectedResistances(result);
+  }
 
-  const handleResistancesChange = (conditions: string[]) => {
-    setSelectedResistances(conditions);
-  };
+  const handleImmunitiesOpen = async () => {
+    const result = await dialogs.open(CharacterImmunities, selectedImmunities);
+    setSelectedImmunities(result);
+  }
 
-  const handleVulnerabilitiesChange = (conditions: string[]) => {
-    setSelectedVulnerabilities(conditions);
-  };
+  const handleVulnerabilitiesOpen = async () => {
+    const result = await dialogs.open(CharacterVulnerabilities, selectedVulnerabilities);
+    setSelectedVulnerabilities(result);
+  }
 
   const handleAddEquipment = () => {
     if (newEquipment.trim() !== '') {
@@ -394,7 +382,6 @@ const DashboardCharacterSheet: FC<{importData?: unknown}> = ({importData}) => {
         <Typography variant='h4'>Conditions</Typography>
         <Typography>{selectedConditions.length > 0 ? selectedConditions.join(', ') : 'No conditions selected.'}</Typography>
         <Button onClick={handleConditionsOpen} variant='contained' color='primary'>Edit Conditions</Button>
-        <CharacterConditions open={conditionsModalOpen} onClose={handleConditionsClose} onConditionsChange={handleConditionsChange}></CharacterConditions>
       </Box>
 
       {/* Container for all conditions containers */}
@@ -405,21 +392,18 @@ const DashboardCharacterSheet: FC<{importData?: unknown}> = ({importData}) => {
           <Typography variant='h6'>Resistances</Typography>
           <Typography>{selectedResistances.length > 0 ? selectedResistances.join(', ') : 'No resistances selected.'}</Typography>
           <Button onClick={handleResistancesOpen} variant='contained' color='primary'>Edit Resistances</Button>
-          <CharacterResistances open={resistancesModalOpen} onClose={handleResistancesClose} onResistancesChange={handleResistancesChange}></CharacterResistances>
         </Box>
         {/* Immunities */}
         <Box sx={sxProps.modalContainer}>
           <Typography variant='h6'>Immunities</Typography>
           <Typography>{selectedImmunities.length > 0 ? selectedImmunities.join(', ') : 'No immunities selected.'}</Typography>
           <Button onClick={handleImmunitiesOpen} variant='contained' color='primary'>Edit Immunities</Button>
-          <CharacterImmunities open={immunitiesModalOpen} onClose={handleImmunitiesClose} onImmunitiesChange={handleImmunitiesChange}></CharacterImmunities>
         </Box>
         {/* Vulnerabilities */}
         <Box sx={sxProps.modalContainer}>
           <Typography variant='h6'>Vulnerability</Typography>
           <Typography>{selectedVulnerabilities.length > 0 ? selectedVulnerabilities.join(', ') : 'No Vulnerabilities selected.'}</Typography>
           <Button onClick={handleVulnerabilitiesOpen} variant='contained' color='primary'>Edit Vulnerabilities</Button>
-          <CharacterVulnerabilities open={vulnerabilitiesModalOpen} onClose={handleVulnerabilitiesClose} onVulnerabilitiesChange={handleVulnerabilitiesChange}></CharacterVulnerabilities>
         </Box>
       </Box>
 

@@ -1,46 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Box, Typography, Chip, Dialog, Paper } from '@mui/material';
 
-interface EncounterDefensesProps {
-  open: boolean;
-  onClose: () => void;
-  onImmunitiesChange: (Immunities: string[]) => void;
-  onResistancesChange: (Resistances: string[]) => void;
-  onVulnerabilitiesChange: (Vulnerabilities: string[]) => void;
-  initialImmunities?: string[];
-  initialResistances?: string[];
-  initialVulnerabilities?: string[];
+interface DefensePayload {
+  immunities: string[];
+  resistances: string[];
+  vulnerabilities: string[];
 }
 
-const EncounterDefenses: React.FC<EncounterDefensesProps> = ({
-  open,
-  onClose,
-  onImmunitiesChange,
-  onResistancesChange,
-  onVulnerabilitiesChange,
-  initialImmunities = [],
-  initialResistances = [],
-  initialVulnerabilities = []
-}) => {
-  const [activeImmunities, setActiveImmunities] = useState<string[]>(initialImmunities);
-  const [activeResistances, setActiveResistances] = useState<string[]>(initialResistances);
-  const [activeVulnerabilities, setActiveVulnerabilities] = useState<string[]>(initialVulnerabilities);
+const EncounterDefenses: React.FC<{ 
+  payload: DefensePayload, 
+  open: boolean, 
+  onClose: (result: DefensePayload) => Promise<void> 
+}> = ({ payload, open, onClose }) => {
+  const [activeImmunities, setActiveImmunities] = useState<string[]>(payload.immunities);
+  const [activeResistances, setActiveResistances] = useState<string[]>(payload.resistances);
+  const [activeVulnerabilities, setActiveVulnerabilities] = useState<string[]>(payload.vulnerabilities);
 
-  useEffect(() => {
-    setActiveImmunities(initialImmunities || []);
-    setActiveResistances(initialResistances || []);
-    setActiveVulnerabilities(initialVulnerabilities || []);
-  }, [initialImmunities, initialResistances, initialVulnerabilities]);
-
-  const Immunities = [
+  const immunities = [
     "Bludgeoning","Piercing","Slashing","Lightning","Thunder","Poison","Cold","Radiant","Fire","Necrotic","Acid","Psychic","Force","Blinded","Charmed","Deafened","Frightened","Grappled","Incapacitated","Invisible","Paralyzed","Petrified","Poisoned","Prone","Restrained","Stunned","Unconscious","Exhaustion"
   ];
 
-  const Resistances = [
+  const resistances = [
     "Acid","Bludgeoning","Cold","Fire","Force","Lightning","Necrotic","Piercing","Poison","Psychic","Radiant","Ranged","Slashing","Spells","Thunder","Traps"
   ];
 
-  const Vulnerabilities = [
+  const vulnerabilities = [
     "Piercing","Slashing","Lightning","Thunder","Poison","Cold","Radiant","Fire","Necrotic","Acid","Psychic","Force"
   ];
 
@@ -52,21 +36,18 @@ const EncounterDefenses: React.FC<EncounterDefensesProps> = ({
           ? activeImmunities.filter(i => i !== item)
           : [...activeImmunities, item];
         setActiveImmunities(updatedArray);
-        onImmunitiesChange(updatedArray);
         break;
       case 'resistances':
         updatedArray = activeResistances.includes(item)
           ? activeResistances.filter(i => i !== item)
           : [...activeResistances, item];
         setActiveResistances(updatedArray);
-        onResistancesChange(updatedArray);
         break;
       case 'vulnerabilities':
         updatedArray = activeVulnerabilities.includes(item)
           ? activeVulnerabilities.filter(i => i !== item)
           : [...activeVulnerabilities, item];
         setActiveVulnerabilities(updatedArray);
-        onVulnerabilitiesChange(updatedArray);
         break;
     }
   };
@@ -84,20 +65,28 @@ const EncounterDefenses: React.FC<EncounterDefensesProps> = ({
     </Box>
   );
 
+  const handleClose = () => {
+    onClose({
+      immunities: activeImmunities,
+      resistances: activeResistances,
+      vulnerabilities: activeVulnerabilities
+    });
+  };
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
       <Box sx={{ bgcolor: 'background.paper', p: 2 }}>
         <Paper sx={{ p: 1, mb: 2 }}>
           <Typography variant='h4'>Immunities</Typography>
-          {renderChips(Immunities, activeImmunities, 'immunities')}
+          {renderChips(immunities, activeImmunities, 'immunities')}
         </Paper>
         <Paper sx={{ p: 1, mb: 2 }}>
           <Typography variant='h4'>Resistances</Typography>
-          {renderChips(Resistances, activeResistances, 'resistances')}
+          {renderChips(resistances, activeResistances, 'resistances')}
         </Paper>
         <Paper sx={{ p: 1, mb: 2 }}>
           <Typography variant='h4'>Vulnerabilities</Typography>
-          {renderChips(Vulnerabilities, activeVulnerabilities, 'vulnerabilities')}
+          {renderChips(vulnerabilities, activeVulnerabilities, 'vulnerabilities')}
         </Paper>
       </Box>
     </Dialog>
