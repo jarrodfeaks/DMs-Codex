@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Send } from '@mui/icons-material';
-import { Action, Weapon, WeaponCategories } from '../../../shared/enums.ts';
+import { Action, Dice, Weapon, WeaponCategories } from '../../../shared/enums.ts';
 import AddIcon from "@mui/icons-material/Add";
 import {
     Box,
@@ -25,7 +25,7 @@ import EncounterAddFromAI from "../components/modals/EncounterAddFromAI";
 import EncounterAddFromBestiary from "../components/modals/EncounterAddFromBestiary";
 import EncounterAddFromPlayers from "../components/modals/EncounterAddFromPlayers";
 import EncounterDefenses from "../components/modals/EncounterDefenses";
-import { missedCombatLogString } from "../utils";
+import { missedCombatLogString, attackCombatLogString } from "../utils";
 import { Player } from "../types.ts";
 import AttackModal from "../components/modals/AttackModal";
 import {apiService} from "../services/apiService.ts";
@@ -130,7 +130,13 @@ export default function Encounter() {
     };
 
     const handleAttackOpen = async () => {
-        await dialogs.open(AttackModal); // attack modal needs payload and result props
+        //Examnple of payload
+        const payload = { damageDices: [[Dice.D6, 3]]};        
+        const result = await dialogs.open<undefined, { combatLog: string; totalDamageDealt: number }>(AttackModal, payload);
+        if (result) {
+            const successfulAttackLog = attackCombatLogString(currentCharacterTurn, selectedWeapon, selectedTarget, result.totalDamageDealt);
+            addCombatLogEntry(successfulAttackLog);
+        }
     };
 
     const handleAccuracyDiceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -144,12 +150,11 @@ export default function Encounter() {
     const handleExecute = () => {
         const accuracyDiceValue = accuracyDice ?? 0;
         // 10 is temporary, should be replaced with the actual AC of the target
-        if (accuracyDiceValue + bonusModifier >= 10) {
-            console.log('Damage Mod Pop Up!');
-            return;
+        if (accuracyDiceValue + bonusModifier >= 0) {
+            handleAttackOpen();
         }
         else {
-            addCombatLogEntry(missedCombatLogString(currentCharacterTurn, selectedWeapon, selectedTargets));
+            addCombatLogEntry(missedCombatLogString(currentCharacterTurn, selectedWeapon, selectedTarget));
         }
     };
 
@@ -765,7 +770,7 @@ export default function Encounter() {
                                 ))}
                             </Select>
                         </Box>
-                        <Button variant="contained" color="primary" onClick={handleAttackOpen}>EXECUTE</Button>
+                        <Button variant="contained" color="primary" onClick={handleExecute}>EXECUTE</Button>
                     </Box>
                 </Card>
                 <Card sx={sxProps.columnCard}>
