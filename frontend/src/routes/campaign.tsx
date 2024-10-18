@@ -6,7 +6,7 @@ import DashboardMain from "../components/dashboard/DashboardMain.tsx";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 export default function Campaign() {
-    const { currentCampaign } = useCurrentCampaign();
+    const currentCampaign = useCurrentCampaign();
     const [importData, setImportData] = useState<unknown | undefined>();
     const [showCharacterSheet, setShowCharacterSheet] = useState(false);
 

@@ -6,7 +6,10 @@ import Start from "./start.tsx";
 import {Campaign, User} from "../types.ts";
 import { DialogsProvider } from '@toolpad/core/useDialogs';
 
-export type ContextType = { currentCampaign: Campaign | undefined };
+export type ContextType = {
+    currentCampaign: Campaign | undefined;
+    user: User;
+};
 
 function App() {
     const userData = useLoaderData() as { user: User; campaigns: Campaign[] };
@@ -28,7 +31,7 @@ function App() {
                 <Box sx={{ display: 'flex' }}>
                     <Sidebar user={userData.user} campaigns={userData.campaigns} currentCampaign={currentCampaign} />
                     <Box sx={{ width: "100%", height: "100vh", p: 2 }}>
-                        { atRoot ? <Start /> : <Outlet context={{ currentCampaign } satisfies ContextType} /> }
+                        { atRoot ? <Start /> : <Outlet context={{ currentCampaign, user: userData.user } satisfies ContextType} /> }
                     </Box>
                 </Box>
             </DialogsProvider>
