@@ -1,16 +1,31 @@
 import {Box, Button, Modal, TextField, Typography} from "@mui/material";
 import {useState} from "react";
+import {apiService} from "../../services/apiService";
+import { User } from "../../types";
 
+interface CreateCampaignModalProps {
+    open: boolean;
+    onClose: () => void;
+    user: User;
+}
 // TODO: should update this to use the useDialog hook like the other modals
 
-export default function CreateCampaignModal({ open, onClose }: { open: boolean, onClose: () => void }) {
+export default function CreateCampaignModal({ open, onClose, user }: CreateCampaignModalProps) {
 
     const [ name, setName ] = useState<string>("");
 
     const handleCreateCampaign = async () => {
-        // send POST request with name to backend here...
-        onClose();
-    }
+        try {
+            const dmId = user.sub;
+            if (!dmId) {
+                throw new Error("User ID not found");
+            }
+            await apiService.post("/campaigns", { dmId, name });
+            onClose();
+        } catch (error) {
+            console.error("Failed to create campaign:", error);
+        }
+    };
 
     return (
         <Modal open={open} onClose={onClose}>

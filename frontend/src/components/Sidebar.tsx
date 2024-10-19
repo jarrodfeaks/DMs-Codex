@@ -39,7 +39,7 @@ export default function Sidebar({ user, campaigns, currentCampaign }: { user: Us
 
     return (
         <>
-            <CreateCampaignModal open={modalOpen} onClose={() => setModalOpen(false)} />
+            <CreateCampaignModal open={modalOpen} onClose={() => setModalOpen(false)} user={user} />
             <Drawer variant="permanent" anchor="left" sx={{
                 width: 300,
                 '& .MuiDrawer-paper': {
