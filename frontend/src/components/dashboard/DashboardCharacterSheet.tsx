@@ -1,12 +1,14 @@
-import React, {FC, useEffect, useState} from 'react';
+import React, {FC, useState} from 'react';
 import {TextField, Box, Typography, Button, List, ListItem, ListItemText, Table, TableRow, TableHead, TableCell, TableBody, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent} from "@mui/material";
 import DashboardCharacterSheetSkill from './DashboardCharacterSheetSkill.tsx';
-import { useDialogs } from '@toolpad/core/useDialogs';
+import { ConfirmDialog, useDialogs } from '@toolpad/core/useDialogs';
 import theme from '../../assets/theme.ts';
+import { Class, Race } from '../../../../shared/enums.ts';
 import CharacterConditions from '../modals/CharacterConditions.tsx';
 import CharacterImmunities from '../modals/CharacterImmunities.tsx';
 import CharacterResistances from '../modals/CharacterResistances.tsx';
 import CharacterVulnerabilities from '../modals/CharacterVulnerabilities.tsx';
+import { apiService } from "../../services/apiService.ts";
 
 interface Weapon {
   name: string;
@@ -17,79 +19,148 @@ interface Weapon {
   damageType: string;
 }
 
+interface DashboardCharacterSheetProps {
+  importData: unknown;
+  editData: unknown;
+}
+
 //const damageTypes = ["None", "Bludgeoning", "Piercing", "Slashing", "Lightning", "Thunder", "Poison", "Cold", "Radiant", "Fire", "Necrotic", "Acid", "Psychic", "Force"];
 
-const DashboardCharacterSheet: FC<{importData?: unknown}> = ({importData}) => {
-  const [classes, setClasses] = useState([]);
-  const [selectedClass, setSelectedClass] = useState('');
-
-  const loadClasses = async () => {
-    // const storedClasses = localStorage.getItem('classes');
-    // if (storedClasses){
-    //   setClasses(storedClasses);
-    // }
-    // else {
-      try {
-        const response = await fetch('https://www.dnd5eapi.co/api/classes');
-        const data = await response.json();
-        localStorage.setItem('classes', JSON.stringify(data));
-        setClasses(data.results); // Set the monster data in state
-      } catch (error) {
-        console.error('Error fetching monsters:', error);
-      }
-    // }
+const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, editData}) => {
+  let preData = null;
+  if (importData){
+    preData = importData;
+  }else if (editData){
+    preData = editData;
   }
 
-  const [races, setRaces] = useState([]);
-  const [selectedRace, setSelectedRace] = useState('');
+  // preData = {
+  //   name: "mosaab",
+  //   level: 2,
+  // };
+  const [characterName, setCharacterName] = useState(preData ? preData.name : '');
+  const [characterLevel, setCharacterLevel] = useState(preData ? preData.level : 0);
+  const classes = Object.values(Class);
+  const [selectedClass, setSelectedClass] = useState(preData ? preData.class : '');
 
-  const loadRaces = async () => {
-    // const storedClasses = localStorage.getItem('classes');
-    // if (storedClasses){
-    //   setClasses(storedClasses);
-    // }
-    // else {
-      try {
-        const response = await fetch('https://www.dnd5eapi.co/api/races');
-        const data = await response.json();
-        setRaces(data.results); // Set the monster data in state
-      } catch (error) {
-        console.error('Error fetching monsters:', error);
-      }
-    // }
-  }
+  const [abilityScoreStrength, setAbilityScoreStrength] = useState(preData ? preData.strength : 0);
+  const [abilityScoreDexterity, setAbilityScoreDexterity] = useState(preData ? preData.dexterity : 0);
+  const [abilityScoreConstitution, setAbilityScoreConstitution] = useState(preData ? preData.constitution : 0);
+  const [abilityScoreIntelligence, setAbilityScoreIntelligence] = useState(preData ? preData.intelligence : 0);
+  const [abilityScoreWisdom, setAbilityScoreWisdom] = useState(preData ? preData.wisdom : 0);
+  const [abilityScoreCharisma, setAbilityScoreCharisma] = useState(preData ? preData.charisma : 0);
 
-  useEffect(() => {
-    loadClasses();
-    loadRaces();
-  }, []);
+  const [abilityModStrength, setAbilityModStrength] = useState(preData ? preData.strength : 0);
+  const [abilityModDexterity, setAbilityModDexterity] = useState(preData ? preData.dexterity : 0);
+  const [abilityModConstitution, setAbilityModConstitution] = useState(preData ? preData.constitution : 0);
+  const [abilityModIntelligence, setAbilityModIntelligence] = useState(preData ? preData.intelligence : 0);
+  const [abilityModWisdom, setAbilityModWisdom] = useState(preData ? preData.wisdom : 0);
+  const [abilityModCharisma, setAbilityModCharisma] = useState(preData ? preData.charisma : 0);
+
+  const [savingThrowsStrength, setSavingThrowsStrength] = useState(preData ? preData.strength : 0);
+  const [savingThrowsDexterity, setSavingThrowsDexterity] = useState(preData ? preData.dexterity : 0);
+  const [savingThrowsConstitution, setSavingThrowsConstitution] = useState(preData ? preData.constitution : 0);
+  const [savingThrowsIntelligence, setSavingThrowsIntelligence] = useState(preData ? preData.intelligence : 0);
+  const [savingThrowsWisdom, setSavingThrowsWisdom] = useState(preData ? preData.wisdom : 0);
+  const [savingThrowsCharisma, setSavingThrowsCharisma] = useState(preData ? preData.charisma : 0);
+
+  const [skills, setSkills] = useState<{[key: string]: { value: number; isActive: boolean }}>({});
+
+  const handleSkillChange = (skillName: string, value: number, isActive: boolean) => {
+    setSkills((prevSkills) => ({
+      ...prevSkills,
+      [skillName]: {value, isActive},
+    }));
+  };
+
+  const [initiative, setInitiative] = useState(preData ? preData.initiative : 0);
+  const [armorClass, setArmorClass] = useState(preData ? preData.armorClass : 0);
+  const [proficiency, setProficiency] = useState(preData ? preData.proficiency : 0);
+  const [maxHP, setMaxHP] = useState(preData ? preData.maxHitpoints : 0);
+  const [currentHP, setCurrentHP] = useState(preData ? preData.currentHitpoints : 0);
+  const [tempHP, setTempHP] = useState(preData ? preData.tempHitpoints : 0);
+  const [successfulDeathSaves, setSuccessfulDeathSaves] = useState(preData ? preData.deathSavingThrows : 0);
+  const [failedDeathSaves, setFailedDeathsaves] = useState(preData ? preData.deathSavingThrows : 0);
+  const [notes, setNotes] = useState(preData ? preData.notes : '');
+
+  // const loadClasses = async () => {
+  //   // const storedClasses = localStorage.getItem('classes');
+  //   // if (storedClasses){
+  //   //   setClasses(storedClasses);
+  //   // }
+  //   // else {
+  //     try {
+  //       const response = await fetch('https://www.dnd5eapi.co/api/classes');
+  //       const data = await response.json();
+  //       localStorage.setItem('classes', JSON.stringify(data));
+  //       setClasses(data.results); // Set the monster data in state
+  //     } catch (error) {
+  //       console.error('Error fetching monsters:', error);
+  //     }
+  //   // }
+  // }
+
+  const races = Object.values(Race);
+  const [selectedRace, setSelectedRace] = useState(preData ? preData.race : '');
+
+  // const loadRaces = async () => {
+  //   // const storedClasses = localStorage.getItem('classes');
+  //   // if (storedClasses){
+  //   //   setClasses(storedClasses);
+  //   // }
+  //   // else {
+  //     try {
+  //       const response = await fetch('https://www.dnd5eapi.co/api/races');
+  //       const data = await response.json();
+  //       setRaces(data.results); // Set the monster data in state
+  //     } catch (error) {
+  //       console.error('Error fetching monsters:', error);
+  //     }
+  //   // }
+  // }
+
+  // useEffect(() => {
+  //   loadClasses();
+  //   loadRaces();
+  // }, []);
 
   const handleRaceChange = (event: SelectChangeEvent<{ value: unknown }>) => {
-    setSelectedRace(event.target.value as string);
+    setSelectedRace(event.target.value as Race);
   };
 
   const handleClasChange = (event: SelectChangeEvent<{ value: unknown }>) => {
-    setSelectedClass(event.target.value as string);
+    setSelectedClass(event.target.value as Class);
   };
 
-  const [equipment, setEquipment] = useState<string[]>([]);
-  const [newEquipment, setNewEquipment] = useState('');
+  const [equipment, setEquipment] = useState<Map<string, number>>(new Map());
+  const [newEquipmentName, setNewEquipmentName] = useState('');
+  const [newEquipmentQty, setNewEquipmentQty] = useState(1);
+  // const [newEquipment, setNewEquipment] = useState<Equipment>({
+  //   name: '',
+  //   qty: 1
+  // });
 
-  const [weapons, setWeapons] = useState<Weapon[]>([]);
-  const [newWeapon, setNewWeapon] = useState<Weapon>({
-    name: '',
-    hit: 0,
-    diceAmount: 1,
-    diceType: 6,
-    damageModifier: 0,
-    damageType: 'None'
-  });
+  const [weaponName, setWeaponName] = useState('');
+  const [weaponHit, setWeaponHit] = useState(0);
+  const [weaponDiceAmount, setWeaponDiceAmount] = useState(1);
+  const [weaponDiceType, setWeaponDiceType] = useState(6);
+  const [weaponDamageModifier, setWeaponDamageModifier] = useState(0);
+  const [weaponDamageType, setWeaponDamageType] = useState('');
+  const [weapons, setWeapons] = useState<Weapon[]>(preData ? preData.weapons : []);
+  // const [newWeapon, setNewWeapon] = useState<Weapon>({
+  //   name: '',
+  //   hit: 0,
+  //   diceAmount: 1,
+  //   diceType: 6,
+  //   damageModifier: 0,
+  //   damageType: 'None'
+  // });
 
   const dialogs = useDialogs();
-  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
-  const [selectedImmunities, setSelectedImmunities] = useState<string[]>([]);
-  const [selectedResistances, setSelectedResistances] = useState<string[]>([]);
-  const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>([]);
+  const [selectedConditions, setSelectedConditions] = useState<string[]>(/*preData ? preData.conditions : */[]);
+  const [selectedImmunities, setSelectedImmunities] = useState<string[]>(/*preData ? preData.immunities : */[]);
+  const [selectedResistances, setSelectedResistances] = useState<string[]>(/*preData ? preData.resistances : */[]);
+  const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>(/*preData ? preData.vulnerabilities :*/ []);
 
   const handleConditionsOpen = async () => {
     const result = await dialogs.open(CharacterConditions, selectedConditions);
@@ -112,31 +183,140 @@ const DashboardCharacterSheet: FC<{importData?: unknown}> = ({importData}) => {
   }
 
   const handleAddEquipment = () => {
-    if (newEquipment.trim() !== '') {
-      setEquipment([...equipment, newEquipment]);
-      setNewEquipment('');
+    if (newEquipmentName && newEquipmentQty > 0) {
+      setEquipment((prevEquipment) => {
+        const updatedEquipment = new Map(prevEquipment);
+        updatedEquipment.set(newEquipmentName, newEquipmentQty); // Add or update entry
+        return updatedEquipment;
+      });  
+      // setNewEquipmentQty(1);
+      // setNewEquipmentName('');
     }
   }
 
   const handleAddWeapon = () => {
-    setNewWeapon({
-      name: 'Massive Sword',
-      hit: 5,
-      diceAmount: 1,
-      diceType: 6,
-      damageModifier: 3,
-      damageType: 'Thunder'
-    });
-    setWeapons([...weapons, newWeapon]);
-    // setNewWeapon({
-    //   name: '',
-    //   hit: 0,
-    //   diceAmount: 1,
-    //   diceType: 6,
-    //   damageModifier: 0,
-    //   damageType: 'None'
-    // });
+    //if (weaponName && weaponHit > 0 && weaponDiceAmount > 0 && weaponDiceType > 0 && weaponDamageModifier > 0 && weaponDamageType){
+      const newWeaponItem: Weapon = {
+        name: weaponName,
+        hit: weaponHit,
+        diceAmount: weaponDiceAmount,
+        diceType: weaponDiceType,
+        damageModifier: weaponDamageModifier,
+        damageType: weaponDamageType
+      };
+      setWeapons((prev) => [...prev, newWeaponItem]);
+      // setWeaponName('');
+      // setWeaponHit(0);
+      // setWeaponDiceAmount(1);
+      // setWeaponDiceType(6);
+      // setWeaponDamageModifier(0);
+      // setWeaponDamageType('');
+    //}
   };
+
+
+  // const handleSave = () => {
+  //   const characterData = {
+  //     name: characterName,
+  //     level: characterLevel,
+  //     race: selectedRace,
+  //     class: selectedClass,
+  //     abilityScores: { abilityScoreStrength, abilityScoreDexterity, abilityScoreConstitution, abilityScoreIntelligence, abilityScoreWisdom, abilityScoreCharisma },
+  //     abilityModifiers: { abilityModStrength, abilityModDexterity, abilityModConstitution, abilityModIntelligence, abilityModWisdom, abilityModCharisma },
+  //     savingThrows: { savingThrowsStrength, savingThrowsDexterity, savingThrowsConstitution, savingThrowsIntelligence, savingThrowsWisdom, savingThrowsCharisma },
+  //     skills,
+  //     initiative: initiative,
+  //     armorClass: armorClass,
+  //     proficiency: proficiency,
+  //     maxHP: maxHP,
+  //     currentHP: currentHP,
+  //     tempHP: tempHP,
+  //     successfulDeathSaves: successfulDeathSaves,
+  //     failedDeathSaves: failedDeathSaves,
+  //     notes: notes,
+  //     equipment,
+  //     weapons,
+  //   };
+  //   console.log('Character Data:', characterData);
+  //   // You can save this data to localStorage, send it to an API, or process it further
+  // };
+
+  const handleSave = async () => {
+    console.log("Saving...");
+
+    const characterData = {
+      name: characterName,
+      level: characterLevel,
+      race: selectedRace,
+      class: selectedClass,
+      abilityScores: { abilityScoreStrength, abilityScoreDexterity, abilityScoreConstitution, abilityScoreIntelligence, abilityScoreWisdom, abilityScoreCharisma },
+      temperaroaryModifiers: { abilityModStrength, abilityModDexterity, abilityModConstitution, abilityModIntelligence, abilityModWisdom, abilityModCharisma },
+      savingThrows: { savingThrowsStrength, savingThrowsDexterity, savingThrowsConstitution, savingThrowsIntelligence, savingThrowsWisdom, savingThrowsCharisma },
+      skills: skills,
+      initiative: initiative,
+      armorClass: armorClass,
+      proficiency: proficiency,
+      maxHP: maxHP,
+      currentHP: currentHP,
+      tempHitpoints: tempHP,
+      status: selectedConditions,
+      damageImmunities: selectedImmunities,
+      resistances: selectedResistances,
+      vulnerabilities: selectedVulnerabilities,
+      successfulDeathSaves: successfulDeathSaves,
+      failedDeathSaves: failedDeathSaves,
+      notes: notes,
+      equipment: equipment,
+      //weapons: weapons,
+    };
+    console.log('Character Data:', characterData);
+
+    const testPlayerData = {
+      name: characterName,
+      level: characterLevel,
+      experience: 0,
+      armorClass: 16,
+      race: selectedRace,
+      class: selectedClass,
+      equipment: equipment,
+      deathSavingThrows: [true, false, false],
+    };
+
+    console.log(testPlayerData)
+    try {
+      const mongoDbResponse = await fetch(`http://localhost:5000/players`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(characterData),
+      });
+
+      if (!mongoDbResponse.ok) {
+        const errorData = await mongoDbResponse.json();
+        console.error('Backend Error Response:', errorData); // Log full backend error
+        throw new Error(`Error adding player to database: ${mongoDbResponse.statusText}`);
+      }
+      console.log('Player added to database:', mongoDbResponse);
+    } catch (error) {
+      console.error('Error adding player to database:', error);
+    }
+    // if (editData){
+    //   try {
+    //     const response = await apiService.post(`/players/${editData.id}`, testPlayerData);
+    //     console.log('Player added to database:', response);
+    //   } catch (error) {
+    //     console.error('Error adding monster to database:', error);
+    //   }
+    // } else {
+    //   try {
+    //     const response = await apiService.post(`/players`, testPlayerData);
+    //     console.log('Player added to database:', response);
+    //   } catch (error) {
+    //     console.error('Error adding monster to database:', error);
+    //   }
+    // }
+  }
 
   const sxProps = {
     mainContainer: {
@@ -184,8 +364,11 @@ const DashboardCharacterSheet: FC<{importData?: unknown}> = ({importData}) => {
       borderWidth: "3px"
     },
     equipmentList: {
-      color: "black"
-
+      border: "2px solid",
+      borderColor: theme.palette.primary.dark,
+      borderRadius: "10px",
+      width: "50%",
+      textAlign: "center"
     },
     skillsColumn: {
       display: "grid",
@@ -238,20 +421,18 @@ const DashboardCharacterSheet: FC<{importData?: unknown}> = ({importData}) => {
       <Box sx={sxProps.titleContainer}>
         <Typography variant='h4'>Character</Typography>
         <Box sx={sxProps.subContainer}>
-          <TextField id='characterName' label='Name'/>
+          <TextField value={characterName} label='Name' onChange={(e) => setCharacterName(e.target.value)}/>
 
           <FormControl sx={{minWidth: '25%'}}>
             <InputLabel id="race-select-label">Select Race</InputLabel>
             <Select
-              labelId="race-select-label"
-              id="race-select"
-              //value={selectedRace}
+              value={selectedRace}
               label="Select a Race"
               onChange={handleRaceChange}
             >
               {races.map((race) => (
-                <MenuItem key={race.index} value={race.name}>
-                  {race.name}
+                <MenuItem key={race} value={race}>
+                  {race}
                 </MenuItem>
               ))}
             </Select>
@@ -260,20 +441,18 @@ const DashboardCharacterSheet: FC<{importData?: unknown}> = ({importData}) => {
           <FormControl sx={{minWidth: '25%'}}>
             <InputLabel id="class-select-label">Select Class</InputLabel>
             <Select
-              labelId="class-select-label"
-              id="class-select"
-              //value={selectedClass}
+              value={selectedClass}
               label="Select a Class"
               onChange={handleClasChange}
             >
               {classes.map((clas) => ( //JS didn't like using the name class
-                <MenuItem key={clas.index} value={clas.name}>
-                  {clas.name}
+                <MenuItem key={clas} value={clas}>
+                  {clas}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
-          <TextField id='characterLevel' label='Level' type='number'/>
+          <TextField value={characterLevel} label='Level' type='number' onChange={(e) => setCharacterLevel(Number(e.target.value))}/>
         </Box>
       </Box>
 
@@ -282,12 +461,12 @@ const DashboardCharacterSheet: FC<{importData?: unknown}> = ({importData}) => {
         <Typography variant='h4'>Ability Scores</Typography>
         <Box sx={sxProps.subContainer}>
           <Box>
-            <TextField id='abilityScoresStrength' label='Strength (STR)' type='number'/>
-            <TextField id='abilityScoresDexterity' label='Dexterity (DEX)' type='number'/>
-            <TextField id='abilityScoresConstitution' label='Constitution (CON)' type='number'/>
-            <TextField id='abilityScoresIntelligence' label='Intelligence (INT)' type='number'/>
-            <TextField id='abilityScoresWisdom' label='Wisdom (WIS)' type='number'/>
-            <TextField id='abilityScoresCharisma' label='Charisma (CHA)' type='number'/>
+            <TextField value={abilityScoreStrength} label='Strength (STR)' type='number' onChange={(e) => setAbilityScoreStrength(Number(e.target.value))}/>
+            <TextField value={abilityScoreDexterity} label='Dexterity (DEX)' type='number' onChange={(e) => setAbilityScoreDexterity(Number(e.target.value))}/>
+            <TextField value={abilityScoreConstitution} label='Constitution (CON)' type='number' onChange={(e) => setAbilityScoreConstitution(Number(e.target.value))}/>
+            <TextField value={abilityScoreIntelligence} label='Intelligence (INT)' type='number' onChange={(e) => setAbilityScoreIntelligence(Number(e.target.value))}/>
+            <TextField value={abilityScoreWisdom} label='Wisdom (WIS)' type='number' onChange={(e) => setAbilityScoreWisdom(Number(e.target.value))}/>
+            <TextField value={abilityScoreCharisma} label='Charisma (CHA)' type='number' onChange={(e) => setAbilityScoreCharisma(Number(e.target.value))}/>
           </Box>
         </Box>
       </Box>
@@ -297,12 +476,12 @@ const DashboardCharacterSheet: FC<{importData?: unknown}> = ({importData}) => {
         <Typography variant='h4'>Ability Modifiers</Typography>
         <Box sx={sxProps.subContainer}>
           <Box>
-            <TextField id='abilityModifiersStrength' label='Strength (STR)' type='number'/>
-            <TextField id='abilityModifiersDexterity' label='Dexterity (DEX)' type='number'/>
-            <TextField id='abilityModifiersConstitution' label='Constitution (CON)' type='number'/>
-            <TextField id='abilityModifiersIntelligence' label='Intelligence (INT)' type='number'/>
-            <TextField id='abilityModifiersWisdom' label='Wisdom (WIS)' type='number'/>
-            <TextField id='abilityModifiersCharisma' label='Charisma (CHA)' type='number'/>
+            <TextField value={abilityModStrength} label='Strength (STR)' type='number' onChange={(e) => setAbilityModStrength(Number(e.target.value))}/>
+            <TextField value={abilityModDexterity} label='Dexterity (DEX)' type='number' onChange={(e) => setAbilityModDexterity(Number(e.target.value))}/>
+            <TextField value={abilityModConstitution} label='Constitution (CON)' type='number' onChange={(e) => setAbilityModConstitution(Number(e.target.value))}/>
+            <TextField value={abilityModIntelligence} label='Intelligence (INT)' type='number' onChange={(e) => setAbilityModIntelligence(Number(e.target.value))}/>
+            <TextField value={abilityModWisdom} label='Wisdom (WIS)' type='number' onChange={(e) => setAbilityModWisdom(Number(e.target.value))}/>
+            <TextField value={abilityModCharisma} label='Charisma (CHA)' type='number' onChange={(e) => setAbilityModCharisma(Number(e.target.value))}/>
           </Box>
         </Box>
       </Box>
@@ -312,12 +491,12 @@ const DashboardCharacterSheet: FC<{importData?: unknown}> = ({importData}) => {
         <Typography variant='h4'>Saving Throws</Typography>
         <Box sx={sxProps.subContainer}>
           <Box>
-            <TextField id='savingThrowsStrength' label='Strength (STR)' type='number'/>
-            <TextField id='savingThrowsDexterity' label='Dexterity (DEX)' type='number'/>
-            <TextField id='savingThrowsConstitution' label='Constitution (CON)' type='number'/>
-            <TextField id='savingThrowsIntelligence' label='Intelligence (INT)' type='number'/>
-            <TextField id='savingThrowsWisdom' label='Wisdom (WIS)' type='number'/>
-            <TextField id='savingThrowsCharisma' label='Charisma (CHA)' type='number'/>
+            <TextField value={savingThrowsStrength} label='Strength (STR)' type='number' onChange={(e) => setSavingThrowsStrength(Number(e.target.value))}/>
+            <TextField value={savingThrowsDexterity} label='Dexterity (DEX)' type='number' onChange={(e) => setSavingThrowsDexterity(Number(e.target.value))}/>
+            <TextField value={savingThrowsConstitution} label='Constitution (CON)' type='number' onChange={(e) => setSavingThrowsConstitution(Number(e.target.value))}/>
+            <TextField value={savingThrowsIntelligence} label='Intelligence (INT)' type='number' onChange={(e) => setSavingThrowsIntelligence(Number(e.target.value))}/>
+            <TextField value={savingThrowsWisdom} label='Wisdom (WIS)' type='number' onChange={(e) => setSavingThrowsWisdom(Number(e.target.value))}/>
+            <TextField value={savingThrowsCharisma} label='Charisma (CHA)' type='number' onChange={(e) => setSavingThrowsCharisma(Number(e.target.value))}/>
           </Box>
         </Box>
       </Box>
@@ -326,32 +505,32 @@ const DashboardCharacterSheet: FC<{importData?: unknown}> = ({importData}) => {
       <Box sx={sxProps.titleContainer}>
         <Typography variant='h4'>Skills</Typography>
         <Box sx={sxProps.skillsColumn}>
-          <DashboardCharacterSheetSkill skillName="Acrobatics (DEX)" />
-          <DashboardCharacterSheetSkill skillName="Animal Handling (WIS)" />
-          <DashboardCharacterSheetSkill skillName="Arcana (INT)" />
-          <DashboardCharacterSheetSkill skillName="Athletics (STR)" />
-          <DashboardCharacterSheetSkill skillName="Deception (CHA)" />
-          <DashboardCharacterSheetSkill skillName="History (INT)" />
-          <DashboardCharacterSheetSkill skillName="Insight (WIS)" />
-          <DashboardCharacterSheetSkill skillName="Intimidation (CHA)" />
-          <DashboardCharacterSheetSkill skillName="Investigation (INT)" />
-          <DashboardCharacterSheetSkill skillName="Medicine (WIS)" />
-          <DashboardCharacterSheetSkill skillName="Nature (INT)" />
-          <DashboardCharacterSheetSkill skillName="Perception (WIS)" />
-          <DashboardCharacterSheetSkill skillName="Performance (CHA)" />
-          <DashboardCharacterSheetSkill skillName="Persuasion (CHA)" />
-          <DashboardCharacterSheetSkill skillName="Religion (INT)" />
-          <DashboardCharacterSheetSkill skillName="Sleight of Hand (DEX)" />
-          <DashboardCharacterSheetSkill skillName="Stealth (DEX)" />
-          <DashboardCharacterSheetSkill skillName="Survival (WIS)" />
+          <DashboardCharacterSheetSkill skillName="Acrobatics (DEX)" onSkillChange={handleSkillChange}/>
+          <DashboardCharacterSheetSkill skillName="Animal Handling (WIS)" onSkillChange={handleSkillChange}/>
+          <DashboardCharacterSheetSkill skillName="Arcana (INT)" onSkillChange={handleSkillChange}/>
+          <DashboardCharacterSheetSkill skillName="Athletics (STR)" onSkillChange={handleSkillChange}/>
+          <DashboardCharacterSheetSkill skillName="Deception (CHA)" onSkillChange={handleSkillChange}/>
+          <DashboardCharacterSheetSkill skillName="History (INT)" onSkillChange={handleSkillChange}/>
+          <DashboardCharacterSheetSkill skillName="Insight (WIS)" onSkillChange={handleSkillChange}/>
+          <DashboardCharacterSheetSkill skillName="Intimidation (CHA)" onSkillChange={handleSkillChange}/>
+          <DashboardCharacterSheetSkill skillName="Investigation (INT)" onSkillChange={handleSkillChange}/>
+          <DashboardCharacterSheetSkill skillName="Medicine (WIS)" onSkillChange={handleSkillChange}/>
+          <DashboardCharacterSheetSkill skillName="Nature (INT)" onSkillChange={handleSkillChange}/>
+          <DashboardCharacterSheetSkill skillName="Perception (WIS)" onSkillChange={handleSkillChange}/>
+          <DashboardCharacterSheetSkill skillName="Performance (CHA)" onSkillChange={handleSkillChange}/>
+          <DashboardCharacterSheetSkill skillName="Persuasion (CHA)" onSkillChange={handleSkillChange}/>
+          <DashboardCharacterSheetSkill skillName="Religion (INT)" onSkillChange={handleSkillChange}/>
+          <DashboardCharacterSheetSkill skillName="Sleight of Hand (DEX)" onSkillChange={handleSkillChange}/>
+          <DashboardCharacterSheetSkill skillName="Stealth (DEX)" onSkillChange={handleSkillChange}/>
+          <DashboardCharacterSheetSkill skillName="Survival (WIS)" onSkillChange={handleSkillChange}/>
         </Box>
       </Box>
 
       {/* initiative and armor */}
       <Box sx={sxProps.initiativeArmorContainer}>
-        <TextField id='initiative' label='Initiative' type='number'/>
-        <TextField id='armor' label='Armor Class (AC)' type='number'/>
-        <TextField id='proficiencyBonus' label='Proficiency Bonus' type='number'/>
+        <TextField value={initiative} label='Initiative' type='number' onChange={(e) => setInitiative(Number(e.target.value))}/>
+        <TextField value={armorClass} label='Armor Class (AC)' type='number' onChange={(e) => setArmorClass(Number(e.target.value))}/>
+        <TextField value={proficiency} label='Proficiency Bonus' type='number' onChange={(e) => setProficiency(Number(e.target.value))}/>
       </Box>
 
       {/* Life stats */}
@@ -359,9 +538,9 @@ const DashboardCharacterSheet: FC<{importData?: unknown}> = ({importData}) => {
       <Typography variant='h4'>Life</Typography>
         <Box sx={sxProps.subContainer}>
           <Box>
-            <TextField id='lifeMaxHP' label='Max HP' type='number' />
-            <TextField id='lifeCurrentHP' label='Current HP' type='number' />
-            <TextField id='lifeTempHP' label='Temp HP' type='number' />
+            <TextField value={maxHP} label='Max HP' type='number' onChange={(e) => setMaxHP(Number(e.target.value))}/>
+            <TextField value={currentHP} label='Current HP' type='number' onChange={(e) => setCurrentHP(Number(e.target.value))}/>
+            <TextField value={tempHP} label='Temp HP' type='number' onChange={(e) => setTempHP(Number(e.target.value))}/>
           </Box>
         </Box>
       </Box>
@@ -371,8 +550,8 @@ const DashboardCharacterSheet: FC<{importData?: unknown}> = ({importData}) => {
       <Typography variant='h4'>Death Throws</Typography>
         <Box sx={sxProps.subContainer}>
           <Box>
-            <TextField id='SuccessfulDeathSaves' label='Successful Death Saves' type='number' />
-            <TextField id='lifeFailedDeathSaves' label='Failed Death Saves' type='number' />
+            <TextField value={successfulDeathSaves} label='Successful Death Saves' type='number' onChange={(e) => setSuccessfulDeathSaves(Number(e.target.value))}/>
+            <TextField value={failedDeathSaves} label='Failed Death Saves' type='number' onChange={(e) => setFailedDeathsaves(Number(e.target.value))}/>
           </Box>
         </Box>
       </Box>
@@ -410,6 +589,16 @@ const DashboardCharacterSheet: FC<{importData?: unknown}> = ({importData}) => {
       {/* Weapons */}
       <Box sx={sxProps.titleContainer}>
         <Typography variant='h4'>Weapons</Typography>
+        <Box sx={sxProps.subContainer}>
+          <Box>
+            <TextField label='Name' onChange={(e) => setWeaponName(e.target.value)}/>
+            <TextField label='Hit' type='number' onChange={(e) => setWeaponHit(Number(e.target.value))}/>
+            <TextField label='Dice Amount' type='number' onChange={(e) => setWeaponDiceAmount(Number(e.target.value))}/>
+            <TextField label='Dice Type' type='number' onChange={(e) => setWeaponDiceType(Number(e.target.value))}/>
+            <TextField label='Damage Modifier' type='number' onChange={(e) => setWeaponDamageModifier(Number(e.target.value))}/>
+            <TextField label='Damage Type' onChange={(e) => setWeaponDamageType(e.target.value)}/>
+          </Box>
+        </Box>
         <Table sx={sxProps.weaponTable}>
           <TableHead sx={sxProps.weaponTableHeader}>
             <TableRow>
@@ -441,18 +630,19 @@ const DashboardCharacterSheet: FC<{importData?: unknown}> = ({importData}) => {
       {/* Notes */}
       <Box sx={sxProps.titleContainer}>
         <Typography variant='h4'>Notes</Typography>
-        <TextField sx={{width: '95%'}}/>
+        <TextField sx={{width: '95%'}} value={notes} onChange={(e) => setNotes(e.target.value)}/>
       </Box>
 
       {/* Equipment */}
       <Box sx={sxProps.titleContainer}>
         <Typography sx={{pb: 1}} variant='h4'>Equipment</Typography>
-        <TextField onChange={(e) => setNewEquipment(e.target.value)} label="Add Equipment"/>
+        <TextField onChange={(e) => setNewEquipmentName(e.target.value)} label="Add Name"/>
+        <TextField onChange={(e) => setNewEquipmentQty(Number(e.target.value))} label="Add Quantity" type='Number'/>
         <Button onClick={handleAddEquipment}>Add Equipment</Button>
         <List sx={sxProps.equipmentList}>
-          {equipment.map((item, index) => (
+          {Array.from(equipment.entries()).map(([name, qty], index) => (
             <ListItem key={index}>
-              <ListItemText primary={item}/>
+              <ListItemText primary={`${name} (Qty: ${qty})`} />
             </ListItem>
           ))}
         </List>
@@ -460,7 +650,7 @@ const DashboardCharacterSheet: FC<{importData?: unknown}> = ({importData}) => {
 
       {/* Container for the save and cancel buttons */}
       <Box sx={sxProps.horizontalButtonsContainer}>
-        <Button variant='contained'>
+        <Button variant='contained' onClick={handleSave}>
           Save
         </Button>
         <Button variant='contained'>

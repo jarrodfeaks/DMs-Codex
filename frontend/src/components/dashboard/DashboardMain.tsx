@@ -6,14 +6,14 @@ import { apiService } from "../../services/apiService.ts";
 
 // Temp until backend stuff gets added?
 interface Player {
-    id: number;
+    id: string;
     name: string;
     level: number;
     playerClass: string;
 }
 
 export default function DashboardMain(
-    { onCreateCharacter }: { onCreateCharacter: (importData?: unknown) => void }) {
+    { onCreateCharacter}: { onCreateCharacter: (importData?: unknown, editData?: unknown) => void }) {
 
     const dialogs = useDialogs();
 
@@ -22,31 +22,36 @@ export default function DashboardMain(
 
     // Dummy data - replace with character data from the currently selected campaign
     const players: Player[] = [
-        { id: 1, name: "Player 1", level: 1, playerClass: "Barbarian" },
-        { id: 2, name: "Player 2", level: 2, playerClass: "Bard" },
-        { id: 3, name: "Player 3", level: 3, playerClass: "Cleric" },
-        { id: 4, name: "Player 4", level: 4, playerClass: "Druid" },
-        { id: 5, name: "Player 5", level: 5, playerClass: "Fighter" },
-        { id: 6, name: "Player 6", level: 6, playerClass: "Monk" },
-        { id: 7, name: "Player 7", level: 7, playerClass: "Paladin" },
-        { id: 8, name: "Player 8", level: 8, playerClass: "Ranger" },
-        { id: 9, name: "Player 9", level: 9, playerClass: "Rogue" },
-        { id: 10, name: "Player 10", level: 10, playerClass: "Sorcerer" },
-        { id: 11, name: "Player 11", level: 11, playerClass: "Warlock" },
-        { id: 12, name: "Player 12", level: 12, playerClass: "Wizard" },
+        { id: "670effd032aa22559e25335e", name: "Player 1", level: 1, playerClass: "Barbarian" },
+        { id: "67132ed10039afc6a6c3dc6a", name: "Player 2", level: 2, playerClass: "Bard" },
+        // { id: 3, name: "Player 3", level: 3, playerClass: "Cleric" },
+        // { id: 4, name: "Player 4", level: 4, playerClass: "Druid" },
+        // { id: 5, name: "Player 5", level: 5, playerClass: "Fighter" },
+        // { id: 6, name: "Player 6", level: 6, playerClass: "Monk" },
+        // { id: 7, name: "Player 7", level: 7, playerClass: "Paladin" },
+        // { id: 8, name: "Player 8", level: 8, playerClass: "Ranger" },
+        // { id: 9, name: "Player 9", level: 9, playerClass: "Rogue" },
+        // { id: 10, name: "Player 10", level: 10, playerClass: "Sorcerer" },
+        // { id: 11, name: "Player 11", level: 11, playerClass: "Warlock" },
+        // { id: 12, name: "Player 12", level: 12, playerClass: "Wizard" },
     ];
 
     const onImportCharacter = async () => {
         const result = await dialogs.open(ImportCharacterModal);
         // only returns a result if the import was successful
         if (result) {
-            onCreateCharacter(result);
+            onCreateCharacter(result, null);
         }
     };
 
-    const onEditCharacter = () => {
+    const onEditCharacter = async () => {
         if (selectedPlayerId !== null) {
             // Go to Character Sheet and load data for the selected player
+            const result = await apiService.get(`/players/${selectedPlayerId}`);
+
+            if (result) {
+              onCreateCharacter(null, result);
+            }
         }
     };
 
