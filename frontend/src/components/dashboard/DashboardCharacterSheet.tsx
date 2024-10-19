@@ -22,11 +22,12 @@ interface Weapon {
 interface DashboardCharacterSheetProps {
   importData: unknown;
   editData: unknown;
+  editId: unknown;
 }
 
 //const damageTypes = ["None", "Bludgeoning", "Piercing", "Slashing", "Lightning", "Thunder", "Poison", "Cold", "Radiant", "Fire", "Necrotic", "Acid", "Psychic", "Force"];
 
-const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, editData}) => {
+const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, editData, editId}) => {
   let preData = null;
   if (importData){
     preData = importData;
@@ -34,6 +35,10 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
     preData = editData;
   }
 
+
+  console.log(importData);
+  console.log(editData);
+  console.log(editId);
   // preData = {
   //   name: "mosaab",
   //   level: 2,
@@ -83,46 +88,8 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
   const [failedDeathSaves, setFailedDeathsaves] = useState(preData ? preData.deathSavingThrows : 0);
   const [notes, setNotes] = useState(preData ? preData.notes : '');
 
-  // const loadClasses = async () => {
-  //   // const storedClasses = localStorage.getItem('classes');
-  //   // if (storedClasses){
-  //   //   setClasses(storedClasses);
-  //   // }
-  //   // else {
-  //     try {
-  //       const response = await fetch('https://www.dnd5eapi.co/api/classes');
-  //       const data = await response.json();
-  //       localStorage.setItem('classes', JSON.stringify(data));
-  //       setClasses(data.results); // Set the monster data in state
-  //     } catch (error) {
-  //       console.error('Error fetching monsters:', error);
-  //     }
-  //   // }
-  // }
-
   const races = Object.values(Race);
   const [selectedRace, setSelectedRace] = useState(preData ? preData.race : '');
-
-  // const loadRaces = async () => {
-  //   // const storedClasses = localStorage.getItem('classes');
-  //   // if (storedClasses){
-  //   //   setClasses(storedClasses);
-  //   // }
-  //   // else {
-  //     try {
-  //       const response = await fetch('https://www.dnd5eapi.co/api/races');
-  //       const data = await response.json();
-  //       setRaces(data.results); // Set the monster data in state
-  //     } catch (error) {
-  //       console.error('Error fetching monsters:', error);
-  //     }
-  //   // }
-  // }
-
-  // useEffect(() => {
-  //   loadClasses();
-  //   loadRaces();
-  // }, []);
 
   const handleRaceChange = (event: SelectChangeEvent<{ value: unknown }>) => {
     setSelectedRace(event.target.value as Race);
@@ -157,10 +124,14 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
   // });
 
   const dialogs = useDialogs();
-  const [selectedConditions, setSelectedConditions] = useState<string[]>(/*preData ? preData.conditions : */[]);
-  const [selectedImmunities, setSelectedImmunities] = useState<string[]>(/*preData ? preData.immunities : */[]);
-  const [selectedResistances, setSelectedResistances] = useState<string[]>(/*preData ? preData.resistances : */[]);
-  const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>(/*preData ? preData.vulnerabilities :*/ []);
+  //const [selectedConditions, setSelectedConditions] = useState<string[]>(/*preData ? preData.conditions : */[]);
+  //const [selectedImmunities, setSelectedImmunities] = useState<string[]>(/*preData ? preData.immunities : */[]);
+  //const [selectedResistances, setSelectedResistances] = useState<string[]>(/*preData ? preData.resistances : */[]);
+  //const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>(/*preData ? preData.vulnerabilities :*/ []);
+  const [selectedConditions, setSelectedConditions] = useState<string[]>(preData ? preData.status : []);
+  const [selectedImmunities, setSelectedImmunities] = useState<string[]>(preData ? preData.damageImmunities : []);
+  const [selectedResistances, setSelectedResistances] = useState<string[]>(preData ? preData.resistances : []);
+  const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>(preData ? preData.vulnerabilities : []);
 
   const handleConditionsOpen = async () => {
     const result = await dialogs.open(CharacterConditions, selectedConditions);
@@ -283,24 +254,48 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
     };
 
     console.log(testPlayerData)
-    try {
-      const mongoDbResponse = await fetch(`http://localhost:5000/players`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(characterData),
-      });
 
-      if (!mongoDbResponse.ok) {
-        const errorData = await mongoDbResponse.json();
-        console.error('Backend Error Response:', errorData); // Log full backend error
-        throw new Error(`Error adding player to database: ${mongoDbResponse.statusText}`);
+    if (editData) {
+      try {
+        const mongoDbResponse = await fetch(`http://localhost:5000/players/${editId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(characterData),
+        });
+  
+        if (!mongoDbResponse.ok) {
+          const errorData = await mongoDbResponse.json();
+          console.error('Backend Error Response:', errorData); // Log full backend error
+          throw new Error(`Error adding player to database: ${mongoDbResponse.statusText}`);
+        }
+        console.log('Player added to database:', mongoDbResponse);
+      } catch (error) {
+        console.error('Error adding player to database:', error);
       }
-      console.log('Player added to database:', mongoDbResponse);
-    } catch (error) {
-      console.error('Error adding player to database:', error);
+    } else {
+      try {
+        const mongoDbResponse = await fetch(`http://localhost:5000/players`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(characterData),
+        });
+  
+        if (!mongoDbResponse.ok) {
+          const errorData = await mongoDbResponse.json();
+          console.error('Backend Error Response:', errorData); // Log full backend error
+          throw new Error(`Error adding player to database: ${mongoDbResponse.statusText}`);
+        }
+        console.log('Player added to database:', mongoDbResponse);
+      } catch (error) {
+        console.error('Error adding player to database:', error);
+      }
     }
+
+    
     // if (editData){
     //   try {
     //     const response = await apiService.post(`/players/${editData.id}`, testPlayerData);

@@ -13,7 +13,7 @@ interface Player {
 }
 
 export default function DashboardMain(
-    { onCreateCharacter}: { onCreateCharacter: (importData?: unknown, editData?: unknown) => void }) {
+    { onCreateCharacter}: { onCreateCharacter: (importData?: unknown, editData?: unknown, editId?: unknown) => void }) {
 
     const dialogs = useDialogs();
 
@@ -24,7 +24,7 @@ export default function DashboardMain(
     const players: Player[] = [
         { id: "670effd032aa22559e25335e", name: "Player 1", level: 1, playerClass: "Barbarian" },
         { id: "67132ed10039afc6a6c3dc6a", name: "Player 2", level: 2, playerClass: "Bard" },
-        // { id: 3, name: "Player 3", level: 3, playerClass: "Cleric" },
+        { id: "67133df80039afc6a6c3dc81", name: "Player 3", level: 3, playerClass: "Cleric" },
         // { id: 4, name: "Player 4", level: 4, playerClass: "Druid" },
         // { id: 5, name: "Player 5", level: 5, playerClass: "Fighter" },
         // { id: 6, name: "Player 6", level: 6, playerClass: "Monk" },
@@ -40,7 +40,7 @@ export default function DashboardMain(
         const result = await dialogs.open(ImportCharacterModal);
         // only returns a result if the import was successful
         if (result) {
-            onCreateCharacter(result, null);
+            onCreateCharacter(result, null, null);
         }
     };
 
@@ -50,7 +50,7 @@ export default function DashboardMain(
             const result = await apiService.get(`/players/${selectedPlayerId}`);
 
             if (result) {
-              onCreateCharacter(null, result);
+              onCreateCharacter(null, result, selectedPlayerId);
             }
         }
     };

@@ -9,11 +9,13 @@ export default function Campaign() {
     const { currentCampaign } = useCurrentCampaign();
     const [importData, setImportData] = useState<unknown | undefined>();
     const [editData, setEditData] = useState<unknown | undefined>();
+    const [editId, setEditId] = useState<unknown | undefined>();
     const [showCharacterSheet, setShowCharacterSheet] = useState(false);
 
-    const toggleView = (importData?: unknown, editData?: unknown) => {
+    const toggleView = (importData?: unknown, editData?: unknown, editId?: unknown) => {
         setImportData(importData);
         setEditData(editData);
+        setEditId(editId);
         setShowCharacterSheet(!showCharacterSheet);
     };
 
@@ -43,7 +45,7 @@ export default function Campaign() {
                 {showCharacterSheet ? "Character Sheet" : `Dashboard - ${currentCampaign?.name}`}
             </Typography>
             {showCharacterSheet ? (
-                <DashboardCharacterSheet importData={importData} editData={editData} />
+                <DashboardCharacterSheet importData={importData} editData={editData} editId={editId}/>
             ) : (
                 <DashboardMain onCreateCharacter={toggleView}/>
             )}
