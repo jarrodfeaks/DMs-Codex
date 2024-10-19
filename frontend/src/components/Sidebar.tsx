@@ -14,32 +14,46 @@ import { useState } from "react";
 import {Add, AutoStories, ExpandLess, ExpandMore, Logout} from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import SidebarCampaign from "./SidebarCampaign.tsx";
-import CreateCampaignModal from "./modals/CreateCampaign.tsx";
+import CreateCampaign from "./modals/CreateCampaign.tsx";
+import { useDialogs } from "@toolpad/core/useDialogs";
 
 export default function Sidebar({ user, campaigns, currentCampaign }: { user: User, campaigns: Campaign[], currentCampaign: Campaign | undefined }) {
     const navigate = useNavigate();
+    const dialogs = useDialogs();
 
     const [ campaignExpanded, setCampaignExpanded ] = useState(true);
 
-    const [ modalOpen, setModalOpen ] = useState(false);
-
     const getCampaigns = () => {
+        if (campaigns.length === 0) {
+            return (
+                <ListItem sx={{ pl: 4 }}>
+                    <ListItemText primary="No campaigns yet" sx={{ color: 'text.secondary', fontStyle: 'italic' }} />
+                </ListItem>
+            );
+        }
+
         return campaigns.map((campaign) => {
             return (
-                <ListItemButton key={campaign.id} sx={{ pl: 4 }} onClick={() => handleOpenCampaign(campaign.id)}>
+                <ListItemButton key={campaign._id} sx={{ pl: 4 }} onClick={() => handleOpenCampaign(campaign._id)}>
                     <ListItemText primary={campaign.name} />
                 </ListItemButton>
             )
         })
     }
 
-    const handleOpenCampaign = (id: number) => {
+    const handleOpenCampaign = (id: string) => {
         navigate(`/app/campaigns/${id}`);
     }
 
+    const handleOpenNewCampaignModal = async () => {
+        const res = await dialogs.open(CreateCampaign, user);
+        if (res) {
+            campaigns.push(res);
+        }
+    };
+
     return (
         <>
-            <CreateCampaignModal open={modalOpen} onClose={() => setModalOpen(false)} user={user} />
             <Drawer variant="permanent" anchor="left" sx={{
                 width: 300,
                 '& .MuiDrawer-paper': {
@@ -67,7 +81,7 @@ export default function Sidebar({ user, campaigns, currentCampaign }: { user: Us
                         <Collapse in={campaignExpanded} timeout="auto" unmountOnExit>
                             <List component="div" disablePadding>
                                 { getCampaigns() }
-                                <ListItemButton sx={{ pl: 4 }} onClick={() => setModalOpen(true)}>
+                                <ListItemButton sx={{ pl: 4 }} onClick={handleOpenNewCampaignModal}>
                                     <ListItemIcon sx={{ minWidth: 0, pr: 1 }}>
                                         <Add />
                                     </ListItemIcon>

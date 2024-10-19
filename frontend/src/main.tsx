@@ -3,32 +3,30 @@ import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, redirect, RouterProvider } from "react-router-dom";
 import App from './routes/app.tsx'
 import Landing from "./routes/landing.tsx";
-import Campaign from "./routes/campaign.tsx";
+import CampaignDashboard from "./routes/campaign.tsx";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import theme from "./assets/theme.ts";
 import Encounter from "./routes/encounter.tsx";
 import Assistant from "./routes/assistant.tsx";
 import "./index.css";
+import { apiService } from "./services/apiService.ts";
+import { Campaign, User } from "./types.ts";
 
-const getUser = async () => {
-    const res = await fetch('/api/profile');
+const getUser = async (): Promise<User | undefined> => {
+    const res = await apiService.get("/profile", { throwOnError: false, returnRawResponse: true });
 
     if (res.ok) return res.json();
     else if (res.status === 401) return undefined;
     throw new Error(`Error authenticating: ${res.status} ${res.statusText}`);
 }
 
-// we can fetch this from the backend later
-const exampleCampaigns = [
-    {
-        id: 1,
-        name: "Campaign 1",
-    },
-    {
-        id: 2,
-        name: "Campaign 2"
-    }
-]
+const getCampaigns = async (user: User): Promise<Campaign[]> => {
+    const res = await apiService.get(`campaigns/dm/${user.sub}`, { throwOnError: false, returnRawResponse: true });
+
+    if (res.ok) return res.json();
+    else if (res.status === 404) return [];
+    throw new Error(`Error retrieving campaigns: ${res.status} ${res.statusText}`);
+}
 
 const router = createBrowserRouter([
     {
@@ -45,14 +43,14 @@ const router = createBrowserRouter([
         element: <App />,
         loader: async () => {
             const user = await getUser();
-            const campaigns = exampleCampaigns;
             if (!user) return redirect("/");
+            const campaigns = await getCampaigns(user);
             return { user, campaigns };
         },
         children: [
             {
                 path: "campaigns/:campaignId",
-                element: <Campaign />,
+                element: <CampaignDashboard />,
                 id: "campaign"
             },
             {

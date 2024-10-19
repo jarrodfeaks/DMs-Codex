@@ -17,7 +17,7 @@ enum LoginStatus {
 }
 
 interface Campaign {
-    id: number;
+    _id: string;
     name: string;
 }
 

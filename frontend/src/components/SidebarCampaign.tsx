@@ -9,13 +9,13 @@ export default function SidebarCampaign({ campaign }: { campaign: Campaign }) {
     const handleNavigate = (to: "dashboard" | "encounters" | "assistant") => {
         switch (to) {
             case "dashboard":
-                navigate(`/app/campaigns/${campaign.id}`);
+                navigate(`/app/campaigns/${campaign._id}`);
                 break;
             case "encounters":
-                navigate(`/app/campaigns/${campaign.id}/encounters/1`);
+                navigate(`/app/campaigns/${campaign._id}/encounters/1`);
                 break;
             case "assistant":
-                navigate(`/app/campaigns/${campaign.id}/assistant`);
+                navigate(`/app/campaigns/${campaign._id}/assistant`);
                 break
         }
     }

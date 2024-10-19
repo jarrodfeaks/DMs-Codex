@@ -21,7 +21,7 @@ function App() {
     const campaignId = useMatch("/app/campaigns/:campaignId/*")?.params.campaignId;
 
     useEffect(() => {
-        const campaign = campaignId ? userData.campaigns.find(c => c.id === Number(campaignId)) : undefined;
+        const campaign = campaignId ? userData.campaigns.find(c => c._id === campaignId) : undefined;
         setCurrentCampaign(campaign);
     }, [campaignId, userData.campaigns]);
 
