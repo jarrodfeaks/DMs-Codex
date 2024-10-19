@@ -1,3 +1,15 @@
+import { Dice } from "../../shared/enums";
+
+/**
+    Get the max value for a dice
+    @param diceEnum - The dice to get the max value for.
+    @returns The max value for the dice.
+*/
+export function GetMaxValueForDice (dice: Dice): number {
+    return parseInt(dice.replace('D', ''), 10);
+};
+
+
 /**
     Calculates a random roll for a X-sided dice
     @param sides - The number of sides of the dice.
@@ -85,7 +97,7 @@ export function sortQueueByInitiative(queue: Array<{ name: string, initiative: n
     @returns The default combat log string.
 */
 export function attackCombatLogString(characterName: string, weapon: string, target: string, damage: number): string {
-    return `• ${characterName} SUCCESSFULLY attacked ${target} with a ${weapon} and dealt ${damage}!`;
+    return `• ${characterName} SUCCESSFULLY attacked ${target} with a ${weapon}. Dealing a total of ${damage} damage!`;
 }
 
 /**
@@ -150,9 +162,9 @@ export function formatMonsterForMongo(apiData: any): any {
         charisma: apiData.charisma,
         constitution: apiData.constitution,
         wisdom: apiData.wisdom,
-        // vulnerabilities: [apiData.damage_vulnerabilities],
-        // resistances: [apiData.damage_resistances],
-        // damageImmunities: [apiData.damage_immunities],
-        // statusImmunities: [apiData.condition_immunities],
+        vulnerabilities: [apiData.damage_vulnerabilities],
+        resistances: [apiData.damage_resistances],
+        damageImmunities: [apiData.damage_immunities],
+        statusImmunities: [apiData.condition_immunities],
     };
 }

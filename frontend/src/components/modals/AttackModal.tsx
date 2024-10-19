@@ -1,31 +1,58 @@
 import { Box, Button, Dialog, Grid, TextField, Typography } from "@mui/material";
 import { useState } from "react";
+import { Dice } from "../../../../shared/enums";
+import { GetMaxValueForDice } from "../../utils";
 
-export default function AttackModal({ open, onClose }: { open: boolean, onClose: () => void }) {
+interface AttackModalProps {
+    open: boolean;
+    onClose: (result?: { totalDamageDealt: number }) => void;
+    payload: { damageDices: [Dice, number][] };
+}
 
-    const [damageValues, setDamageValues] = useState<number[]>(Array(11).fill(0));  // TEMP - 11 text fields; should be dynamic
+export default function AttackModal({ open, onClose, payload }: AttackModalProps) {
+    const { damageDices = [] } = payload || {};
+    const initialDamageValues = damageDices.map(([_, num]) => Array(num).fill(''));
+    const [damageValues, setDamageValues] = useState<number[][]>(initialDamageValues);
 
-    const onAttack = async () => {
-        onClose();
-        // Deal damage here
-    };
-
-    const onCancel = () => {
-        setDamageValues(Array(11).fill(0));
-        onClose();
-    };
-
-    const handleInputChange = (index: number, value: string) => {
+    const handleInputChange = (diceIndex: number, rollIndex: number, value: string) => {
         const intValue = parseInt(value, 10);
-        if (!isNaN(intValue) && intValue >= 0) {
+        const maxValue = GetMaxValueForDice(damageDices[diceIndex][0]);
+        if (!isNaN(intValue) && intValue >= 0 && intValue <= maxValue) {
             const newValues = [...damageValues];
-            newValues[index] = intValue;
+            newValues[diceIndex][rollIndex] = intValue;
             setDamageValues(newValues);
         } else if (value === '') { 
             const newValues = [...damageValues];
-            newValues[index] = 0;
+            newValues[diceIndex][rollIndex] = 0;
             setDamageValues(newValues);
         }
+    };
+
+    const onAttack = () => {
+        let totalDamageDealt = 0;
+        let isValid = true;
+    
+        damageValues.forEach((diceValues, diceIndex) => {
+            const maxValue = GetMaxValueForDice(damageDices[diceIndex][0]);
+            diceValues.forEach((value) => {
+                const intValue = parseInt(value, 10);
+                if (isNaN(intValue) || intValue <= 0 || intValue > maxValue) {
+                    isValid = false;
+                } else {
+                    totalDamageDealt += intValue;
+                }
+            });
+        });
+    
+        if (isValid) {
+            onClose({ totalDamageDealt });
+        } else {
+            alert('Please enter valid damage values.');
+        }
+    };
+
+    const onCancel = () => {
+        onClose();
     };
 
     return (
@@ -42,20 +69,24 @@ export default function AttackModal({ open, onClose }: { open: boolean, onClose:
                     Roll Damage
                 </Typography>
 
-                {/* Damage Roll Text Fields */}
-                <Grid container spacing={2}>
-                    {damageValues.map((value, index) => (
-                        <Grid item xs={4} key={index}>
-                            <TextField
-                                type="number"
-                                value={value}
-                                onChange={(e) => handleInputChange(index, e.target.value)}
-                                InputProps={{ inputProps: { min: 0 } }}  // Restrict to positive numbers
-                                fullWidth
-                            />
+                {damageDices.map(([dice, num], diceIndex) => (
+                    <Box key={diceIndex} sx={{ mb: 2 }}>
+                        <Grid container spacing={2}>
+                            {damageValues[diceIndex].map((value, rollIndex) => (
+                                <Grid item xs={4} key={rollIndex}>
+                                    <TextField
+                                        type="number"
+                                        value={value}
+                                        onChange={(e) => handleInputChange(diceIndex, rollIndex, e.target.value)}
+                                        InputProps={{ inputProps: { min: 0, max: GetMaxValueForDice(dice) } }}
+                                        fullWidth
+                                        label={`${dice}`}
+                                    />
+                                </Grid>
+                            ))}
                         </Grid>
-                    ))}
-                </Grid>
+                    </Box>
+                ))}
 
                 {/* Attack Button */}
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
