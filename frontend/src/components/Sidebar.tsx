@@ -24,14 +24,6 @@ export default function Sidebar({ user, campaigns, currentCampaign }: { user: Us
     const [ campaignExpanded, setCampaignExpanded ] = useState(true);
 
     const getCampaigns = () => {
-        if (campaigns.length === 0) {
-            return (
-                <ListItem sx={{ pl: 4 }}>
-                    <ListItemText primary="No campaigns yet" sx={{ color: 'text.secondary', fontStyle: 'italic' }} />
-                </ListItem>
-            );
-        }
-
         return campaigns.map((campaign) => {
             const isCurrentCampaign = currentCampaign && campaign._id === currentCampaign._id;
             return (

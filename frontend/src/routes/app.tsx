@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react'
 import {Box} from "@mui/material";
 import Sidebar from "../components/Sidebar.tsx";
-import { Outlet, useLoaderData, useMatch } from "react-router-dom";
+import { Outlet, useLoaderData, useMatch, useNavigate } from "react-router-dom";
 import Start from "./start.tsx";
 import {Campaign, User} from "../types.ts";
 import { DialogsProvider } from '@toolpad/core/useDialogs';
@@ -13,6 +13,7 @@ export type ContextType = {
 
 function App() {
     const userData = useLoaderData() as { user: User; campaigns: Campaign[] };
+    const navigate = useNavigate();
 
     const atRoot: boolean = !!useMatch("/app");
 
@@ -25,13 +26,24 @@ function App() {
         setCurrentCampaign(campaign);
     }, [campaignId, userData.campaigns]);
 
+    useEffect(() => {
+        if (atRoot && userData.campaigns.length > 0) {
+            const firstCampaign = userData.campaigns[0];
+            navigate(`/app/campaigns/${firstCampaign._id}`);
+        }
+    }, [atRoot, userData.campaigns, navigate]);
+
     return (
         <>
             <DialogsProvider>
                 <Box sx={{ display: 'flex' }}>
                     <Sidebar user={userData.user} campaigns={userData.campaigns} currentCampaign={currentCampaign} />
                     <Box sx={{ width: "100%", height: "100vh", p: 2 }}>
-                        { atRoot ? <Start /> : <Outlet context={{ currentCampaign, user: userData.user } satisfies ContextType} /> }
+                        {atRoot && userData.campaigns.length === 0 ? (
+                            <Start />
+                        ) : (
+                            <Outlet context={{ currentCampaign, user: userData.user } satisfies ContextType} />
+                        )}
                     </Box>
                 </Box>
             </DialogsProvider>
