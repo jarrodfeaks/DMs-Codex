@@ -3,7 +3,7 @@ import {TextField, Box, Typography, Button, List, ListItem, ListItemText, Table,
 import DashboardCharacterSheetSkill from './DashboardCharacterSheetSkill.tsx';
 import { ConfirmDialog, useDialogs } from '@toolpad/core/useDialogs';
 import theme from '../../assets/theme.ts';
-import { Class, Race } from '../../../../shared/enums.ts';
+import { Class, DamageType, Race, Attribute, Dice } from '../../../../shared/enums.ts';
 import CharacterConditions from '../modals/CharacterConditions.tsx';
 import CharacterImmunities from '../modals/CharacterImmunities.tsx';
 import CharacterResistances from '../modals/CharacterResistances.tsx';
@@ -12,11 +12,12 @@ import { apiService } from "../../services/apiService.ts";
 
 interface Weapon {
   name: string;
-  hit: number;
+  hitModifier: number;
+  baseDamage: number;
   diceAmount: number;
-  diceType: number;
-  damageModifier: number;
-  damageType: string;
+  diceType: Dice;
+  modification: Attribute;
+  damageType: DamageType;
 }
 
 interface DashboardCharacterSheetProps {
@@ -107,13 +108,18 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
   //   qty: 1
   // });
 
+  const attributes = Object.values(Attribute);
+  const damageTypes = Object.values(DamageType);
+  const diceTypes = Object.values(Dice);
   const [weaponName, setWeaponName] = useState('');
   const [weaponHit, setWeaponHit] = useState(0);
+  const [weaponBaseDmg, setWeaponBaseDmg] = useState(0);
   const [weaponDiceAmount, setWeaponDiceAmount] = useState(1);
-  const [weaponDiceType, setWeaponDiceType] = useState(6);
-  const [weaponDamageModifier, setWeaponDamageModifier] = useState(0);
+  const [weaponDiceType, setWeaponDiceType] = useState('');
+  const [weaponDamageModifier, setWeaponDamageModifier] = useState('');
   const [weaponDamageType, setWeaponDamageType] = useState('');
   const [weapons, setWeapons] = useState<Weapon[]>(preData ? preData.weapons : []);
+  const [weaponIds, setWeaponIds] = useState<string[]>([]);
   // const [newWeapon, setNewWeapon] = useState<Weapon>({
   //   name: '',
   //   hit: 0,
@@ -123,15 +129,27 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
   //   damageType: 'None'
   // });
 
+  const handleAttributeChange = (event: SelectChangeEvent<{ value: unknown }>) => {
+    setWeaponDamageModifier(event.target.value as Attribute);
+  };
+
+  const handleDamageTypeChange = (event: SelectChangeEvent<{ value: unknown }>) => {
+    setWeaponDamageType(event.target.value as DamageType);
+  };
+
+  const handleDiceTypeChange = (event: SelectChangeEvent<{ value: unknown }>) => {
+    setWeaponDiceType(event.target.value as Dice);
+  };
+
   const dialogs = useDialogs();
-  //const [selectedConditions, setSelectedConditions] = useState<string[]>(/*preData ? preData.conditions : */[]);
-  //const [selectedImmunities, setSelectedImmunities] = useState<string[]>(/*preData ? preData.immunities : */[]);
-  //const [selectedResistances, setSelectedResistances] = useState<string[]>(/*preData ? preData.resistances : */[]);
-  //const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>(/*preData ? preData.vulnerabilities :*/ []);
-  const [selectedConditions, setSelectedConditions] = useState<string[]>(preData ? preData.status : []);
-  const [selectedImmunities, setSelectedImmunities] = useState<string[]>(preData ? preData.damageImmunities : []);
-  const [selectedResistances, setSelectedResistances] = useState<string[]>(preData ? preData.resistances : []);
-  const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>(preData ? preData.vulnerabilities : []);
+  const [selectedConditions, setSelectedConditions] = useState<string[]>(/*preData ? preData.conditions : */[]);
+  const [selectedImmunities, setSelectedImmunities] = useState<string[]>(/*preData ? preData.immunities : */[]);
+  const [selectedResistances, setSelectedResistances] = useState<string[]>(/*preData ? preData.resistances : */[]);
+  const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>(/*preData ? preData.vulnerabilities :*/ []);
+  // const [selectedConditions, setSelectedConditions] = useState<string[]>(preData ? preData.status : []);
+  // const [selectedImmunities, setSelectedImmunities] = useState<string[]>(preData ? preData.damageImmunities : []);
+  // const [selectedResistances, setSelectedResistances] = useState<string[]>(preData ? preData.resistances : []);
+  // const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>(preData ? preData.vulnerabilities : []);
 
   const handleConditionsOpen = async () => {
     const result = await dialogs.open(CharacterConditions, selectedConditions);
@@ -165,52 +183,37 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
     }
   }
 
-  const handleAddWeapon = () => {
-    //if (weaponName && weaponHit > 0 && weaponDiceAmount > 0 && weaponDiceType > 0 && weaponDamageModifier > 0 && weaponDamageType){
-      const newWeaponItem: Weapon = {
-        name: weaponName,
-        hit: weaponHit,
-        diceAmount: weaponDiceAmount,
-        diceType: weaponDiceType,
-        damageModifier: weaponDamageModifier,
-        damageType: weaponDamageType
-      };
-      setWeapons((prev) => [...prev, newWeaponItem]);
-      // setWeaponName('');
-      // setWeaponHit(0);
-      // setWeaponDiceAmount(1);
-      // setWeaponDiceType(6);
-      // setWeaponDamageModifier(0);
-      // setWeaponDamageType('');
-    //}
+  const handleAddWeapon = async () => {
+    const weaponToSave = {
+      name: weaponName,
+      hitModifier: weaponHit,
+      baseDamage: weaponBaseDmg,
+      damageType: weaponDamageType,
+      modification: weaponDamageModifier,
+      damageDice: [weaponDiceType, weaponDiceAmount]
+    }
+    console.log("weapon to save is ", weaponToSave);
+
+    try {
+      const mongoDbResponse = await apiService.post(`/weapons`, weaponToSave);
+      console.log('Weapon added to database:', mongoDbResponse, mongoDbResponse._id);
+      weaponIds.push(mongoDbResponse._id);
+      console.log(weaponIds);
+    } catch (error) {
+      console.error('Error adding weapon to database:', error);
+    }
+
+    const newWeaponItem: Weapon = {
+      name: weaponName,
+      hitModifier: weaponHit,
+      baseDamage: weaponBaseDmg,
+      diceAmount: weaponDiceAmount,
+      diceType: weaponDiceType,
+      modification: weaponDamageModifier,
+      damageType: weaponDamageType
+    };
+    setWeapons((prev) => [...prev, newWeaponItem]);
   };
-
-
-  // const handleSave = () => {
-  //   const characterData = {
-  //     name: characterName,
-  //     level: characterLevel,
-  //     race: selectedRace,
-  //     class: selectedClass,
-  //     abilityScores: { abilityScoreStrength, abilityScoreDexterity, abilityScoreConstitution, abilityScoreIntelligence, abilityScoreWisdom, abilityScoreCharisma },
-  //     abilityModifiers: { abilityModStrength, abilityModDexterity, abilityModConstitution, abilityModIntelligence, abilityModWisdom, abilityModCharisma },
-  //     savingThrows: { savingThrowsStrength, savingThrowsDexterity, savingThrowsConstitution, savingThrowsIntelligence, savingThrowsWisdom, savingThrowsCharisma },
-  //     skills,
-  //     initiative: initiative,
-  //     armorClass: armorClass,
-  //     proficiency: proficiency,
-  //     maxHP: maxHP,
-  //     currentHP: currentHP,
-  //     tempHP: tempHP,
-  //     successfulDeathSaves: successfulDeathSaves,
-  //     failedDeathSaves: failedDeathSaves,
-  //     notes: notes,
-  //     equipment,
-  //     weapons,
-  //   };
-  //   console.log('Character Data:', characterData);
-  //   // You can save this data to localStorage, send it to an API, or process it further
-  // };
 
   const handleSave = async () => {
     console.log("Saving...");
@@ -221,7 +224,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       race: selectedRace,
       class: selectedClass,
       abilityScores: { abilityScoreStrength, abilityScoreDexterity, abilityScoreConstitution, abilityScoreIntelligence, abilityScoreWisdom, abilityScoreCharisma },
-      temperaroaryModifiers: { abilityModStrength, abilityModDexterity, abilityModConstitution, abilityModIntelligence, abilityModWisdom, abilityModCharisma },
+      abilityModifiers: { abilityModStrength, abilityModDexterity, abilityModConstitution, abilityModIntelligence, abilityModWisdom, abilityModCharisma },
       savingThrows: { savingThrowsStrength, savingThrowsDexterity, savingThrowsConstitution, savingThrowsIntelligence, savingThrowsWisdom, savingThrowsCharisma },
       skills: skills,
       initiative: initiative,
@@ -238,8 +241,9 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       failedDeathSaves: failedDeathSaves,
       notes: notes,
       equipment: equipment,
-      //weapons: weapons,
+      weapons: weaponIds,
     };
+    console.log('character equipment: ', equipment);
     console.log('Character Data:', characterData);
 
     const testPlayerData = {
@@ -255,62 +259,62 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
 
     console.log(testPlayerData)
 
-    if (editData) {
-      try {
-        const mongoDbResponse = await fetch(`http://localhost:5000/players/${editId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(characterData),
-        });
+    // if (editData) {
+    //   try {
+    //     const mongoDbResponse = await fetch(`http://localhost:5000/players/${editId}`, {
+    //       method: 'PUT',
+    //       headers: {
+    //         'Content-Type': 'application/json',
+    //       },
+    //       body: JSON.stringify(characterData),
+    //     });
   
-        if (!mongoDbResponse.ok) {
-          const errorData = await mongoDbResponse.json();
-          console.error('Backend Error Response:', errorData); // Log full backend error
-          throw new Error(`Error adding player to database: ${mongoDbResponse.statusText}`);
-        }
-        console.log('Player added to database:', mongoDbResponse);
+    //     if (!mongoDbResponse.ok) {
+    //       const errorData = await mongoDbResponse.json();
+    //       console.error('Backend Error Response:', errorData); // Log full backend error
+    //       throw new Error(`Error adding player to database: ${mongoDbResponse.statusText}`);
+    //     }
+    //     console.log('Player added to database:', mongoDbResponse);
+    //   } catch (error) {
+    //     console.error('Error adding player to database:', error);
+    //   }
+    // } else {
+    //   try {
+    //     const mongoDbResponse = await fetch(`http://localhost:5000/players`, {
+    //       method: 'POST',
+    //       headers: {
+    //         'Content-Type': 'application/json',
+    //       },
+    //       body: JSON.stringify(characterData),
+    //     });
+  
+    //     if (!mongoDbResponse.ok) {
+    //       const errorData = await mongoDbResponse.json();
+    //       console.error('Backend Error Response:', errorData); // Log full backend error
+    //       throw new Error(`Error adding player to database: ${mongoDbResponse.statusText}`);
+    //     }
+    //     console.log('Player added to database:', mongoDbResponse);
+    //   } catch (error) {
+    //     console.error('Error adding player to database:', error);
+    //   }
+    // }
+
+    
+    if (editData){
+      try {
+        const response = await apiService.post(`/players/${editId}`, characterData);
+        console.log('Player added to database:', response);
       } catch (error) {
         console.error('Error adding player to database:', error);
       }
     } else {
       try {
-        const mongoDbResponse = await fetch(`http://localhost:5000/players`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(characterData),
-        });
-  
-        if (!mongoDbResponse.ok) {
-          const errorData = await mongoDbResponse.json();
-          console.error('Backend Error Response:', errorData); // Log full backend error
-          throw new Error(`Error adding player to database: ${mongoDbResponse.statusText}`);
-        }
-        console.log('Player added to database:', mongoDbResponse);
+        const response = await apiService.post(`/players`, characterData);
+        console.log('Player added to database:', response);
       } catch (error) {
         console.error('Error adding player to database:', error);
       }
     }
-
-    
-    // if (editData){
-    //   try {
-    //     const response = await apiService.post(`/players/${editData.id}`, testPlayerData);
-    //     console.log('Player added to database:', response);
-    //   } catch (error) {
-    //     console.error('Error adding monster to database:', error);
-    //   }
-    // } else {
-    //   try {
-    //     const response = await apiService.post(`/players`, testPlayerData);
-    //     console.log('Player added to database:', response);
-    //   } catch (error) {
-    //     console.error('Error adding monster to database:', error);
-    //   }
-    // }
   }
 
   const sxProps = {
@@ -588,10 +592,50 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
           <Box>
             <TextField label='Name' onChange={(e) => setWeaponName(e.target.value)}/>
             <TextField label='Hit' type='number' onChange={(e) => setWeaponHit(Number(e.target.value))}/>
+            <TextField label='Base Damage' type='number' onChange={(e) => setWeaponBaseDmg(Number(e.target.value))}/>
             <TextField label='Dice Amount' type='number' onChange={(e) => setWeaponDiceAmount(Number(e.target.value))}/>
-            <TextField label='Dice Type' type='number' onChange={(e) => setWeaponDiceType(Number(e.target.value))}/>
-            <TextField label='Damage Modifier' type='number' onChange={(e) => setWeaponDamageModifier(Number(e.target.value))}/>
-            <TextField label='Damage Type' onChange={(e) => setWeaponDamageType(e.target.value)}/>
+            <FormControl sx={{minWidth: '25%'}}>
+              <InputLabel id="class-select-label">Select Dice Type</InputLabel>
+              <Select
+                value={weaponDiceType}
+                label="Select Dice Type"
+                onChange={handleDiceTypeChange}
+              >
+                {diceTypes.map((diceType) => (
+                  <MenuItem key={diceType} value={diceType}>
+                    {diceType}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl sx={{minWidth: '25%'}}>
+              <InputLabel id="class-select-label">Select Modification</InputLabel>
+              <Select
+                value={weaponDamageModifier}
+                label="Select Attribute"
+                onChange={handleAttributeChange}
+              >
+                {attributes.map((attribute) => ( 
+                  <MenuItem key={attribute} value={attribute}>
+                    {attribute}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl sx={{minWidth: '25%'}}>
+              <InputLabel id="class-select-label">Select DamageType</InputLabel>
+              <Select
+                value={weaponDamageType}
+                label="Select Damage Type"
+                onChange={handleDamageTypeChange}
+              >
+                {damageTypes.map((damageType) => (
+                  <MenuItem key={damageType} value={damageType}>
+                    {damageType}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Box>
         </Box>
         <Table sx={sxProps.weaponTable}>
@@ -610,9 +654,9 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
               <TableRow key={index}>
                 <TableCell>{weapon.name}</TableCell>
                 {/* <TableCell>{weapon.hit}</TableCell> */}
-                <TableCell>{weapon.diceAmount}D{weapon.diceType} + {weapon.hit}</TableCell>
+                <TableCell>{weapon.diceAmount}{weapon.diceType} + {weapon.hitModifier}</TableCell>
                 {/* <TableCell>{weapon.diceType}</TableCell> */}
-                <TableCell>{weapon.damageModifier}</TableCell>
+                <TableCell>{weapon.modification}</TableCell>
                 <TableCell>{weapon.damageType}</TableCell>
               </TableRow>
             ))}
