@@ -1,4 +1,4 @@
-import React, {FC, useState} from 'react';
+import React, {FC, useEffect, useState} from 'react';
 import {TextField, Box, Typography, Button, List, ListItem, ListItemText, Table, TableRow, TableHead, TableCell, TableBody, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent} from "@mui/material";
 import DashboardCharacterSheetSkill from './DashboardCharacterSheetSkill.tsx';
 import { ConfirmDialog, useDialogs } from '@toolpad/core/useDialogs';
@@ -37,9 +37,9 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
   }
 
 
-  console.log(importData);
-  console.log(editData);
-  console.log(editId);
+  // console.log(importData);
+  // console.log(editData);
+  // console.log(editId);
   // preData = {
   //   name: "mosaab",
   //   level: 2,
@@ -70,14 +70,45 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
   const [savingThrowsWisdom, setSavingThrowsWisdom] = useState(preData ? preData.wisdom : 0);
   const [savingThrowsCharisma, setSavingThrowsCharisma] = useState(preData ? preData.charisma : 0);
 
+  const allSkills = ["Acrobatics (DEX)","Animal Handling (WIS)","Arcana (INT)","Athletics (STR)","Deception (CHA)","History (INT)","Insight (WIS)","Intimidation (CHA)","Investigation (INT)","Medicine (WIS)","Nature (INT)","Perception (WIS)","Performance (CHA)","Persuasion (CHA)","Religion (INT)","Sleight of Hand (DEX)","Stealth (DEX)","Survival (WIS)"];
   const [skills, setSkills] = useState<{[key: string]: { value: number; isActive: boolean }}>({});
+  const [finalSkills, setFinalSkills] = useState(preData ? preData.temperaroaryModifiers : [['', 0]])
+
+  useEffect(() => {
+    console.log("original skills before",skills);
+    // Initialize skills based on finalSkills
+    if (finalSkills.length > 0) {
+      finalSkills.forEach((skill) => {
+        console.log(skill);
+        handleSkillChange(skill[0], skill[1], true); // Set the skill as active
+      });
+    }
+    console.log("Final skills", finalSkills);
+    console.log("original skills after",skills);
+  }, []);
 
   const handleSkillChange = (skillName: string, value: number, isActive: boolean) => {
     setSkills((prevSkills) => ({
       ...prevSkills,
       [skillName]: {value, isActive},
     }));
+    prepareSkills();
+    console.log(skillName, value, isActive);
+    console.log(skills);
   };
+
+  
+
+  const prepareSkills = () => {
+    const activeSkills = Object.entries(skills)
+      //.filter(([, { isActive }]) => isActive) // Keep only active skills
+      .map(([skillName, { value }]) => [skillName, value] as [string, number]); // Format as [string, number]
+
+    setFinalSkills(activeSkills);
+    // console.log("original skills is", skills);
+    // console.log("final skills is", finalSkills);
+    
+  }
 
   const [initiative, setInitiative] = useState(preData ? preData.initiative : 0);
   const [armorClass, setArmorClass] = useState(preData ? preData.armorClass : 0);
@@ -119,7 +150,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
   const [weaponDamageModifier, setWeaponDamageModifier] = useState('');
   const [weaponDamageType, setWeaponDamageType] = useState('');
   const [weapons, setWeapons] = useState<Weapon[]>(preData ? preData.weapons : []);
-  const [weaponIds, setWeaponIds] = useState<string[]>([]);
+  const [weaponIds, setWeaponIds] = useState<string[]>(preData ? preData.weapons : []);
   // const [newWeapon, setNewWeapon] = useState<Weapon>({
   //   name: '',
   //   hit: 0,
@@ -128,6 +159,27 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
   //   damageModifier: 0,
   //   damageType: 'None'
   // });
+
+  const getWeaponData = async () => {
+    if (editData && editData.weapons) {
+      const weaponDataPromises = editData.weapons.map(async (weapon) => {
+        const weaponId = weapon._id;
+        const weaponData = await apiService.get(`/weapons/${weaponId}`);
+        return weaponData; // Return the fetched weapon data
+      });
+
+      // Wait for all weapon data to be fetched
+      const weaponDataArray = await Promise.all(weaponDataPromises);
+      
+      // Update state with the new weapon data array
+      setWeapons(weaponDataArray);
+      console.log('Fetched weapons:', weaponDataArray);
+    }
+  };
+
+  useEffect(() => {
+    getWeaponData();
+  }, [editData]); 
 
   const handleAttributeChange = (event: SelectChangeEvent<{ value: unknown }>) => {
     setWeaponDamageModifier(event.target.value as Attribute);
@@ -142,14 +194,14 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
   };
 
   const dialogs = useDialogs();
-  const [selectedConditions, setSelectedConditions] = useState<string[]>(/*preData ? preData.conditions : */[]);
-  const [selectedImmunities, setSelectedImmunities] = useState<string[]>(/*preData ? preData.immunities : */[]);
-  const [selectedResistances, setSelectedResistances] = useState<string[]>(/*preData ? preData.resistances : */[]);
-  const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>(/*preData ? preData.vulnerabilities :*/ []);
-  // const [selectedConditions, setSelectedConditions] = useState<string[]>(preData ? preData.status : []);
-  // const [selectedImmunities, setSelectedImmunities] = useState<string[]>(preData ? preData.damageImmunities : []);
-  // const [selectedResistances, setSelectedResistances] = useState<string[]>(preData ? preData.resistances : []);
-  // const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>(preData ? preData.vulnerabilities : []);
+  // const [selectedConditions, setSelectedConditions] = useState<string[]>(/*preData ? preData.conditions : */[]);
+  // const [selectedImmunities, setSelectedImmunities] = useState<string[]>(/*preData ? preData.immunities : */[]);
+  // const [selectedResistances, setSelectedResistances] = useState<string[]>(/*preData ? preData.resistances : */[]);
+  // const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>(/*preData ? preData.vulnerabilities :*/ []);
+  const [selectedConditions, setSelectedConditions] = useState<string[]>(preData ? preData.status : []);
+  const [selectedImmunities, setSelectedImmunities] = useState<string[]>(preData ? preData.damageImmunities : []);
+  const [selectedResistances, setSelectedResistances] = useState<string[]>(preData ? preData.resistances : []);
+  const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>(preData ? preData.vulnerabilities : []);
 
   const handleConditionsOpen = async () => {
     const result = await dialogs.open(CharacterConditions, selectedConditions);
@@ -207,8 +259,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       name: weaponName,
       hitModifier: weaponHit,
       baseDamage: weaponBaseDmg,
-      diceAmount: weaponDiceAmount,
-      diceType: weaponDiceType,
+      damageDice: [weaponDiceType, weaponDiceAmount],
       modification: weaponDamageModifier,
       damageType: weaponDamageType
     };
@@ -218,6 +269,9 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
   const handleSave = async () => {
     console.log("Saving...");
 
+    //prepareSkills();
+    console.log(equipment);
+
     const characterData = {
       name: characterName,
       level: characterLevel,
@@ -226,7 +280,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       abilityScores: { abilityScoreStrength, abilityScoreDexterity, abilityScoreConstitution, abilityScoreIntelligence, abilityScoreWisdom, abilityScoreCharisma },
       abilityModifiers: { abilityModStrength, abilityModDexterity, abilityModConstitution, abilityModIntelligence, abilityModWisdom, abilityModCharisma },
       savingThrows: { savingThrowsStrength, savingThrowsDexterity, savingThrowsConstitution, savingThrowsIntelligence, savingThrowsWisdom, savingThrowsCharisma },
-      skills: skills,
+      temperaroaryModifiers: finalSkills,
       initiative: initiative,
       armorClass: armorClass,
       proficiency: proficiency,
@@ -302,7 +356,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
     
     if (editData){
       try {
-        const response = await apiService.post(`/players/${editId}`, characterData);
+        const response = await apiService.put(`/players/${editId}`, characterData);
         console.log('Player added to database:', response);
       } catch (error) {
         console.error('Error adding player to database:', error);
@@ -504,24 +558,9 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       <Box sx={sxProps.titleContainer}>
         <Typography variant='h4'>Skills</Typography>
         <Box sx={sxProps.skillsColumn}>
-          <DashboardCharacterSheetSkill skillName="Acrobatics (DEX)" onSkillChange={handleSkillChange}/>
-          <DashboardCharacterSheetSkill skillName="Animal Handling (WIS)" onSkillChange={handleSkillChange}/>
-          <DashboardCharacterSheetSkill skillName="Arcana (INT)" onSkillChange={handleSkillChange}/>
-          <DashboardCharacterSheetSkill skillName="Athletics (STR)" onSkillChange={handleSkillChange}/>
-          <DashboardCharacterSheetSkill skillName="Deception (CHA)" onSkillChange={handleSkillChange}/>
-          <DashboardCharacterSheetSkill skillName="History (INT)" onSkillChange={handleSkillChange}/>
-          <DashboardCharacterSheetSkill skillName="Insight (WIS)" onSkillChange={handleSkillChange}/>
-          <DashboardCharacterSheetSkill skillName="Intimidation (CHA)" onSkillChange={handleSkillChange}/>
-          <DashboardCharacterSheetSkill skillName="Investigation (INT)" onSkillChange={handleSkillChange}/>
-          <DashboardCharacterSheetSkill skillName="Medicine (WIS)" onSkillChange={handleSkillChange}/>
-          <DashboardCharacterSheetSkill skillName="Nature (INT)" onSkillChange={handleSkillChange}/>
-          <DashboardCharacterSheetSkill skillName="Perception (WIS)" onSkillChange={handleSkillChange}/>
-          <DashboardCharacterSheetSkill skillName="Performance (CHA)" onSkillChange={handleSkillChange}/>
-          <DashboardCharacterSheetSkill skillName="Persuasion (CHA)" onSkillChange={handleSkillChange}/>
-          <DashboardCharacterSheetSkill skillName="Religion (INT)" onSkillChange={handleSkillChange}/>
-          <DashboardCharacterSheetSkill skillName="Sleight of Hand (DEX)" onSkillChange={handleSkillChange}/>
-          <DashboardCharacterSheetSkill skillName="Stealth (DEX)" onSkillChange={handleSkillChange}/>
-          <DashboardCharacterSheetSkill skillName="Survival (WIS)" onSkillChange={handleSkillChange}/>
+          {allSkills.map((skil) => (
+            <DashboardCharacterSheetSkill skillName={skil} onSkillChange={handleSkillChange} activeSkills={finalSkills}></DashboardCharacterSheetSkill>
+          ))}
         </Box>
       </Box>
 
@@ -558,7 +597,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       {/* Conditions */}
       <Box sx={sxProps.titleContainer}>
         <Typography variant='h4'>Conditions</Typography>
-        <Typography>{selectedConditions.length > 0 ? selectedConditions.join(', ') : 'No conditions selected.'}</Typography>
+        <Typography>{(selectedConditions && selectedConditions.length > 0) ? selectedConditions.join(', ') : 'No conditions selected.'}</Typography>
         <Button onClick={handleConditionsOpen} variant='contained' color='primary'>Edit Conditions</Button>
       </Box>
 
@@ -568,19 +607,19 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
         {/* Resistances */}
         <Box sx={sxProps.modalContainer}>
           <Typography variant='h6'>Resistances</Typography>
-          <Typography>{selectedResistances.length > 0 ? selectedResistances.join(', ') : 'No resistances selected.'}</Typography>
+          <Typography>{(selectedResistances && selectedResistances.length > 0) ? selectedResistances.join(', ') : 'No resistances selected.'}</Typography>
           <Button onClick={handleResistancesOpen} variant='contained' color='primary'>Edit Resistances</Button>
         </Box>
         {/* Immunities */}
         <Box sx={sxProps.modalContainer}>
           <Typography variant='h6'>Immunities</Typography>
-          <Typography>{selectedImmunities.length > 0 ? selectedImmunities.join(', ') : 'No immunities selected.'}</Typography>
+          <Typography>{(selectedImmunities && selectedImmunities.length > 0 ) ? selectedImmunities.join(', ') : 'No immunities selected.'}</Typography>
           <Button onClick={handleImmunitiesOpen} variant='contained' color='primary'>Edit Immunities</Button>
         </Box>
         {/* Vulnerabilities */}
         <Box sx={sxProps.modalContainer}>
           <Typography variant='h6'>Vulnerability</Typography>
-          <Typography>{selectedVulnerabilities.length > 0 ? selectedVulnerabilities.join(', ') : 'No Vulnerabilities selected.'}</Typography>
+          <Typography>{(selectedVulnerabilities && selectedVulnerabilities.length > 0) ? selectedVulnerabilities.join(', ') : 'No Vulnerabilities selected.'}</Typography>
           <Button onClick={handleVulnerabilitiesOpen} variant='contained' color='primary'>Edit Vulnerabilities</Button>
         </Box>
       </Box>
@@ -654,7 +693,20 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
               <TableRow key={index}>
                 <TableCell>{weapon.name}</TableCell>
                 {/* <TableCell>{weapon.hit}</TableCell> */}
-                <TableCell>{weapon.diceAmount}{weapon.diceType} + {weapon.hitModifier}</TableCell>
+                {/* <TableCell>
+                  {editData ? (
+                    // If editData exists, show the dice type and amount differently
+                    <span>
+                      {weapon.damageDice[1]}{weapon.damageDice[0]} + {weapon.hitModifier}
+                    </span>
+                  ) : (
+                    // Default display if editData does not exist
+                    <span>
+                      {weapon.diceAmount}{weapon.diceType} + {weapon.hitModifier}
+                    </span>
+                  )}
+                </TableCell> */}
+                <TableCell>{weapon.damageDice[1]}{weapon.damageDice[0]} + {weapon.hitModifier}</TableCell>
                 {/* <TableCell>{weapon.diceType}</TableCell> */}
                 <TableCell>{weapon.modification}</TableCell>
                 <TableCell>{weapon.damageType}</TableCell>

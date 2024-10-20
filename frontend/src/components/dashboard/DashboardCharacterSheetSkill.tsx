@@ -4,11 +4,15 @@ import {TextField, Box, FormControlLabel, Switch} from "@mui/material";
 interface DashboardCharacterSheetSkillProps {
   skillName: string;
   onSkillChange: (skillName: string, value: number, isActive: boolean) => void;
+  activeSkills: [[string, number]];
 }
 
-const DashboardCharacterSheetSkill: FC<DashboardCharacterSheetSkillProps> = ({skillName, onSkillChange}) => {
-  const [isActive, setIsActive] = useState(false);
-  const [value, setValue] = useState(0);
+const DashboardCharacterSheetSkill: FC<DashboardCharacterSheetSkillProps> = ({skillName, onSkillChange, activeSkills}) => {
+  const activeSkill = activeSkills.find(([str, num]) => str === skillName);
+  //console.log(activeSkills);
+
+  const [isActive, setIsActive] = useState(activeSkill ? true : false);
+  const [value, setValue] = useState(activeSkill ? activeSkill[1] : 0);
 
   const handleSwitchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newActiveState = event.target.checked;
