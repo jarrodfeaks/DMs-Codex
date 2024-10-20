@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Typography, Box, Link } from "@mui/material";
+import { Typography, Box, Link, Divider } from "@mui/material";
 import { useCurrentCampaign } from "./app.context.ts";
 import DashboardCharacterSheet from "../components/dashboard/DashboardCharacterSheet.tsx";
 import DashboardMain from "../components/dashboard/DashboardMain.tsx";
@@ -38,7 +38,28 @@ export default function Campaign() {
                 </Box>
             )}
             <Typography variant="h3" sx={{ mb: 2 }}>
-                {showCharacterSheet ? "Character Sheet" : `Dashboard - ${currentCampaign?.name}`}
+                {showCharacterSheet ? (
+                    "Character Sheet"
+                ) : (
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <span>Dashboard</span>
+                        {currentCampaign?.name && (
+                            <>
+                                <Divider orientation="vertical" flexItem sx={{ mx: 2, my: 1 }} />
+                                <Typography
+                                    component="span"
+                                    variant="h4"
+                                    sx={{
+                                        fontWeight: 'normal',
+                                        color: 'text.secondary'
+                                    }}
+                                >
+                                    {currentCampaign.name}
+                                </Typography>
+                            </>
+                        )}
+                    </Box>
+                )}
             </Typography>
             {showCharacterSheet ? (
                 <DashboardCharacterSheet importData={importData} />

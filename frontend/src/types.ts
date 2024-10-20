@@ -18,7 +18,11 @@ enum LoginStatus {
 
 interface Campaign {
     _id: string;
+    dmId: string;
     name: string;
+    players: Player[];
+    encounters: unknown[]; // TODO: define these types
+    monsters: unknown[];
 }
 
 interface Player {
