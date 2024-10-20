@@ -74,28 +74,38 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
   const [skills, setSkills] = useState<{[key: string]: { value: number; isActive: boolean }}>({});
   const [finalSkills, setFinalSkills] = useState(preData ? preData.temperaroaryModifiers : [['', 0]])
 
-  useEffect(() => {
-    console.log("original skills before",skills);
-    // Initialize skills based on finalSkills
-    if (finalSkills.length > 0) {
-      finalSkills.forEach((skill) => {
-        console.log(skill);
-        handleSkillChange(skill[0], skill[1], true); // Set the skill as active
-      });
-    }
-    console.log("Final skills", finalSkills);
-    console.log("original skills after",skills);
-  }, []);
+  // useEffect(() => {
+  //   console.log("original skills before",skills);
+  //   // Initialize skills based on finalSkills
+  //   if (finalSkills.length > 0) {
+  //     finalSkills.forEach((skill) => {
+  //       console.log(skill);
+  //       handleSkillChange(skill[0], skill[1], true); // Set the skill as active
+  //     });
+  //   }
+  //   console.log("Final skills", finalSkills);
+  //   console.log("original skills after",skills);
+  // }, []);
 
   const handleSkillChange = (skillName: string, value: number, isActive: boolean) => {
-    setSkills((prevSkills) => ({
-      ...prevSkills,
-      [skillName]: {value, isActive},
-    }));
-    prepareSkills();
-    console.log(skillName, value, isActive);
-    console.log(skills);
+    const index = finalSkills.findIndex(([name]) => name === skillName);
+  
+    if (isActive) {
+      if (index !== -1) {
+        // Update existing skill
+        finalSkills[index][1] = value;
+      } else {
+        // Add new skill if it doesn't exist
+        finalSkills.push([skillName, value]);
+      }
+    } else {
+      // Remove skill if inactive
+      if (index !== -1) {
+        finalSkills.splice(index, 1); // Remove the element at the found index
+      }
+    }
   };
+  
 
   
 
