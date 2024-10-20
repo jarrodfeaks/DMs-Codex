@@ -33,8 +33,26 @@ export default function Sidebar({ user, campaigns, currentCampaign }: { user: Us
         }
 
         return campaigns.map((campaign) => {
+            const isCurrentCampaign = currentCampaign && campaign._id === currentCampaign._id;
             return (
-                <ListItemButton key={campaign._id} sx={{ pl: 4 }} onClick={() => handleOpenCampaign(campaign._id)}>
+                <ListItemButton
+                    key={campaign._id}
+                    sx={{
+                        pl: 4,
+                        position: 'relative',
+                        '&::before': isCurrentCampaign ? {
+                            content: '""',
+                            position: 'absolute',
+                            left: '0.5rem',
+                            top: "20%",
+                            bottom: "20%",
+                            width: '0.25rem',
+                            backgroundColor: 'primary.main',
+                            borderRadius: '2px',
+                        } : {}
+                    }}
+                    onClick={() => handleOpenCampaign(campaign._id)}
+                >
                     <ListItemText primary={campaign.name} />
                 </ListItemButton>
             )
