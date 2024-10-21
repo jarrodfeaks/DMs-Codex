@@ -56,9 +56,17 @@ export default function Encounter() {
         }
     };
 
-    const handleNextTurn = () => {
-        setCurrentTurn((prevTurn) => (prevTurn + 1) % players.length);
-    };
+const handleNextTurn = async () => {
+    const nextTurn = (currentTurn + 1) % players.length;
+    setCurrentTurn(nextTurn);
+    
+    try {
+        const response = await apiService.get(`/api/players/${players[nextTurn]._id}`);
+        setCurrentPlayer(response.data);
+    } catch (err) {
+        setError('Failed to fetch player information');
+    }
+};
     
 
     const [showAddButtons, setShowAddButtons] = useState(true);
@@ -231,14 +239,14 @@ export default function Encounter() {
         );
     };
 
-    const initiativeOrder = [
-        { name: 'Joseph Kizana', initiative: 20, hp: 40, maxHp: 50, ac: 19 },
-        { name: 'Mosaab Saleem', initiative: 19, hp: 50, maxHp: 50, ac: 20 },
-        { name: 'Sydney Melendres', initiative: 16, hp: 25, maxHp: 50, ac: 15 },
-        { name: 'Justin Tran', initiative: 12, hp: 40, maxHp: 50, ac: 21 },
-        { name: 'Samuel Coa', initiative: 9, hp: 0, maxHp: 30, ac: 12 },
-        { name: 'Jarrod Feaks', initiative: 8, hp: 0, maxHp: 50, ac: 23 },
-    ];
+    // const initiativeOrder = [
+    //     { name: 'Joseph Kizana', initiative: 20, hp: 40, maxHp: 50, ac: 19 },
+    //     { name: 'Mosaab Saleem', initiative: 19, hp: 50, maxHp: 50, ac: 20 },
+    //     { name: 'Sydney Melendres', initiative: 16, hp: 25, maxHp: 50, ac: 15 },
+    //     { name: 'Justin Tran', initiative: 12, hp: 40, maxHp: 50, ac: 21 },
+    //     { name: 'Samuel Coa', initiative: 9, hp: 0, maxHp: 30, ac: 12 },
+    //     { name: 'Jarrod Feaks', initiative: 8, hp: 0, maxHp: 50, ac: 23 },
+    // ];
 
     const handleTargetStatChange = (stat, value) => {
         setSelectedTarget(prevTarget => ({
@@ -406,8 +414,8 @@ export default function Encounter() {
         setNotes(newNotes);
     };
 
-    const handleTargetSelection = (targetName) => {
-        const target = initiativeOrder.find(char => char.name === targetName);
+    const handleTargetSelection = (targetId) => {
+        const target = players.find(player => player._id === targetId);
         setSelectedTarget(target);
     };
 
@@ -880,9 +888,14 @@ export default function Encounter() {
                         {renderActionSpecificDropdown()}
                         <Box sx={sxProps.actionItem}>
                             <Typography>Target</Typography>
-                            <Select value={selectedTarget ? selectedTarget.name : ""} onChange={(e) => handleTargetSelection(e.target.value)} size="small" fullWidth>
-                                {initiativeOrder.map((character) => (
-                                    <MenuItem key={character.name} value={character.name}>{character.name}</MenuItem>
+                            <Select 
+                                value={selectedTarget ? selectedTarget._id : ""} 
+                                onChange={(e) => handleTargetSelection(e.target.value)} 
+                                size="small" 
+                                fullWidth
+                            >
+                                {players.map((player) => (
+                                    <MenuItem key={player._id} value={player._id}>{player.name}</MenuItem>
                                 ))}
                             </Select>
                         </Box>
