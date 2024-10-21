@@ -2,13 +2,17 @@ import React, { useState, useRef, useEffect } from "react";
 import { Send } from '@mui/icons-material';
 import { Action, Dice, Weapon, WeaponCategories } from '../../../shared/enums.ts';
 import AddIcon from "@mui/icons-material/Add";
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import SecurityIcon from '@mui/icons-material/Security';
+import FaceRetouchingOffIcon from '@mui/icons-material/FaceRetouchingOff';
 import {
     Box,
     Button,
     Card,
+    Checkbox,
     Chip,
     CircularProgress,
-    Collapse,
     IconButton,
     InputAdornment,
     ListSubheader,
@@ -33,7 +37,6 @@ import {apiService} from "../services/apiService.ts";
 
 export default function Encounter() {
     const [showRemoveButtons, setShowRemoveButtons] = useState(false);
-
     const removePlayerFromQueue = (playerId: string) => {
         const newPlayers = players.filter((player) => player._id !== playerId);
         setPlayers(newPlayers);
@@ -296,6 +299,30 @@ export default function Encounter() {
         };
     }, []);
 
+    const DeathSaves = () => {
+        const [deathSaves, setDeathSaves] = useState([false, false, false, false, false]);
+      
+        const handleDeathSaveToggle = (index) => {
+          const newDeathSaves = [...deathSaves];
+          newDeathSaves[index] = !newDeathSaves[index];
+          setDeathSaves(newDeathSaves);
+        };
+      
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <FaceRetouchingOffIcon />
+            {deathSaves.map((checked, index) => (
+              <Checkbox
+                key={index}
+                checked={checked}
+                onChange={() => handleDeathSaveToggle(index)}
+                size="small"
+              />
+            ))}
+          </Box>
+        );
+      };
+
     const sxProps = {
         encounterScreen: {
             display: "flex",
@@ -467,8 +494,8 @@ export default function Encounter() {
             <Card sx={sxProps.columnCard}>
               <Typography variant="subtitle2">Status</Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <Typography>Hit Points:</Typography>
-                <TextField
+              <Typography><FavoriteIcon />  Hit Points:</Typography>
+              <TextField
                   type="number"
                   value={selectedTarget.hp}
                   onChange={(e) => handleTargetStatChange('hp', e.target.value)}
@@ -485,7 +512,7 @@ export default function Encounter() {
                 />
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <Typography>Temp HP:</Typography>
+                <Typography><FavoriteBorderIcon />  Temp HP:</Typography>
                 <TextField
                   type="number"
                   value={selectedTarget.tempHp || 0}
@@ -495,7 +522,7 @@ export default function Encounter() {
                 />
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography>AC:</Typography>
+                <Typography><SecurityIcon />   AC:</Typography>
                 <TextField
                   type="number"
                   value={selectedTarget.ac}
@@ -505,8 +532,7 @@ export default function Encounter() {
                 />
               </Box>
             <Box sx={sxProps.deathSaves}>
-                <Typography>☠</Typography>
-                <Box>□□□□□</Box>
+                <Box><DeathSaves /></Box>
             </Box>
             <Box sx={sxProps.targetSection}>
                 <Card sx={sxProps.columnCard}>
@@ -608,11 +634,17 @@ export default function Encounter() {
                         sx={{
                             ...sxProps.columnCard,
                             ...sxProps.initiativeItem,
-                            ...(initiativeStarted && index === currentTurn && sxProps.initiativeItemActive)
+                            ...(initiativeStarted && index === currentTurn && sxProps.initiativeItemActive),
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '8px 16px',
                         }}
                     >
-                        <Typography>{index + 1}. {player.name}</Typography>
-                        <Typography>Level {player.level} {player.class}</Typography>
+                        <Box sx={{ flexGrow: 1 }}>
+                            <Typography>{index + 1}. {player.name}</Typography>
+                            <Typography>Level {player.level} {player.class}</Typography>
+                        </Box>
                         <ToggleButtonGroup
                             value={formatsByCharacter[player.name] || []}
                             onChange={(event, newFormats) => handleFormat(player.name, event, newFormats)}
@@ -711,7 +743,7 @@ export default function Encounter() {
                 <Card sx={sxProps.columnCard}>
                     <Typography variant="subtitle2">Status</Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                        <Typography>Hit Points:</Typography>
+                        <Typography><FavoriteIcon />  Hit Points:</Typography>
                         <TextField
                             type="number"
                             value={currentHP}
@@ -729,7 +761,7 @@ export default function Encounter() {
                         />
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                        <Typography>Temp HP:</Typography>
+                        <Typography><FavoriteBorderIcon />  Temp HP:</Typography>
                         <TextField
                             type="number"
                             value={tempHP}
@@ -739,7 +771,7 @@ export default function Encounter() {
                         />
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography>AC:</Typography>
+                        <Typography><SecurityIcon />   AC:</Typography>
                         <TextField
                             type="number"
                             value={armorClass}
@@ -747,6 +779,9 @@ export default function Encounter() {
                             size="small"
                             sx={{ width: 100 }}
                         />
+                    </Box>
+                    <Box sx={sxProps.deathSaves}>
+                        <Box><DeathSaves /></Box>
                     </Box>
                 </Card>
 
