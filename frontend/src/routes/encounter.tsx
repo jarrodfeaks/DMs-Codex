@@ -490,50 +490,51 @@ export default function Encounter() {
 
         return (
           <Box sx={sxProps.targetSection}>
-            <Typography variant="h6">{selectedTarget.name}</Typography>
-            <Card sx={sxProps.columnCard}>
-              <Typography variant="subtitle2">Status</Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-              <Typography><FavoriteIcon />  Hit Points:</Typography>
-              <TextField
-                  type="number"
-                  value={selectedTarget.hp}
-                  onChange={(e) => handleTargetStatChange('hp', e.target.value)}
-                  size="small"
-                  sx={{ width: 60 }}
-                />
-                <Typography>/</Typography>
-                <TextField
-                  type="number"
-                  value={selectedTarget.maxHp}
-                  onChange={(e) => handleTargetStatChange('maxHp', e.target.value)}
-                  size="small"
-                  sx={{ width: 60 }}
-                />
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <Typography><FavoriteBorderIcon />  Temp HP:</Typography>
-                <TextField
-                  type="number"
-                  value={selectedTarget.tempHp || 0}
-                  onChange={(e) => handleTargetStatChange('tempHp', e.target.value)}
-                  size="small"
-                  sx={{ width: 60 }}
-                />
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography><SecurityIcon />   AC:</Typography>
-                <TextField
-                  type="number"
-                  value={selectedTarget.ac}
-                  onChange={(e) => handleTargetStatChange('ac', e.target.value)}
-                  size="small"
-                  sx={{ width: 60 }}
-                />
-              </Box>
-            <Box sx={sxProps.deathSaves}>
-                <Box><DeathSaves /></Box>
-            </Box>
+                <Typography variant="h6">{selectedTarget.name}</Typography>
+                <Card sx={sxProps.columnCard}>
+                <Typography variant="subtitle2">Status</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <Typography><FavoriteIcon />  Hit Points:</Typography>
+                    <TextField
+                        type="number"
+                        value={selectedTarget.hp}
+                        onChange={(e) => handleTargetStatChange('hp', e.target.value)}
+                        size="small"
+                        sx={{ width: 60 }}
+                        />
+                        <Typography>/</Typography>
+                        <TextField
+                        type="number"
+                        value={selectedTarget.maxHp}
+                        onChange={(e) => handleTargetStatChange('maxHp', e.target.value)}
+                        size="small"
+                        sx={{ width: 60 }}
+                        />
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <Typography><FavoriteBorderIcon />  Temp HP:</Typography>
+                    <TextField
+                    type="number"
+                    value={selectedTarget.tempHp || 0}
+                    onChange={(e) => handleTargetStatChange('tempHp', e.target.value)}
+                    size="small"
+                    sx={{ width: 60 }}
+                    />
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography><SecurityIcon />   AC:</Typography>
+                    <TextField
+                    type="number"
+                    value={selectedTarget.ac}
+                    onChange={(e) => handleTargetStatChange('ac', e.target.value)}
+                    size="small"
+                    sx={{ width: 60 }}
+                    />
+                </Box>
+                <Box sx={sxProps.deathSaves}>
+                    <Box><DeathSaves /></Box>
+                </Box>
+            </Card>
             <Box sx={sxProps.targetSection}>
                 <Card sx={sxProps.columnCard}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
@@ -559,6 +560,8 @@ export default function Encounter() {
                         </Box>
                     )}
                 </Card>
+            </Box>
+            <Box sx={sxProps.targetSection}>
                 <Card sx={sxProps.columnCard}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                         <Typography variant="subtitle2">Defenses</Typography>
@@ -619,7 +622,6 @@ export default function Encounter() {
                     )}
                 </Card>
             </Box>
-            </Card>
           </Box>
         );
       };
