@@ -31,6 +31,24 @@ import AttackModal from "../components/modals/AttackModal";
 import {apiService} from "../services/apiService.ts";
 
 export default function Encounter() {
+
+    const [initiativeStarted, setInitiativeStarted] = useState(false);
+    const [currentTurn, setCurrentTurn] = useState(0);
+
+    const handleStartInitiative = () => {
+        if (players.length > 0) {
+            setInitiativeStarted(true);
+            setCurrentTurn(0);
+        }
+    };
+
+    const handleNextTurn = () => {
+        setCurrentTurn((prevTurn) => (prevTurn + 1) % players.length);
+    };
+    
+
+    const [showAddButtons, setShowAddButtons] = useState(true);
+
     const [hitPoints, setHitPoints] = useState("30/50");
     const [originalHitPoints, setOriginalHitPoints] = useState(hitPoints);
     const [tempHP, setTempHP] = useState(10);
@@ -239,7 +257,7 @@ export default function Encounter() {
     const buttonContainerRef = useRef<HTMLElement>(null);
 
     const handleAddInitiative = () => {
-        setShowButtons(true);
+        setShowAddButtons(true);
     };
 
     const handleGenerateSuggestion = () => {
@@ -249,7 +267,8 @@ export default function Encounter() {
 
     const addPlayerToQueue = (player: Player) => {
         setPlayers([...players, player]);
-    };
+        setShowAddButtons(false);
+      };
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -571,30 +590,34 @@ export default function Encounter() {
         <Box sx={sxProps.encounterScreen}>
             <Box sx={sxProps.encounterColumn}>
                 <Typography variant="h6" sx={sxProps.columnTitle}>INITIATIVE</Typography>
-                {players.map((character, index) => (
+                {players.map((player, index) => (
                     <Card
-                        key={character._id}
-                        sx={{ ...sxProps.columnCard, ...sxProps.initiativeItem, ...(isActive(character.name) && sxProps.initiativeItemActive) }}
+                        key={player._id}
+                        sx={{
+                            ...sxProps.columnCard,
+                            ...sxProps.initiativeItem,
+                            ...(initiativeStarted && index === currentTurn && sxProps.initiativeItemActive)
+                        }}
                     >
-                        <Typography>{index + 1}. {character.name}</Typography>
-                        <Typography>Level {character.level} {character.class}</Typography>
+                        <Typography>{index + 1}. {player.name}</Typography>
+                        <Typography>Level {player.level} {player.class}</Typography>
                         <ToggleButtonGroup
-                            value={formatsByCharacter[character.name] || []}
-                            onChange={(event, newFormats) => handleFormat(character.name, event, newFormats)}
+                            value={formatsByCharacter[player.name] || []}
+                            onChange={(event, newFormats) => handleFormat(player.name, event, newFormats)}
                             sx={{ maxHeight: '40px' }}>
                             {['action', 'bonus', 'reaction'].map(type => (
                                 <ToggleButton
                                     key={type}
                                     value={type}
                                     sx={{
-                                        backgroundColor: (formatsByCharacter[character.name] || []).includes(type)
+                                        backgroundColor: (formatsByCharacter[player.name] || []).includes(type)
                                             ? 'primary.dark' //when selected
                                             : 'primary.main', //not selcted
-                                        color: (formatsByCharacter[character.name] || []).includes(type)
+                                        color: (formatsByCharacter[player.name] || []).includes(type)
                                             ? 'black' //selected
                                             : 'white', //notselected
                                         '&:hover': {
-                                            backgroundColor: (formatsByCharacter[character.name] || []).includes(type)
+                                            backgroundColor: (formatsByCharacter[player.name] || []).includes(type)
                                                 ? 'primary.main' //hoverselected
                                                 : 'primary.dark',
                                             color: 'white' //hovertext
@@ -607,24 +630,52 @@ export default function Encounter() {
                     </Card>
                 ))}
                 <Card sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 1, borderRadius: 0.5 }}>
-                    <IconButton size="small" >
-                        <AddIcon onClick={handleAddInitiative}/>
+                    <IconButton size="small" onClick={handleAddInitiative}>
+                        <AddIcon />
                     </IconButton>
                 </Card>
 
-                <Box ref={buttonContainerRef}>
-                    <Collapse in={showButtons}>
-                        <Button onClick={handleOpenPlayerList} variant="contained" color="primary" sx={{ width: '100%', marginTop: '5px', marginBottom: '5px' }}>
-                            Add from player list
-                        </Button>
-                        <Button onClick={handleOpenBestiary} variant="contained" color="primary" sx={{ width: '100%', marginTop: '5px', marginBottom: '5px' }}>
-                            Add from bestiary
-                        </Button>
-                        <Button onClick={handleOpenAIGenerate} variant="contained" color="primary" sx={{ width: '100%', marginTop: '5px', marginBottom: '5px' }}>
-                            AI Generate Encounter!
-                        </Button>
-                    </Collapse>
+                
+
+                <Box ref={useRef(null)}>
+                    {showAddButtons && (
+                        <>
+                            <Button onClick={handleOpenPlayerList} variant="contained" color="primary" sx={{ width: '100%', marginTop: '5px', marginBottom: '5px' }}>
+                                Add from player list
+                            </Button>
+                            <Button onClick={handleOpenBestiary} variant="contained" color="primary" sx={{ width: '100%', marginTop: '5px', marginBottom: '5px' }}>
+                                Add from bestiary
+                            </Button>
+                            <Button onClick={handleOpenAIGenerate} variant="contained" color="primary" sx={{ width: '100%', marginTop: '5px', marginBottom: '5px' }}>
+                                AI Generate Encounter!
+                            </Button>
+                        </>
+                    )}
                 </Box>
+                
+
+                {!initiativeStarted && (
+                    <Button
+                        onClick={handleStartInitiative}
+                        variant="contained"
+                        color="primary"
+                        sx={{ width: '100%', marginTop: '10px' }}
+                        disabled={players.length === 0}
+                    >
+                        Start Initiative
+                    </Button>
+                )}
+
+                {initiativeStarted && (
+                    <Button
+                        onClick={handleNextTurn}
+                        variant="contained"
+                        color="primary"
+                        sx={{ width: '100%', marginTop: '10px' }}
+                    >
+                        Next Turn
+                    </Button>
+                )}
             </Box>
 
             {/* PLAYER SELECTED OR CURRENT TURN IN INITIATIVE ORDER IN QUEUE */}
@@ -748,7 +799,7 @@ export default function Encounter() {
                         <Box sx={sxProps.actionItem}>
                             <Typography>Type</Typography>
                             <TextField
-                            placeholder="Type here..."
+                            placeholder="Enter type"
                             size="small"
                             fullWidth
                         />
