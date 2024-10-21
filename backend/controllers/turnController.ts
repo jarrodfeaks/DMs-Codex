@@ -8,7 +8,8 @@ import { Encounter } from '../models/encounterModel';
 const getTurnInformation = async (req: Request, res: Response) => {
     try {
         const turnId = req.params.id;
-        const turn = await Turn.findById(turnId);
+        const turn = await Turn.findById(turnId)
+        .populate('weapon');
         if (turn) {
             res.status(200).json(turn);
         } else {

@@ -33,7 +33,8 @@ const getDMCampaigns = async (req: Request, res: Response) => {
         const campaigns = await Campaign.find({ dmId: dmId })
         .populate('encounters')
         .populate('players')
-        .populate('monsters');
+        .populate('monsters')
+        .populate('current_turn');
         if (campaigns.length > 0) {
             res.status(200).json(campaigns);
         } else {
