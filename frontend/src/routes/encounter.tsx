@@ -80,7 +80,6 @@ const handleNextTurn = async () => {
     const [loadingDefenses, setLoadingDefenses] = useState(true);
     const [selectedAction, setSelectedAction] = useState<Action>(Action.Attack);
     const [selectedWeapon, setSelectedWeapon] = useState<Weapon | ''>('');
-    const [selectedSpell, setSelectedSpell] = useState<string>('');
     const [selectedTarget, setSelectedTarget] = useState(null);
     const [bonusModifier, setBonusModifier] = useState<number>(2);
     const [accuracyDice, setAccuracyDice] = useState<number>(1);
@@ -154,22 +153,124 @@ const handleNextTurn = async () => {
     const [selectedResistances, setSelectedResistances] = useState<string[]>([]);
     const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>([]);
 
-    const handleConditionsOpen = async () => {
-        const conditions = await dialogs.open(CharacterConditions, selectedConditions);
-        setSelectedConditions(conditions);
-    };
-
-    const handleDefensesOpen = async () => {
+    const handleConditionsOpen = async (type: 'current' | 'target') => {
+        const conditions = await dialogs.open(CharacterConditions, type === 'current' ? currentConditions : targetConditions);
+        if (type === 'current') {
+          setCurrentConditions(conditions);
+        } else {
+          setTargetConditions(conditions);
+        }
+      };
+      
+      const handleDefensesOpen = async (type: 'current' | 'target') => {
         const defenses = await dialogs.open(EncounterDefenses, { 
-            immunities: selectedImmunities, 
-            resistances: selectedResistances, 
-            vulnerabilities: selectedVulnerabilities 
+          immunities: type === 'current' ? currentImmunities : targetImmunities, 
+          resistances: type === 'current' ? currentResistances : targetResistances, 
+          vulnerabilities: type === 'current' ? currentVulnerabilities : targetVulnerabilities 
         });
-        setSelectedImmunities(defenses.immunities || []);
-        setSelectedResistances(defenses.resistances || []);
-        setSelectedVulnerabilities(defenses.vulnerabilities || []);
+        
+        if (type === 'current') {
+          setCurrentImmunities(defenses.immunities || []);
+          setCurrentResistances(defenses.resistances || []);
+          setCurrentVulnerabilities(defenses.vulnerabilities || []);
+        } else {
+          setTargetImmunities(defenses.immunities || []);
+          setTargetResistances(defenses.resistances || []);
+          setTargetVulnerabilities(defenses.vulnerabilities || []);
+        }
+      };
+
+    // For current player
+    const [currentConditionsOpen, setCurrentConditionsOpen] = useState(false);
+    const [currentImmunitiesOpen, setCurrentImmunitiesOpen] = useState(false);
+    const [currentResistancesOpen, setCurrentResistancesOpen] = useState(false);
+    const [currentVulnerabilitiesOpen, setCurrentVulnerabilitiesOpen] = useState(false);
+
+    // For target player
+    const [targetConditionsOpen, setTargetConditionsOpen] = useState(false);
+    const [targetImmunitiesOpen, setTargetImmunitiesOpen] = useState(false);
+    const [targetResistancesOpen, setTargetResistancesOpen] = useState(false);
+    const [targetVulnerabilitiesOpen, setTargetVulnerabilitiesOpen] = useState(false);
+
+    // Handler functions for current player
+    const handleCurrentConditionsOpen = () => setCurrentConditionsOpen(true);
+    const handleCurrentConditionsClose = async (result) => {
+    setCurrentConditions(result);
+    setCurrentConditionsOpen(false);
     };
 
+    // Similar handlers for immunities, resistances, and vulnerabilities
+    const handleCurrentImmunitiesOpen = () => setCurrentImmunitiesOpen(true);
+    const handleCurrentImmunitiesClose = async (result) => {
+        setCurrentImmunities(result);
+        setCurrentImmunitiesOpen(false);
+    }
+
+    const handleCurrentResistancesOpen = () => setCurrentResistancesOpen(true);
+    const handleCurrentResistancesClose = async (result) => {
+        setCurrentResistances(result);
+        setCurrentResistancesOpen(false);
+    }
+    
+    const handleCurrentVulnerabilitiesOpen = () => setCurrentVulnerabilitiesOpen(true);
+    const handleCurrentVulnerabilitiesClose = async (result) => {
+        setCurrentVulnerabilities(result);
+        setCurrentVulnerabilitiesOpen(false);
+    }
+    
+    // Handler functions for target player
+    const handleTargetConditionsOpen = () => setTargetConditionsOpen(true);
+    const handleTargetConditionsClose = async (result) => {
+        setTargetConditions(result);
+        setTargetConditionsOpen(false);
+    };
+    
+    // Similar handlers for immunities, resistances, and vulnerabilities
+    const handleTargetImmunitiesOpen = () => setTargetImmunitiesOpen(true);
+    const handleTargetImmunitiesClose = async (result) => {
+        setTargetImmunities(result);
+        setTargetImmunitiesOpen(false);
+    }
+
+    const handleTargetResistancesOpen = () => setTargetResistancesOpen(true);
+    const handleTargetResistancesClose = async (result) => {
+        setTargetResistances(result);
+        setTargetResistancesOpen(false);
+    }
+    
+    const handleTargetVulnerabilitiesOpen = () => setTargetVulnerabilitiesOpen(true);
+    const handleTargetVulnerabilitiesClose = async (result) => {
+        setTargetVulnerabilities(result);
+        setTargetVulnerabilitiesOpen(false);
+    }
+
+    // Separate state for current player and target defenses
+    const [currentDefensesOpen, setCurrentDefensesOpen] = useState(false);
+    const [targetDefensesOpen, setTargetDefensesOpen] = useState(false);
+
+    // Handlers for current player defenses
+    const handleCurrentDefensesOpen = () => setCurrentDefensesOpen(true);
+    const handleCurrentDefensesClose = async (result) => {
+        if (result) {
+            setCurrentImmunities(result.immunities || []);
+            setCurrentResistances(result.resistances || []);
+            setCurrentVulnerabilities(result.vulnerabilities || []);
+        }
+        setCurrentDefensesOpen(false);
+    };
+
+    // Handlers for target player defenses
+    const handleTargetDefensesOpen = () => setTargetDefensesOpen(true);
+    const handleTargetDefensesClose = async (result) => {
+        if (result) {
+            setTargetImmunities(result.immunities || []);
+            setTargetResistances(result.resistances || []);
+            setTargetVulnerabilities(result.vulnerabilities || []);
+        }
+        setTargetDefensesOpen(false);
+    };
+    
+    
     const handleAttackOpen = async () => {
         //Examnple of payload
         const payload = { damageDices: [[Dice.D6, 3]]};        
@@ -215,28 +316,34 @@ const handleNextTurn = async () => {
         }
     };
 
-    const handleDeleteCondition = (conditionToDelete: string) => {
-        setSelectedConditions(prevConditions =>
+    const handleDeleteCondition = (conditionToDelete) => {
+        setCurrentConditions(prevConditions => 
             prevConditions.filter(condition => condition !== conditionToDelete)
         );
     };
 
-    const handleDeleteImmunity = (immunityToDelete: string) => {
-        setSelectedImmunities(prevImmunities =>
-            prevImmunities.filter(immunity => immunity !== immunityToDelete)
-        );
+    const handleDeleteImmunity = (immunity: string, isCurrentPlayer: boolean) => {
+        if (isCurrentPlayer) {
+            setCurrentImmunities(prev => prev.filter(i => i !== immunity));
+        } else {
+            setTargetImmunities(prev => prev.filter(i => i !== immunity));
+        }
     };
-
-    const handleDeleteResistance = (resistanceToDelete: string) => {
-        setSelectedResistances(prevResistances =>
-            prevResistances.filter(resistance => resistance !== resistanceToDelete)
-        );
+    
+    const handleDeleteResistance = (resistance: string, isCurrentPlayer: boolean) => {
+        if (isCurrentPlayer) {
+            setCurrentResistances(prev => prev.filter(r => r !== resistance));
+        } else {
+            setTargetResistances(prev => prev.filter(r => r !== resistance));
+        }
     };
-
-    const handleDeleteVulnerability = (vulnerabilityToDelete: string) => {
-        setSelectedVulnerabilities(prevVulnerabilities =>
-            prevVulnerabilities.filter(vulnerability => vulnerability !== vulnerabilityToDelete)
-        );
+    
+    const handleDeleteVulnerability = (vulnerability: string, isCurrentPlayer: boolean) => {
+        if (isCurrentPlayer) {
+            setCurrentVulnerabilities(prev => prev.filter(v => v !== vulnerability));
+        } else {
+            setTargetVulnerabilities(prev => prev.filter(v => v !== vulnerability));
+        }
     };
 
     // const initiativeOrder = [
@@ -547,7 +654,12 @@ const handleNextTurn = async () => {
                 <Card sx={sxProps.columnCard}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                         <Typography variant="subtitle2">Conditions</Typography>
-                        <IconButton size="small" onClick={handleConditionsOpen}><AddIcon /></IconButton>
+                        <IconButton size="small" onClick={handleTargetConditionsOpen}><AddIcon /></IconButton>
+                        <CharacterConditions 
+                            payload={targetConditions} 
+                            open={targetConditionsOpen} 
+                            onClose={handleTargetConditionsClose}
+                            />
                     </Box>
                     {loadingConditions ? (
                         <Box display="flex" justifyContent="center" alignItems="center" height={50}>
@@ -555,7 +667,7 @@ const handleNextTurn = async () => {
                         </Box>
                     ) : (
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                            {selectedConditions.map((condition, index) => (
+                            {targetConditions.map((condition, index) => (
                                 <Chip
                                     key={index}
                                     label={condition}
@@ -564,7 +676,7 @@ const handleNextTurn = async () => {
                                     onDelete={() => handleDeleteCondition(condition)}
                                 />
                             ))}
-                            {selectedConditions.length === 0 && <Typography>No conditions</Typography>}
+                            {targetConditions.length === 0 && <Typography>No conditions</Typography>}
                         </Box>
                     )}
                 </Card>
@@ -573,8 +685,17 @@ const handleNextTurn = async () => {
                 <Card sx={sxProps.columnCard}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                         <Typography variant="subtitle2">Defenses</Typography>
-                        <IconButton size="small" onClick={handleDefensesOpen}><AddIcon /></IconButton>
+                        <IconButton size="small" onClick={handleTargetDefensesOpen}><AddIcon /></IconButton>
                     </Box>
+                    <EncounterDefenses 
+                        open={targetDefensesOpen}
+                        onClose={handleTargetDefensesClose}
+                        payload={{
+                            immunities: targetImmunities,
+                            resistances: targetResistances,
+                            vulnerabilities: targetVulnerabilities
+                        }}
+                    />
                     {loadingDefenses ? (
                         <Box display="flex" justifyContent="center" alignItems="center" height={100}>
                             <CircularProgress size={24} />
@@ -584,46 +705,46 @@ const handleNextTurn = async () => {
                             <Box sx={{ mb: 1 }}>
                                 <Typography variant="body2">Immunities</Typography>
                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                                    {selectedImmunities.map((immunity, index) => (
+                                    {targetImmunities.map((immunity, index) => (
                                         <Chip
                                             key={index}
                                             label={immunity}
                                             size="small"
                                             color="primary"
-                                            onDelete={() => handleDeleteImmunity(immunity)}
+                                            onDelete={() => handleDeleteImmunity(immunity, false)}
                                         />
                                     ))}
-                                    {selectedImmunities.length === 0 && <Typography>No immunities</Typography>}
+                                    {targetImmunities.length === 0 && <Typography>No immunities</Typography>}
                                 </Box>
                             </Box>
                             <Box sx={{ mb: 1 }}>
                                 <Typography variant="body2">Resistances</Typography>
                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                                    {selectedResistances.map((resistance, index) => (
+                                    {targetResistances.map((resistance, index) => (
                                         <Chip
                                             key={index}
                                             label={resistance}
                                             size="small"
                                             color="primary"
-                                            onDelete={() => handleDeleteResistance(resistance)}
+                                            onDelete={() => handleDeleteResistance(resistance, false)}
                                         />
                                     ))}
-                                    {selectedResistances.length === 0 && <Typography>No resistances</Typography>}
+                                    {targetResistances.length === 0 && <Typography>No resistances</Typography>}
                                 </Box>
                             </Box>
                             <Box>
                                 <Typography variant="body2">Vulnerabilities</Typography>
                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                                    {selectedVulnerabilities.map((vulnerability, index) => (
+                                    {targetVulnerabilities.map((vulnerability, index) => (
                                         <Chip
                                             key={index}
                                             label={vulnerability}
                                             size="small"
                                             color="primary"
-                                            onDelete={() => handleDeleteVulnerability(vulnerability)}
+                                            onDelete={() => handleDeleteVulnerability(vulnerability, false)}
                                         />
                                     ))}
-                                    {selectedVulnerabilities.length === 0 && <Typography>No vulnerabilities</Typography>}
+                                    {targetVulnerabilities.length === 0 && <Typography>No vulnerabilities</Typography>}
                                 </Box>
                             </Box>
                         </>
@@ -799,10 +920,15 @@ const handleNextTurn = async () => {
                 <Card sx={sxProps.columnCard}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                         <Typography variant="subtitle2">Conditions</Typography>
-                        <IconButton size="small" onClick={handleConditionsOpen}><AddIcon /></IconButton>
+                        <IconButton size="small" onClick={handleCurrentConditionsOpen}><AddIcon /></IconButton>
+                        <CharacterConditions 
+                        payload={currentConditions} 
+                        open={currentConditionsOpen} 
+                        onClose={handleCurrentConditionsClose}
+                        />
                     </Box>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                        {selectedConditions.map((condition, index) => (
+                        {currentConditions.map((condition, index) => (
                             <Chip
                                 key={index}
                                 label={condition}
@@ -811,7 +937,7 @@ const handleNextTurn = async () => {
                                 onDelete={() => handleDeleteCondition(condition)}
                             />
                         ))}
-                        {selectedConditions.length === 0 && <Typography>No conditions</Typography>}
+                        {currentConditions.length === 0 && <Typography>No conditions</Typography>}
                     </Box>
                 </Card>
 
@@ -819,51 +945,60 @@ const handleNextTurn = async () => {
                 <Card sx={sxProps.columnCard}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                         <Typography variant="subtitle2">Defenses</Typography>
-                        <IconButton size="small" onClick={handleDefensesOpen}><AddIcon /></IconButton>
+                        <IconButton size="small" onClick={handleCurrentDefensesOpen}><AddIcon /></IconButton>
+                        <EncounterDefenses 
+                            open={currentDefensesOpen}
+                            onClose={handleCurrentDefensesClose}
+                            payload={{
+                                immunities: currentImmunities,
+                                resistances: currentResistances,
+                                vulnerabilities: currentVulnerabilities
+                            }}
+                        />
                     </Box>
                     <Box sx={{ mb: 1 }}>
                         <Typography variant="body2">Immunities</Typography>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                            {selectedImmunities.map((immunity, index) => (
+                            {currentImmunities.map((immunity, index) => (
                                 <Chip
                                     key={index}
                                     label={immunity}
                                     size="small"
                                     color="primary"
-                                    onDelete={() => handleDeleteImmunity(immunity)}
+                                    onDelete={() => handleDeleteImmunity(immunity, true)}
                                 />
                             ))}
-                            {selectedImmunities.length === 0 && <Typography>No immunities</Typography>}
+                            {currentImmunities.length === 0 && <Typography>No immunities</Typography>}
                         </Box>
                     </Box>
                     <Box sx={{ mb: 1 }}>
                         <Typography variant="body2">Resistances</Typography>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                            {selectedResistances.map((resistance, index) => (
+                            {currentResistances.map((resistance, index) => (
                                 <Chip
                                     key={index}
                                     label={resistance}
                                     size="small"
                                     color="primary"
-                                    onDelete={() => handleDeleteResistance(resistance)}
+                                    onDelete={() => handleDeleteResistance(resistance, true)}
                                 />
                             ))}
-                            {selectedResistances.length === 0 && <Typography>No resistances</Typography>}
+                            {currentResistances.length === 0 && <Typography>No resistances</Typography>}
                         </Box>
                     </Box>
                     <Box>
                         <Typography variant="body2">Vulnerabilities</Typography>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                            {selectedVulnerabilities.map((vulnerability, index) => (
+                            {currentVulnerabilities.map((vulnerability, index) => (
                                 <Chip
                                     key={index}
                                     label={vulnerability}
                                     size="small"
                                     color="primary"
-                                    onDelete={() => handleDeleteVulnerability(vulnerability)}
+                                    onDelete={() => handleDeleteVulnerability(vulnerability, true)}
                                 />
                             ))}
-                            {selectedVulnerabilities.length === 0 && <Typography>No vulnerabilities</Typography>}
+                            {currentVulnerabilities.length === 0 && <Typography>No vulnerabilities</Typography>}
                         </Box>
                     </Box>
                 </Card>
