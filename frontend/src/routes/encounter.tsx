@@ -19,6 +19,7 @@ import {
     ToggleButtonGroup,
     Typography
 } from "@mui/material";
+import RemoveIcon from '@mui/icons-material/Remove';
 import { useDialogs } from "@toolpad/core/useDialogs";
 import CharacterConditions from "../components/modals/CharacterConditions";
 import EncounterAddFromAI from "../components/modals/EncounterAddFromAI";
@@ -31,6 +32,16 @@ import AttackModal from "../components/modals/AttackModal";
 import {apiService} from "../services/apiService.ts";
 
 export default function Encounter() {
+    const [showRemoveButtons, setShowRemoveButtons] = useState(false);
+
+    const removePlayerFromQueue = (playerId: string) => {
+        const newPlayers = players.filter((player) => player._id !== playerId);
+        setPlayers(newPlayers);
+        if (newPlayers.length === 0) {
+          setShowAddButtons(true);
+          setShowRemoveButtons(false);
+        }
+      };
 
     const [initiativeStarted, setInitiativeStarted] = useState(false);
     const [currentTurn, setCurrentTurn] = useState(0);
@@ -94,6 +105,7 @@ export default function Encounter() {
     };
 
     const [currentPlayer, setCurrentPlayer] = useState(null);
+    
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -627,13 +639,29 @@ export default function Encounter() {
                                 </ToggleButton>
                             ))}
                         </ToggleButtonGroup>
+                        {showRemoveButtons && (
+                        <IconButton size="small" onClick={() => removePlayerFromQueue(player._id)}>
+                            <RemoveIcon />
+                        </IconButton>
+                        )}
                     </Card>
                 ))}
-                <Card sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 1, borderRadius: 0.5 }}>
+                <Box sx={{ display: 'flex', gap: 1, marginBottom: 1 }}>
+                <Card sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 1, borderRadius: 0.5, flex: 1 }}>
                     <IconButton size="small" onClick={handleAddInitiative}>
-                        <AddIcon />
+                    <AddIcon />
                     </IconButton>
                 </Card>
+                <Card sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 1, borderRadius: 0.5, flex: 1 }}>
+                    <IconButton 
+                    size="small" 
+                    onClick={() => setShowRemoveButtons(!showRemoveButtons)}
+                    color={showRemoveButtons ? "secondary" : "default"}
+                    >
+                    <RemoveIcon />
+                    </IconButton>
+                </Card>
+                </Box>
 
                 
 
