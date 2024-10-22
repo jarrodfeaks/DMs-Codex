@@ -15,7 +15,7 @@ const campaignSchema = new Schema<ICampaign>({
     description: { type: String },
     encounters: [{ type: Schema.Types.ObjectId, ref: 'Encounter' }],
     players: [{ type: Schema.Types.ObjectId, ref: 'Player' }],
-    monsters: [{ type: Schema.Types.ObjectId, ref: 'Monster' }]
+    monsters: [{ type: Schema.Types.ObjectId, ref: 'Monster' }],
 },
     {
         timestamps: true
