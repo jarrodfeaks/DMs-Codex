@@ -75,6 +75,13 @@ export default function Encounter() {
         setArmorClass(isNaN(value) ? 0 : value);
     };
 
+    const handleSendLog = () => {
+        if (logInput.trim()) {
+            addCombatLogEntry(`• ${logInput}`);
+            setLogInput(""); // Clear the input field
+        }
+    };
+
     const [currentPlayer, setCurrentPlayer] = useState(null);
     const [error, setError] = useState<string | null>(null);
 
@@ -112,6 +119,8 @@ export default function Encounter() {
     const [selectedImmunities, setSelectedImmunities] = useState<string[]>([]);
     const [selectedResistances, setSelectedResistances] = useState<string[]>([]);
     const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>([]);
+
+    const [logInput, setLogInput] = useState<string>("");
 
     const handleConditionsOpen = async () => {
         const conditions = await dialogs.open(CharacterConditions, selectedConditions);
@@ -795,10 +804,12 @@ export default function Encounter() {
                             placeholder="Type here..."
                             size="small"
                             fullWidth
+                            value={logInput}
+                            onChange={(e) => setLogInput(e.target.value)}
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="end">
-                                        <IconButton edge="end">
+                                        <IconButton edge="end" onClick={handleSendLog}>
                                             <Send />
                                         </IconButton>
                                     </InputAdornment>
