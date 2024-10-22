@@ -3,38 +3,18 @@ import { useState } from "react";
 import ImportCharacterModal from "../modals/DashboardImportCharacter.tsx";
 import { useDialogs } from "@toolpad/core/useDialogs";
 import { apiService } from "../../services/apiService.ts";
-
-// Temp until backend stuff gets added?
-interface Player {
-    id: string;
-    name: string;
-    level: number;
-    playerClass: string;
-}
+import { useCurrentCampaign } from "../../routes/app.context.ts";
+import { Player } from "../../types.ts";
 
 export default function DashboardMain(
     { onCreateCharacter}: { onCreateCharacter: (importData?: unknown, editData?: unknown, editId?: unknown) => void }) {
+    const currentCampaign = useCurrentCampaign();
 
     const dialogs = useDialogs();
 
-    // Updates selectedPlayerID with whatever the hell a react hook is
-    const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
+    const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
 
-    // Dummy data - replace with character data from the currently selected campaign
-    const players: Player[] = [
-        { id: "670effd032aa22559e25335e", name: "Player 1", level: 1, playerClass: "Barbarian" },
-        { id: "67132ed10039afc6a6c3dc6a", name: "Player 2", level: 2, playerClass: "Bard" },
-        { id: "67133df80039afc6a6c3dc81", name: "Player 3", level: 3, playerClass: "Cleric" },
-        { id: "67147daba92a50954685241f", name: "Player 4", level: 4, playerClass: "Druid" },
-        // { id: 5, name: "Player 5", level: 5, playerClass: "Fighter" },
-        // { id: 6, name: "Player 6", level: 6, playerClass: "Monk" },
-        // { id: 7, name: "Player 7", level: 7, playerClass: "Paladin" },
-        // { id: 8, name: "Player 8", level: 8, playerClass: "Ranger" },
-        // { id: 9, name: "Player 9", level: 9, playerClass: "Rogue" },
-        // { id: 10, name: "Player 10", level: 10, playerClass: "Sorcerer" },
-        // { id: 11, name: "Player 11", level: 11, playerClass: "Warlock" },
-        // { id: 12, name: "Player 12", level: 12, playerClass: "Wizard" },
-    ];
+    const [ players, setPlayers ] = useState<Player[]>(currentCampaign?.players ?? []);
 
     const onImportCharacter = async () => {
         const result = await dialogs.open(ImportCharacterModal);
@@ -61,11 +41,11 @@ export default function DashboardMain(
         }
     };
 
-    const selectPlayer = (playerId: number) => {
+    const selectPlayer = (playerId: string) => {
         setSelectedPlayerId(playerId);
     };
 
-    const doubleClickPlayer = (playerId: number) => {
+    const doubleClickPlayer = (playerId: string) => {
         // Go to Character Sheet and load data for the selected player
         setSelectedPlayerId(playerId);
     };
@@ -86,6 +66,8 @@ export default function DashboardMain(
             </Typography>
             <TextField
                 placeholder="Type here..."
+                multiline
+                maxRows={5}
                 sx={{ width: '50%', mt: 2 }}
             />
 
@@ -103,34 +85,40 @@ export default function DashboardMain(
                     mt: 2,
                 }}
             >
-                <List>
-                    {players.map(player => ( // Replace with Character data for the currently selected Campaign
-                        <ListItem
-                            key={player.id}
-                            disablePadding
-                        >
-                            <ListItemButton
-                                selected={player.id === selectedPlayerId}
-                                onClick={() => selectPlayer(player.id)}
-                                onDoubleClick={() => doubleClickPlayer(player.id)}
+                {players.length > 0 ? (
+                    <List>
+                        {players.map(player => (
+                            <ListItem
+                                key={player._id}
+                                disablePadding
                             >
-                                <Box sx={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    flexGrow: 1,
-                                }}>
-                                    <ListItemText
-                                        primary={player.name}
-                                    />
-                                    <ListItemText
-                                        primary={`Level ${player.level} ${player.playerClass}`}
-                                        sx={{ textAlign: 'right' }}
-                                    />
-                                </Box>
-                            </ListItemButton>
-                        </ListItem>
-                    ))}
-                </List>
+                                <ListItemButton
+                                    selected={player._id === selectedPlayerId}
+                                    onClick={() => selectPlayer(player._id)}
+                                    onDoubleClick={() => doubleClickPlayer(player._id)}
+                                >
+                                    <Box sx={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        flexGrow: 1,
+                                    }}>
+                                        <ListItemText
+                                            primary={player.name}
+                                        />
+                                        <ListItemText
+                                            primary={`Level ${player.level} ${player.class}`}
+                                            sx={{ textAlign: 'right' }}
+                                        />
+                                    </Box>
+                                </ListItemButton>
+                            </ListItem>
+                        ))}
+                    </List>
+                ) : (
+                    <Typography variant="body1" sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>
+                        No characters added yet. Create or import a character to get started!
+                    </Typography>
+                )}
             </Paper>
 
             {/* Button Container */}

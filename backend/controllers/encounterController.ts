@@ -10,7 +10,10 @@ import { Monster } from '../models/monsterModel';
 const getEncounterInformation = async (req: Request, res: Response) => {
     try {
         const encounterId = req.params.id;
-        const encounter = await Encounter.findById(encounterId);
+        const encounter = await Encounter.findById(encounterId)
+        .populate('encounters')
+        .populate('players')
+        .populate('monsters');
         if (encounter) {
             res.status(200).json(encounter);
         } else {
@@ -154,6 +157,35 @@ const resetTurnsInEncounter = async (req: Request, res: Response) => {
     }
 };
 
+// @desc Update the current turn in an encounter
+// @route PUT /encounters/:id/current-turn
+// @access Public
+const updateCurrentTurn = async (req: Request, res: Response) => {
+    try {
+        const encounterId = req.params.id;
+        const { currentTurnId } = req.body;
+
+        const encounter = await Encounter.findById(encounterId);
+        if (!encounter) {
+            return res.status(404).send({ message: 'Encounter not found' });
+        }
+
+        // Validate that the currentTurnId is found in either the monsters or players list
+        const isValidTurnId = encounter.monsters.includes(currentTurnId) || encounter.players.includes(currentTurnId);
+        if (!isValidTurnId) {
+            return res.status(400).send({ message: 'Invalid currentTurnId. It must be a valid monster or player ID in the encounter.' });
+        }
+
+        encounter.current_turn = currentTurnId;
+        await encounter.save();
+
+        res.status(200).json(encounter);
+    } catch (error: any) {
+        console.error(error.stack);
+        res.status(500).send({ message: 'An unexpected error occurred. Please try again later.' });
+    }
+};
+
 // @desc Delete an encounter
 // @route DELETE /encounters/:id
 // @access Public
@@ -172,4 +204,4 @@ const deleteEncounter = async (req: Request, res: Response) => {
     }
 };
 
-export {addToCombatLog, addCharacterToEncounter, getEncounterInformation, createEncounter, resetTurnsInEncounter, updateEncounter, deleteEncounter };
+export {addToCombatLog, addCharacterToEncounter, getEncounterInformation, createEncounter, resetTurnsInEncounter, updateEncounter, deleteEncounter, updateCurrentTurn };

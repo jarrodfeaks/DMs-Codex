@@ -1,29 +1,32 @@
-import {Box, Button, Modal, TextField, Typography} from "@mui/material";
+import { Box, Button, Dialog, TextField, Typography } from "@mui/material";
 import {useState} from "react";
+import {apiService} from "../../services/apiService";
+import { Campaign, User } from "../../types";
+import { DialogProps } from "@toolpad/core";
 
-// TODO: should update this to use the useDialog hook like the other modals
-
-export default function CreateCampaignModal({ open, onClose }: { open: boolean, onClose: () => void }) {
+export default function CreateCampaign({ payload, open, onClose }: DialogProps<User, Campaign | undefined>) {
 
     const [ name, setName ] = useState<string>("");
 
     const handleCreateCampaign = async () => {
-        // send POST request with name to backend here...
-        onClose();
-    }
+        try {
+            const dmId = payload.sub;
+            if (!dmId) {
+                throw new Error("User ID not found");
+            }
+            const res = await apiService.post("/campaigns", { dmId, name });
+            onClose(res);
+        } catch (error) {
+            console.error("Failed to create campaign:", error);
+        }
+    };
 
     return (
-        <Modal open={open} onClose={onClose}>
+        <Dialog open={open} onClose={() => onClose(undefined)}>
             <Box sx={{
                 width: 400,
                 bgcolor: 'background.paper',
-                borderRadius: 2,
                 p: 4,
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                boxShadow: 24
             }}>
                 <Typography variant="h5" sx={{ mb: 2 }}>
                     Create New Campaign
@@ -36,7 +39,7 @@ export default function CreateCampaignModal({ open, onClose }: { open: boolean, 
                     variant="outlined"
                 />
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
-                    <Button onClick={onClose} color="error">
+                    <Button onClick={() => onClose(undefined)}>
                         Cancel
                     </Button>
                     <Button
@@ -49,6 +52,6 @@ export default function CreateCampaignModal({ open, onClose }: { open: boolean, 
                     </Button>
                 </Box>
             </Box>
-        </Modal>
+        </Dialog>
     )
 }
