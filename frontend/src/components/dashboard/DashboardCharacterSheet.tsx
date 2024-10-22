@@ -32,13 +32,14 @@ interface DashboardCharacterSheetProps {
 const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, editData, editId, toggleCharacterSheet}) => {
   let preData = null;
   if (importData){
-    const allSkills = [
-      "Acrobatics (DEX)", "Animal Handling (WIS)", "Arcana (INT)", "Athletics (STR)",
-      "Deception (CHA)", "History (INT)", "Insight (WIS)", "Intimidation (CHA)",
-      "Investigation (INT)", "Medicine (WIS)", "Nature (INT)", "Perception (WIS)",
-      "Performance (CHA)", "Persuasion (CHA)", "Religion (INT)", "Sleight of Hand (DEX)",
-      "Stealth (DEX)", "Survival (WIS)"
-    ];
+    console.log('original Import data is ', importData);
+    // const allSkills = [
+    //   "Acrobatics (DEX)", "Animal Handling (WIS)", "Arcana (INT)", "Athletics (STR)",
+    //   "Deception (CHA)", "History (INT)", "Insight (WIS)", "Intimidation (CHA)",
+    //   "Investigation (INT)", "Medicine (WIS)", "Nature (INT)", "Perception (WIS)",
+    //   "Performance (CHA)", "Persuasion (CHA)", "Religion (INT)", "Sleight of Hand (DEX)",
+    //   "Stealth (DEX)", "Survival (WIS)"
+    // ];
     
     // Mapping between skill keys from the database and the formatted skill names
     const skillMap = {
@@ -68,10 +69,21 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       .filter(skill => skill.is_proficient)
       .map(skill => [skillMap[skill.skill], skill.modifier]);
 
+    let capitalizedResistances = null;
+    if (importData.defenses) {
+      capitalizedResistances = importData.defenses.map(
+        (str) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
+      );
+    }
+
+    const formattedEquipment = importData.equipment_list.reduce((acc, item) => {
+      acc[item.name] = item.quantity; // Set the item name as the key and quantity as the value
+      return acc; // Return the accumulator for the next iteration
+    }, {});
 
     preData = {
       name: importData.name,
-      leve: importData.level,
+      level: importData.level,
       class: importData.class,
       race: importData.race,
       strength: importData.ability_scores.strength,
@@ -81,7 +93,8 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       wisdom: importData.ability_scores.wisdom,
       charisma: importData.ability_scores.charisma,
       armorClass: importData.armor_class,
-      equipment: importData.equipment_list,
+      equipment: formattedEquipment,
+      resistances: capitalizedResistances,
       temperaroaryModifiers: proficientSkillsFormatted,
     };
 
@@ -270,7 +283,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
   // const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>(/*preData ? preData.vulnerabilities :*/ []);
   const [selectedConditions, setSelectedConditions] = useState<string[]>(editData ? preData.status : []);
   const [selectedImmunities, setSelectedImmunities] = useState<string[]>(editData ? preData.damageImmunities : []);
-  const [selectedResistances, setSelectedResistances] = useState<string[]>(editData ? preData.resistances : []);
+  const [selectedResistances, setSelectedResistances] = useState<string[]>(preData ? preData.resistances : []);
   const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>(editData ? preData.vulnerabilities : []);
 
   const handleConditionsOpen = async () => {
