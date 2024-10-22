@@ -45,7 +45,7 @@ export default function Campaign() {
                 {showCharacterSheet ? "Character Sheet" : `Dashboard - ${currentCampaign?.name}`}
             </Typography>
             {showCharacterSheet ? (
-                <DashboardCharacterSheet importData={importData} editData={editData} editId={editId}/>
+                <DashboardCharacterSheet importData={importData} editData={editData} editId={editId} toggleCharacterSheet={toggleView}/>
             ) : (
                 <DashboardMain onCreateCharacter={toggleView}/>
             )}

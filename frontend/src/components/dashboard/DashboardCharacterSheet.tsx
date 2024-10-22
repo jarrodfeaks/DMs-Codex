@@ -24,20 +24,76 @@ interface DashboardCharacterSheetProps {
   importData: unknown;
   editData: unknown;
   editId: unknown;
+  toggleCharacterSheet: (importData?: unknown, editData?: unknown, editId?: unknown) => void;
 }
 
 //const damageTypes = ["None", "Bludgeoning", "Piercing", "Slashing", "Lightning", "Thunder", "Poison", "Cold", "Radiant", "Fire", "Necrotic", "Acid", "Psychic", "Force"];
 
-const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, editData, editId}) => {
+const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, editData, editId, toggleCharacterSheet}) => {
   let preData = null;
   if (importData){
-    preData = importData;
+    const allSkills = [
+      "Acrobatics (DEX)", "Animal Handling (WIS)", "Arcana (INT)", "Athletics (STR)",
+      "Deception (CHA)", "History (INT)", "Insight (WIS)", "Intimidation (CHA)",
+      "Investigation (INT)", "Medicine (WIS)", "Nature (INT)", "Perception (WIS)",
+      "Performance (CHA)", "Persuasion (CHA)", "Religion (INT)", "Sleight of Hand (DEX)",
+      "Stealth (DEX)", "Survival (WIS)"
+    ];
+    
+    // Mapping between skill keys from the database and the formatted skill names
+    const skillMap = {
+      acrobatics: "Acrobatics (DEX)",
+      animal_handling: "Animal Handling (WIS)",
+      arcana: "Arcana (INT)",
+      athletics: "Athletics (STR)",
+      deception: "Deception (CHA)",
+      history: "History (INT)",
+      insight: "Insight (WIS)",
+      intimidation: "Intimidation (CHA)",
+      investigation: "Investigation (INT)",
+      medicine: "Medicine (WIS)",
+      nature: "Nature (INT)",
+      perception: "Perception (WIS)",
+      performance: "Performance (CHA)",
+      persuasion: "Persuasion (CHA)",
+      religion: "Religion (INT)",
+      sleight_of_hand: "Sleight of Hand (DEX)",
+      stealth: "Stealth (DEX)",
+      survival: "Survival (WIS)"
+    };
+    
+    // preData = importData;
+    
+    const proficientSkillsFormatted = importData.proficiencies.skills
+      .filter(skill => skill.is_proficient)
+      .map(skill => [skillMap[skill.skill], skill.modifier]);
+
+
+    preData = {
+      name: importData.name,
+      leve: importData.level,
+      class: importData.class,
+      race: importData.race,
+      strength: importData.ability_scores.strength,
+      dexterity: importData.ability_scores.dexterity,
+      constitution: importData.ability_scores.constitution,
+      intelligence: importData.ability_scores.intelligence,
+      wisdom: importData.ability_scores.wisdom,
+      charisma: importData.ability_scores.charisma,
+      armorClass: importData.armor_class,
+      equipment: importData.equipment_list,
+      temperaroaryModifiers: proficientSkillsFormatted,
+    };
+
+    console.log('importData is :', preData);
   }else if (editData){
     preData = editData;
   }
 
 
-  // console.log(importData);
+  console.log(preData);
+
+  const isFieldEmpty = (value: number | '') => value === '' || value === undefined;
   // console.log(editData);
   // console.log(editId);
   // preData = {
@@ -141,7 +197,11 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
     setSelectedClass(event.target.value as Class);
   };
 
-  const [equipment, setEquipment] = useState<Map<string, number>>(new Map());
+  const initialEquipment = preData?.equipment 
+  ? new Map<string, number>(Object.entries(preData.equipment)) 
+  : new Map<string, number>();
+
+  const [equipment, setEquipment] = useState<Map<string, number>>(initialEquipment);
   const [newEquipmentName, setNewEquipmentName] = useState('');
   const [newEquipmentQty, setNewEquipmentQty] = useState(1);
   // const [newEquipment, setNewEquipment] = useState<Equipment>({
@@ -208,10 +268,10 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
   // const [selectedImmunities, setSelectedImmunities] = useState<string[]>(/*preData ? preData.immunities : */[]);
   // const [selectedResistances, setSelectedResistances] = useState<string[]>(/*preData ? preData.resistances : */[]);
   // const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>(/*preData ? preData.vulnerabilities :*/ []);
-  const [selectedConditions, setSelectedConditions] = useState<string[]>(preData ? preData.status : []);
-  const [selectedImmunities, setSelectedImmunities] = useState<string[]>(preData ? preData.damageImmunities : []);
-  const [selectedResistances, setSelectedResistances] = useState<string[]>(preData ? preData.resistances : []);
-  const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>(preData ? preData.vulnerabilities : []);
+  const [selectedConditions, setSelectedConditions] = useState<string[]>(editData ? preData.status : []);
+  const [selectedImmunities, setSelectedImmunities] = useState<string[]>(editData ? preData.damageImmunities : []);
+  const [selectedResistances, setSelectedResistances] = useState<string[]>(editData ? preData.resistances : []);
+  const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>(editData ? preData.vulnerabilities : []);
 
   const handleConditionsOpen = async () => {
     const result = await dialogs.open(CharacterConditions, selectedConditions);
@@ -237,7 +297,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
     if (newEquipmentName && newEquipmentQty > 0) {
       setEquipment((prevEquipment) => {
         const updatedEquipment = new Map(prevEquipment);
-        updatedEquipment.set(newEquipmentName, newEquipmentQty); // Add or update entry
+        updatedEquipment.set(newEquipmentName, newEquipmentQty);
         return updatedEquipment;
       });  
       // setNewEquipmentQty(1);
@@ -273,7 +333,9 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       modification: weaponDamageModifier,
       damageType: weaponDamageType
     };
-    setWeapons((prev) => [...prev, newWeaponItem]);
+    
+    setWeapons((prevWeapons) => [...(prevWeapons || []), newWeaponItem]);
+    
   };
 
   const handleSave = async () => {
@@ -304,7 +366,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       successfulDeathSaves: successfulDeathSaves,
       failedDeathSaves: failedDeathSaves,
       notes: notes,
-      equipment: equipment,
+      equipment: Object.fromEntries(equipment),
       weapons: weaponIds,
     };
     console.log('character equipment: ', equipment);
@@ -484,9 +546,9 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       <Box sx={sxProps.titleContainer}>
         <Typography variant='h4'>Character</Typography>
         <Box sx={sxProps.subContainer}>
-          <TextField value={characterName} label='Name' onChange={(e) => setCharacterName(e.target.value)}/>
+          <TextField value={characterName} label='Name' error={isFieldEmpty(characterName)} onChange={(e) => setCharacterName(e.target.value)}/>
 
-          <FormControl sx={{minWidth: '25%'}}>
+          <FormControl sx={{minWidth: '25%'}} error={selectedRace === ''}>
             <InputLabel id="race-select-label">Select Race</InputLabel>
             <Select
               value={selectedRace}
@@ -501,7 +563,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
             </Select>
           </FormControl>
 
-          <FormControl sx={{minWidth: '25%'}}>
+          <FormControl sx={{minWidth: '25%'}} error={selectedClass === ''}>
             <InputLabel id="class-select-label">Select Class</InputLabel>
             <Select
               value={selectedClass}
@@ -515,7 +577,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
               ))}
             </Select>
           </FormControl>
-          <TextField value={characterLevel} label='Level' type='number' onChange={(e) => setCharacterLevel(Number(e.target.value))}/>
+          <TextField value={characterLevel} label='Level' error={isFieldEmpty(characterLevel)} type='number' onChange={(e) => setCharacterLevel(Number(e.target.value))}/>
         </Box>
       </Box>
 
@@ -576,9 +638,9 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
 
       {/* initiative and armor */}
       <Box sx={sxProps.initiativeArmorContainer}>
-        <TextField value={initiative} label='Initiative' type='number' onChange={(e) => setInitiative(Number(e.target.value))}/>
-        <TextField value={armorClass} label='Armor Class (AC)' type='number' onChange={(e) => setArmorClass(Number(e.target.value))}/>
-        <TextField value={proficiency} label='Proficiency Bonus' type='number' onChange={(e) => setProficiency(Number(e.target.value))}/>
+        <TextField value={initiative} error={isFieldEmpty(initiative)} label='Initiative' type='number' onChange={(e) => setInitiative(Number(e.target.value))}/>
+        <TextField value={armorClass} error={isFieldEmpty(armorClass)} label='Armor Class (AC)' type='number' onChange={(e) => setArmorClass(Number(e.target.value))}/>
+        <TextField value={proficiency} error={isFieldEmpty(proficiency)} label='Proficiency Bonus' type='number' onChange={(e) => setProficiency(Number(e.target.value))}/>
       </Box>
 
       {/* Life stats */}
@@ -586,9 +648,9 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       <Typography variant='h4'>Life</Typography>
         <Box sx={sxProps.subContainer}>
           <Box>
-            <TextField value={maxHP} label='Max HP' type='number' onChange={(e) => setMaxHP(Number(e.target.value))}/>
-            <TextField value={currentHP} label='Current HP' type='number' onChange={(e) => setCurrentHP(Number(e.target.value))}/>
-            <TextField value={tempHP} label='Temp HP' type='number' onChange={(e) => setTempHP(Number(e.target.value))}/>
+            <TextField value={maxHP} error={isFieldEmpty(maxHP)} label='Max HP' type='number' onChange={(e) => setMaxHP(Number(e.target.value))}/>
+            <TextField value={currentHP} error={isFieldEmpty(currentHP)} label='Current HP' type='number' onChange={(e) => setCurrentHP(Number(e.target.value))}/>
+            <TextField value={tempHP} error={isFieldEmpty(tempHP)} label='Temp HP' type='number' onChange={(e) => setTempHP(Number(e.target.value))}/>
           </Box>
         </Box>
       </Box>
@@ -598,8 +660,8 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       <Typography variant='h4'>Death Throws</Typography>
         <Box sx={sxProps.subContainer}>
           <Box>
-            <TextField value={successfulDeathSaves} label='Successful Death Saves' type='number' onChange={(e) => setSuccessfulDeathSaves(Number(e.target.value))}/>
-            <TextField value={failedDeathSaves} label='Failed Death Saves' type='number' onChange={(e) => setFailedDeathsaves(Number(e.target.value))}/>
+            <TextField value={successfulDeathSaves} error={isFieldEmpty(successfulDeathSaves)} label='Successful Death Saves' type='number' onChange={(e) => setSuccessfulDeathSaves(Number(e.target.value))}/>
+            <TextField value={failedDeathSaves} error={isFieldEmpty(failedDeathSaves)} label='Failed Death Saves' type='number' onChange={(e) => setFailedDeathsaves(Number(e.target.value))}/>
           </Box>
         </Box>
       </Box>
@@ -699,29 +761,35 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
             </TableRow>
           </TableHead>
           <TableBody>
-            {weapons.map((weapon, index) => (
-              <TableRow key={index}>
-                <TableCell>{weapon.name}</TableCell>
-                {/* <TableCell>{weapon.hit}</TableCell> */}
-                {/* <TableCell>
-                  {editData ? (
-                    // If editData exists, show the dice type and amount differently
-                    <span>
-                      {weapon.damageDice[1]}{weapon.damageDice[0]} + {weapon.hitModifier}
-                    </span>
-                  ) : (
-                    // Default display if editData does not exist
-                    <span>
-                      {weapon.diceAmount}{weapon.diceType} + {weapon.hitModifier}
-                    </span>
-                  )}
-                </TableCell> */}
-                <TableCell>{weapon.damageDice[1]}{weapon.damageDice[0]} + {weapon.hitModifier}</TableCell>
-                {/* <TableCell>{weapon.diceType}</TableCell> */}
-                <TableCell>{weapon.modification}</TableCell>
-                <TableCell>{weapon.damageType}</TableCell>
+            {weapons ? (
+              weapons.map((weapon, index) => (
+                <TableRow key={index}>
+                  <TableCell>{weapon.name}</TableCell>
+                  {/* <TableCell>{weapon.hit}</TableCell> */}
+                  {/* <TableCell>
+                    {editData ? (
+                      // If editData exists, show the dice type and amount differently
+                      <span>
+                        {weapon.damageDice[1]}{weapon.damageDice[0]} + {weapon.hitModifier}
+                      </span>
+                    ) : (
+                      // Default display if editData does not exist
+                      <span>
+                        {weapon.diceAmount}{weapon.diceType} + {weapon.hitModifier}
+                      </span>
+                    )}
+                  </TableCell> */}
+                  <TableCell>{weapons.length > 0 ? weapon.damageDice[1] : ''}{weapons.length > 0 ? weapon.damageDice[0] : ''} + {weapon.hitModifier}</TableCell>
+                  {/* <TableCell>{weapon.diceType}</TableCell> */}
+                  <TableCell>{weapon.modification}</TableCell>
+                  <TableCell>{weapon.damageType}</TableCell>
+                </TableRow>
+              ))
+            ):(
+              <TableRow>
+                <TableCell colSpan={4}>No weapons available</TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
 
@@ -731,7 +799,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       {/* Notes */}
       <Box sx={sxProps.titleContainer}>
         <Typography variant='h4'>Notes</Typography>
-        <TextField sx={{width: '95%'}} value={notes} onChange={(e) => setNotes(e.target.value)}/>
+        <TextField sx={{width: '95%'}} value={notes} error={isFieldEmpty(notes)} onChange={(e) => setNotes(e.target.value)}/>
       </Box>
 
       {/* Equipment */}
@@ -754,7 +822,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
         <Button variant='contained' onClick={handleSave}>
           Save
         </Button>
-        <Button variant='contained'>
+        <Button variant='contained' onClick={toggleCharacterSheet}>
           Cancel
         </Button>
       </Box>
