@@ -2,8 +2,8 @@ import { Typography, Paper, Box, Button } from "@mui/material";
 import AssistantChoices from "../components/assistant/AssistantChoices";
 import { AssistantMode } from "../types";
 import AssistantChat from "../components/assistant/AssistantChat";
-import { useState } from "react";
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import useAssistant from "../hooks/useAssistant";
 
 export default function Assistant() {
     const sxProps = {
@@ -32,11 +32,10 @@ export default function Assistant() {
         }
     }
 
-    // is null when a mode is not selected
-    const [ assistantMode, setAssistantMode ] = useState<AssistantMode | null>(null);
+    const { mode, changeMode } = useAssistant();
 
     const handleChoiceSelected = (choice: AssistantMode) => {
-        setAssistantMode(choice);
+        changeMode(choice);
     }
 
     return (
@@ -47,17 +46,17 @@ export default function Assistant() {
                     <Button 
                         sx={sxProps.resetButton} 
                         startIcon={<RestartAltIcon />} 
-                        onClick={() => setAssistantMode(null)}
-                        disabled={assistantMode === null}
+                        onClick={() => changeMode(null)}
+                        disabled={mode === null}
                     >
                         Reset Assistant
                     </Button>
                 </Box>
                 <Paper sx={sxProps.contentArea}>
-                    {assistantMode === null ? (
+                    {mode === null ? (
                         <AssistantChoices onChoiceSelected={handleChoiceSelected} />
                     ) : (
-                        <AssistantChat mode={assistantMode} />
+                        <AssistantChat mode={mode} />
                     )}
                 </Paper>
             </Box>
