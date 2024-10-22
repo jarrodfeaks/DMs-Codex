@@ -22,7 +22,7 @@ interface ICharacter extends Document {
     vulnerabilities: DamageType[];
     weapons: ObjectId[];
     proficiencies: [Attribute | Skill];
-    notes?: string;
+    notes: string;
 }
 
 const characterSchema = new Schema<ICharacter>({

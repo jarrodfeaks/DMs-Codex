@@ -10,6 +10,7 @@ import campaignRoutes from './routes/campaignRoutes';
 import encounterRoutes from './routes/encounterRoutes';
 import turnRoutes from './routes/turnRoutes';
 import weaponRoutes from './routes/weaponRoutes';
+import userRoutes from './routes/userRoutes';
 import { auth } from "express-openid-connect";
 const PORT = process.env.PORT || 5000;
 const BACKEND_URL = `http://localhost:${PORT}`;
@@ -69,6 +70,7 @@ app.use("/campaigns", campaignRoutes);
 app.use("/encounters", encounterRoutes);
 app.use("/turns", turnRoutes);
 app.use("/weapons", weaponRoutes);
+app.use("/users", userRoutes);
 
 app.get("/test/db", async (req, res) => {
     try {
