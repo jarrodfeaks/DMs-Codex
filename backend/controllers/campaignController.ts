@@ -30,18 +30,26 @@ const getAllCampaigns = async (req: Request, res: Response) => {
 const getDMCampaigns = async (req: Request, res: Response) => {
     try {
         const dmId = req.params.dmId;
-        const campaigns = await Campaign.find({ dmId: dmId })
-        .populate('encounters')
-        .populate('players')
-        .populate('monsters')
-        .populate('current_turn');
-        if (campaigns.length > 0) {
-            res.status(200).json(campaigns);
-        } else {
-            res.status(404).send({ message: `No campaigns found for this ${dmId}` });
+
+        // Check if the DM id exists in the database
+        const dmExists = await Campaign.find({ dmId: dmId });
+        if (!dmExists) {
+            return res.status(200).json([]);
         }
+
+        const campaigns = await Campaign.find({ dmId: dmId })
+            .populate('encounters')
+            .populate('players')
+            .populate('monsters')
+
+        if (campaigns.length === 0) {
+            return res.status(200).json([]);
+        }
+
+        res.status(200).json(campaigns);
     } catch (error: any) {
-        res.status(500).send(error.message);
+        console.error('Error retrieving campaigns:', error);
+        res.status(500).send({ message: 'Error retrieving campaigns', error: error.message });
     }
 };
 
