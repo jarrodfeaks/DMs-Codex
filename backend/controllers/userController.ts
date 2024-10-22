@@ -46,16 +46,16 @@ const getRuleBookIdByDmId = async (req: Request, res: Response) => {
 };
 
 // @desc Update the rulebookId for a user
-// @route PUT /users/:id/rulebook
+// @route PUT /users/:dmId/rulebook
 // @access Public
 const updateRulebookId = async (req: Request, res: Response) => {
     try {
-        const userId = req.params.id;
+        const dmId = req.params.dmId;
         const { rulebookId } = req.body;
 
-        const user = await User.findById(userId);
+        const user = await User.findOne({ dmId });
         if (!user) {
-            return res.status(404).send({ message: 'User not found' });
+            return res.status(404).json({ message: 'User not found' });
         }
 
         user.rulebookId = rulebookId;
