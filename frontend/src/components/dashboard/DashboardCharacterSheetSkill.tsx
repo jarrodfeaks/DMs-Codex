@@ -36,15 +36,16 @@ const DashboardCharacterSheetSkill: FC<DashboardCharacterSheetSkillProps> = ({ s
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
       <FormControlLabel
         control={
           <Switch checked={isActive} onChange={handleSwitchChange} color="primary" />
         }
-        label={skillName}
+        // label={skillName}
       />
       <TextField
         id="Value"
+        label={skillName}
         type="number"
         value={isActive ? tempValue : ''} // Use tempValue for live editing
         onChange={handleTempChange}
@@ -54,6 +55,7 @@ const DashboardCharacterSheetSkill: FC<DashboardCharacterSheetSkillProps> = ({ s
           marginBottom: 2,
           marginTop: 2,
           borderRadius: '10px',
+          width: '200px'
         }}
       />
     </Box>

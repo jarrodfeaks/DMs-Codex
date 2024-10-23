@@ -484,7 +484,9 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
     subContainer: {
       display: "flex",
       flexDirection: "row",
-      flexWrap: "wrap"
+      justifyContent: "center",
+      gap: 2,
+      paddingTop: '15px'
     },
     switchContainer: {
       display: "grid",
@@ -492,6 +494,8 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
     },
     weaponTable: {
       width: "95%",
+      marginTop: "20px",
+      marginBottom: "20px"
     },
     weaponTableHeader: {
       backgroundColor: theme.palette.primary.dark
@@ -510,9 +514,10 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
     },
     skillsColumn: {
       display: "grid",
-      gridTemplateColumns: "repeat(2, 1fr)",
-      columnGap: 2,
-      margin: 2
+      gridTemplateColumns: "repeat(4, 1fr)",
+      columnGap: 3,
+      margin: 3,
+      gridAutoRows: "minmax(20px, 80px)",
     },
     initiativeArmorContainer: {
       display: "flex",
@@ -522,7 +527,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       borderRadius: "10px",
       alignItems: "center",
       marginBottom: 2,
-      gap: "10%",
+      gap: 2,
       paddingBottom: 2,
       paddingTop: 2
     },
@@ -530,11 +535,8 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       display: "flex",
       flexDirection: "row",
       justifyContent: "center",
-      gap: "30%",
+      gap: 5,
       paddingTop: 2,
-      border: "2px solid",
-      borderColor: "#FFFFF0",
-      borderRadius: "10px",
       alignItems: "center",
       marginBottom: 2,
       paddingBottom: 2
@@ -542,12 +544,10 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
     modalContainer: {
       display: "flex",
       flexDirection: "column",
-      //border: "2px solid",
-      //borderColor: "#FFFFF0",
       borderRadius: "10px",
       alignItems: "center",
-      marginBottom: 2,
-      paddingBottom: 2
+      paddingBottom: 2,
+      gap: 1
     }
   }
 
@@ -557,11 +557,10 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
 
       {/* Basic character info */}
       <Box sx={sxProps.titleContainer}>
-        <Typography variant='h4'>Character</Typography>
+        <Typography variant='h4' sx={{padding: '10px'}}>Character</Typography>
         <Box sx={sxProps.subContainer}>
-          <TextField value={characterName} label='Name' error={isFieldEmpty(characterName)} onChange={(e) => setCharacterName(e.target.value)}/>
-
-          <FormControl sx={{minWidth: '25%'}} error={selectedRace === ''}>
+          <TextField value={characterName} label='Name' sx={{minWidth: '60%' }} error={isFieldEmpty(characterName)} onChange={(e) => setCharacterName(e.target.value)}/>
+          <FormControl sx={{minWidth: '35%'}} error={selectedRace === ''}>
             <InputLabel id="race-select-label">Select Race</InputLabel>
             <Select
               value={selectedRace}
@@ -576,7 +575,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
             </Select>
           </FormControl>
 
-          <FormControl sx={{minWidth: '25%'}} error={selectedClass === ''}>
+          <FormControl sx={{minWidth: '35%'}} error={selectedClass === ''}>
             <InputLabel id="class-select-label">Select Class</InputLabel>
             <Select
               value={selectedClass}
@@ -590,58 +589,78 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
               ))}
             </Select>
           </FormControl>
-          <TextField value={characterLevel} label='Level' error={isFieldEmpty(characterLevel)} type='number' onChange={(e) => setCharacterLevel(Number(e.target.value))}/>
+          <TextField value={characterLevel} label='Level' sx={{minWidth: '25%'}} error={isFieldEmpty(characterLevel)} type='number' onChange={(e) => setCharacterLevel(Number(e.target.value))}/>
         </Box>
       </Box>
 
       {/* Ability scores */}
       <Box sx={sxProps.titleContainer}>
-        <Typography variant='h4'>Ability Scores</Typography>
+        <Typography variant='h4' sx={{padding: '10px'}}>Ability Scores</Typography>
         <Box sx={sxProps.subContainer}>
-          <Box>
-            <TextField value={abilityScoreStrength} label='Strength (STR)' type='number' onChange={(e) => setAbilityScoreStrength(Number(e.target.value))}/>
-            <TextField value={abilityScoreDexterity} label='Dexterity (DEX)' type='number' onChange={(e) => setAbilityScoreDexterity(Number(e.target.value))}/>
-            <TextField value={abilityScoreConstitution} label='Constitution (CON)' type='number' onChange={(e) => setAbilityScoreConstitution(Number(e.target.value))}/>
-            <TextField value={abilityScoreIntelligence} label='Intelligence (INT)' type='number' onChange={(e) => setAbilityScoreIntelligence(Number(e.target.value))}/>
-            <TextField value={abilityScoreWisdom} label='Wisdom (WIS)' type='number' onChange={(e) => setAbilityScoreWisdom(Number(e.target.value))}/>
-            <TextField value={abilityScoreCharisma} label='Charisma (CHA)' type='number' onChange={(e) => setAbilityScoreCharisma(Number(e.target.value))}/>
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
+            <TextField value={abilityScoreStrength} sx={{width: '12%'}} label='Strength (STR)' type='number' onChange={(e) => setAbilityScoreStrength(Number(e.target.value))}/>
+            <TextField value={abilityScoreDexterity} sx={{width: '12%'}} label='Dexterity (DEX)' type='number' onChange={(e) => setAbilityScoreDexterity(Number(e.target.value))}/>
+            <TextField value={abilityScoreConstitution} sx={{width: '12%'}} label='Constitution (CON)' type='number' onChange={(e) => setAbilityScoreConstitution(Number(e.target.value))}/>
+            <TextField value={abilityScoreIntelligence} sx={{width: '12%'}} label='Intelligence (INT)' type='number' onChange={(e) => setAbilityScoreIntelligence(Number(e.target.value))}/>
+            <TextField value={abilityScoreWisdom} sx={{width: '12%'}} label='Wisdom (WIS)' type='number' onChange={(e) => setAbilityScoreWisdom(Number(e.target.value))}/>
+            <TextField value={abilityScoreCharisma} sx={{width: '12%'}} label='Charisma (CHA)' type='number' onChange={(e) => setAbilityScoreCharisma(Number(e.target.value))}/>
           </Box>
         </Box>
       </Box>
 
       {/* Ability modifiers */}
       <Box sx={sxProps.titleContainer}>
-        <Typography variant='h4'>Ability Modifiers</Typography>
+        <Typography variant='h4' sx={{padding: '10px'}}>Ability Modifiers</Typography>
         <Box sx={sxProps.subContainer}>
-          <Box>
-            <TextField value={abilityModStrength} label='Strength (STR)' type='number' onChange={(e) => setAbilityModStrength(Number(e.target.value))}/>
-            <TextField value={abilityModDexterity} label='Dexterity (DEX)' type='number' onChange={(e) => setAbilityModDexterity(Number(e.target.value))}/>
-            <TextField value={abilityModConstitution} label='Constitution (CON)' type='number' onChange={(e) => setAbilityModConstitution(Number(e.target.value))}/>
-            <TextField value={abilityModIntelligence} label='Intelligence (INT)' type='number' onChange={(e) => setAbilityModIntelligence(Number(e.target.value))}/>
-            <TextField value={abilityModWisdom} label='Wisdom (WIS)' type='number' onChange={(e) => setAbilityModWisdom(Number(e.target.value))}/>
-            <TextField value={abilityModCharisma} label='Charisma (CHA)' type='number' onChange={(e) => setAbilityModCharisma(Number(e.target.value))}/>
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
+            <TextField value={abilityModStrength} sx={{width: '12%'}} label='Strength (STR)' type='number' onChange={(e) => setAbilityModStrength(Number(e.target.value))}/>
+            <TextField value={abilityModDexterity} sx={{width: '12%'}} label='Dexterity (DEX)' type='number' onChange={(e) => setAbilityModDexterity(Number(e.target.value))}/>
+            <TextField value={abilityModConstitution} sx={{width: '12%'}} label='Constitution (CON)' type='number' onChange={(e) => setAbilityModConstitution(Number(e.target.value))}/>
+            <TextField value={abilityModIntelligence} sx={{width: '12%'}} label='Intelligence (INT)' type='number' onChange={(e) => setAbilityModIntelligence(Number(e.target.value))}/>
+            <TextField value={abilityModWisdom} sx={{width: '12%'}} label='Wisdom (WIS)' type='number' onChange={(e) => setAbilityModWisdom(Number(e.target.value))}/>
+            <TextField value={abilityModCharisma} sx={{width: '12%'}} label='Charisma (CHA)' type='number' onChange={(e) => setAbilityModCharisma(Number(e.target.value))}/>
           </Box>
         </Box>
       </Box>
 
       {/* Saving throws */}
       <Box sx={sxProps.titleContainer}>
-        <Typography variant='h4'>Saving Throws</Typography>
+        <Typography variant='h4' sx={{padding: '10px'}}>Saving Throws</Typography>
         <Box sx={sxProps.subContainer}>
-          <Box>
-            <TextField value={savingThrowsStrength} label='Strength (STR)' type='number' onChange={(e) => setSavingThrowsStrength(Number(e.target.value))}/>
-            <TextField value={savingThrowsDexterity} label='Dexterity (DEX)' type='number' onChange={(e) => setSavingThrowsDexterity(Number(e.target.value))}/>
-            <TextField value={savingThrowsConstitution} label='Constitution (CON)' type='number' onChange={(e) => setSavingThrowsConstitution(Number(e.target.value))}/>
-            <TextField value={savingThrowsIntelligence} label='Intelligence (INT)' type='number' onChange={(e) => setSavingThrowsIntelligence(Number(e.target.value))}/>
-            <TextField value={savingThrowsWisdom} label='Wisdom (WIS)' type='number' onChange={(e) => setSavingThrowsWisdom(Number(e.target.value))}/>
-            <TextField value={savingThrowsCharisma} label='Charisma (CHA)' type='number' onChange={(e) => setSavingThrowsCharisma(Number(e.target.value))}/>
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
+            <TextField value={savingThrowsStrength} sx={{width: '12%'}} label='Strength (STR)' type='number' onChange={(e) => setSavingThrowsStrength(Number(e.target.value))}/>
+            <TextField value={savingThrowsDexterity} sx={{width: '12%'}} label='Dexterity (DEX)' type='number' onChange={(e) => setSavingThrowsDexterity(Number(e.target.value))}/>
+            <TextField value={savingThrowsConstitution} sx={{width: '12%'}} label='Constitution (CON)' type='number' onChange={(e) => setSavingThrowsConstitution(Number(e.target.value))}/>
+            <TextField value={savingThrowsIntelligence} sx={{width: '12%'}} label='Intelligence (INT)' type='number' onChange={(e) => setSavingThrowsIntelligence(Number(e.target.value))}/>
+            <TextField value={savingThrowsWisdom} sx={{width: '12%'}} label='Wisdom (WIS)' type='number' onChange={(e) => setSavingThrowsWisdom(Number(e.target.value))}/>
+            <TextField value={savingThrowsCharisma} sx={{width: '12%'}} label='Charisma (CHA)' type='number' onChange={(e) => setSavingThrowsCharisma(Number(e.target.value))}/>
           </Box>
+        </Box>
+      </Box>
+
+      {/* initiative and armor */}
+      <Box sx={sxProps.titleContainer}>
+        <Typography variant='h4' sx={{padding: '10px'}}>Initiative and Armour</Typography>
+        <Box sx={sxProps.subContainer}>
+          <TextField value={initiative} error={isFieldEmpty(initiative)} label='Initiative' type='number' onChange={(e) => setInitiative(Number(e.target.value))}/>
+          <TextField value={armorClass} error={isFieldEmpty(armorClass)} label='Armor Class (AC)' type='number' onChange={(e) => setArmorClass(Number(e.target.value))}/>
+          <TextField value={proficiency} error={isFieldEmpty(proficiency)} label='Proficiency Bonus' type='number' onChange={(e) => setProficiency(Number(e.target.value))}/>
+        </Box>
+      </Box>
+
+      {/* Life stats */}
+      <Box sx={sxProps.titleContainer}>
+      <Typography variant='h4' sx={{padding: '10px'}}>Hit Points</Typography>
+        <Box sx={sxProps.subContainer}>
+            <TextField value={maxHP} error={isFieldEmpty(maxHP)} label='Max HP' type='number' onChange={(e) => setMaxHP(Number(e.target.value))}/>
+            <TextField value={currentHP} error={isFieldEmpty(currentHP)} label='Current HP' type='number' onChange={(e) => setCurrentHP(Number(e.target.value))}/>
+            <TextField value={tempHP} error={isFieldEmpty(tempHP)} label='Temp HP' type='number' onChange={(e) => setTempHP(Number(e.target.value))}/>
         </Box>
       </Box>
 
       {/* Skills */}
       <Box sx={sxProps.titleContainer}>
-        <Typography variant='h4'>Skills</Typography>
+        <Typography variant='h4' sx={{padding: '10px'}}>Skills</Typography>
         <Box sx={sxProps.skillsColumn}>
           {allSkills.map((skil) => (
             <DashboardCharacterSheetSkill skillName={skil} onSkillChange={handleSkillChange} activeSkills={finalSkills}></DashboardCharacterSheetSkill>
@@ -649,72 +668,37 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
         </Box>
       </Box>
 
-      {/* initiative and armor */}
-      <Box sx={sxProps.initiativeArmorContainer}>
-        <TextField value={initiative} error={isFieldEmpty(initiative)} label='Initiative' type='number' onChange={(e) => setInitiative(Number(e.target.value))}/>
-        <TextField value={armorClass} error={isFieldEmpty(armorClass)} label='Armor Class (AC)' type='number' onChange={(e) => setArmorClass(Number(e.target.value))}/>
-        <TextField value={proficiency} error={isFieldEmpty(proficiency)} label='Proficiency Bonus' type='number' onChange={(e) => setProficiency(Number(e.target.value))}/>
-      </Box>
-
-      {/* Life stats */}
-      <Box sx={sxProps.titleContainer}>
-      <Typography variant='h4'>Life</Typography>
-        <Box sx={sxProps.subContainer}>
-          <Box>
-            <TextField value={maxHP} error={isFieldEmpty(maxHP)} label='Max HP' type='number' onChange={(e) => setMaxHP(Number(e.target.value))}/>
-            <TextField value={currentHP} error={isFieldEmpty(currentHP)} label='Current HP' type='number' onChange={(e) => setCurrentHP(Number(e.target.value))}/>
-            <TextField value={tempHP} error={isFieldEmpty(tempHP)} label='Temp HP' type='number' onChange={(e) => setTempHP(Number(e.target.value))}/>
-          </Box>
-        </Box>
-      </Box>
-
-      {/* Death throws */}
-      <Box sx={sxProps.titleContainer}>
-      <Typography variant='h4'>Death Throws</Typography>
-        <Box sx={sxProps.subContainer}>
-          <Box>
-            <TextField value={successfulDeathSaves} error={isFieldEmpty(successfulDeathSaves)} label='Successful Death Saves' type='number' onChange={(e) => setSuccessfulDeathSaves(Number(e.target.value))}/>
-            <TextField value={failedDeathSaves} error={isFieldEmpty(failedDeathSaves)} label='Failed Death Saves' type='number' onChange={(e) => setFailedDeathsaves(Number(e.target.value))}/>
-          </Box>
-        </Box>
-      </Box>
-
-      {/* Conditions */}
-      <Box sx={sxProps.titleContainer}>
-        <Typography variant='h4'>Conditions</Typography>
-        <Typography>{(selectedConditions && selectedConditions.length > 0) ? selectedConditions.join(', ') : 'No conditions selected.'}</Typography>
-        <Button onClick={handleConditionsOpen} variant='contained' color='primary'>Edit Conditions</Button>
-      </Box>
-
       {/* Container for all conditions containers */}
       <Box sx={sxProps.titleContainer}>
-        <Typography variant='h4'>Defenses</Typography>
-        {/* Resistances */}
-        <Box sx={sxProps.modalContainer}>
-          <Typography variant='h6'>Resistances</Typography>
-          <Typography>{(selectedResistances && selectedResistances.length > 0) ? selectedResistances.join(', ') : 'No resistances selected.'}</Typography>
-          <Button onClick={handleResistancesOpen} variant='contained' color='primary'>Edit Resistances</Button>
-        </Box>
-        {/* Immunities */}
-        <Box sx={sxProps.modalContainer}>
-          <Typography variant='h6'>Immunities</Typography>
-          <Typography>{(selectedImmunities && selectedImmunities.length > 0 ) ? selectedImmunities.join(', ') : 'No immunities selected.'}</Typography>
-          <Button onClick={handleImmunitiesOpen} variant='contained' color='primary'>Edit Immunities</Button>
-        </Box>
-        {/* Vulnerabilities */}
-        <Box sx={sxProps.modalContainer}>
-          <Typography variant='h6'>Vulnerability</Typography>
-          <Typography>{(selectedVulnerabilities && selectedVulnerabilities.length > 0) ? selectedVulnerabilities.join(', ') : 'No Vulnerabilities selected.'}</Typography>
-          <Button onClick={handleVulnerabilitiesOpen} variant='contained' color='primary'>Edit Vulnerabilities</Button>
+      <Typography variant='h4' sx={{padding: '10px'}}>Defenses</Typography>
+        <Box sx={{display: 'flex', gap: 15 }}>
+          {/* Resistances */}
+          <Box sx={sxProps.modalContainer}>
+            <Typography variant='h6'>Resistances</Typography>
+            <Typography>{(selectedResistances && selectedResistances.length > 0) ? selectedResistances.join(', ') : 'No resistances selected.'}</Typography>
+            <Button onClick={handleResistancesOpen} variant='contained' color='primary'>Edit Resistances</Button>
+          </Box>
+          {/* Immunities */}
+          <Box sx={sxProps.modalContainer}>
+            <Typography variant='h6'>Immunities</Typography>
+            <Typography>{(selectedImmunities && selectedImmunities.length > 0 ) ? selectedImmunities.join(', ') : 'No immunities selected.'}</Typography>
+            <Button onClick={handleImmunitiesOpen} variant='contained' color='primary'>Edit Immunities</Button>
+          </Box>
+          {/* Vulnerabilities */}
+          <Box sx={sxProps.modalContainer}>
+            <Typography variant='h6'>Vulnerability</Typography>
+            <Typography>{(selectedVulnerabilities && selectedVulnerabilities.length > 0) ? selectedVulnerabilities.join(', ') : 'No Vulnerabilities selected.'}</Typography>
+            <Button onClick={handleVulnerabilitiesOpen} variant='contained' color='primary'>Edit Vulnerabilities</Button>
+          </Box>
         </Box>
       </Box>
 
       {/* Weapons */}
       <Box sx={sxProps.titleContainer}>
-        <Typography variant='h4'>Weapons</Typography>
+        <Typography variant='h4' sx={{padding: '10px'}}>Weapons</Typography>
+        <TextField label='Name' sx={{ width: '56%'}} onChange={(e) => setWeaponName(e.target.value)}/>
         <Box sx={sxProps.subContainer}>
-          <Box>
-            <TextField label='Name' onChange={(e) => setWeaponName(e.target.value)}/>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
             <TextField label='Hit' type='number' onChange={(e) => setWeaponHit(Number(e.target.value))}/>
             <TextField label='Base Damage' type='number' onChange={(e) => setWeaponBaseDmg(Number(e.target.value))}/>
             <TextField label='Dice Amount' type='number' onChange={(e) => setWeaponDiceAmount(Number(e.target.value))}/>
@@ -762,6 +746,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
             </FormControl>
           </Box>
         </Box>
+        <Button onClick={handleAddWeapon} sx={{ margin: 2 }}>Add Weapon</Button>
         <Table sx={sxProps.weaponTable}>
           <TableHead sx={sxProps.weaponTableHeader}>
             <TableRow>
@@ -778,20 +763,6 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
               weapons.map((weapon, index) => (
                 <TableRow key={index}>
                   <TableCell>{weapon.name}</TableCell>
-                  {/* <TableCell>{weapon.hit}</TableCell> */}
-                  {/* <TableCell>
-                    {editData ? (
-                      // If editData exists, show the dice type and amount differently
-                      <span>
-                        {weapon.damageDice[1]}{weapon.damageDice[0]} + {weapon.hitModifier}
-                      </span>
-                    ) : (
-                      // Default display if editData does not exist
-                      <span>
-                        {weapon.diceAmount}{weapon.diceType} + {weapon.hitModifier}
-                      </span>
-                    )}
-                  </TableCell> */}
                   <TableCell>{weapons.length > 0 ? weapon.damageDice[1] : ''}{weapons.length > 0 ? weapon.damageDice[0] : ''} + {weapon.hitModifier}</TableCell>
                   {/* <TableCell>{weapon.diceType}</TableCell> */}
                   <TableCell>{weapon.modification}</TableCell>
@@ -805,37 +776,37 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
             )}
           </TableBody>
         </Table>
-
-        <Button onClick={handleAddWeapon}>Add Weapon</Button>
-      </Box>
-
-      {/* Notes */}
-      <Box sx={sxProps.titleContainer}>
-        <Typography variant='h4'>Notes</Typography>
-        <TextField sx={{width: '95%'}} value={notes} error={isFieldEmpty(notes)} onChange={(e) => setNotes(e.target.value)}/>
       </Box>
 
       {/* Equipment */}
       <Box sx={sxProps.titleContainer}>
-        <Typography sx={{pb: 1}} variant='h4'>Equipment</Typography>
-        <TextField onChange={(e) => setNewEquipmentName(e.target.value)} label="Add Name"/>
-        <TextField onChange={(e) => setNewEquipmentQty(Number(e.target.value))} label="Add Quantity" type='Number'/>
-        <Button onClick={handleAddEquipment}>Add Equipment</Button>
-        <List sx={sxProps.equipmentList}>
-          {Array.from(equipment.entries()).map(([name, qty], index) => (
-            <ListItem key={index}>
-              <ListItemText primary={`${name} (Qty: ${qty})`} />
-            </ListItem>
-          ))}
-        </List>
+        <Typography sx={{pb: 1}} variant='h4' sx={{ paddingTop: '10px' }}>Equipment</Typography>
+        <Box sx={sxProps.subContainer}>
+          <TextField onChange={(e) => setNewEquipmentName(e.target.value)} label="Add Name"/>
+          <TextField onChange={(e) => setNewEquipmentQty(Number(e.target.value))} label="Add Quantity" type='Number'/>
+          <Button onClick={handleAddEquipment}>Add Equipment</Button>
+          <List sx={sxProps.equipmentList}>
+            {Array.from(equipment.entries()).map(([name, qty], index) => (
+              <ListItem key={index}>
+                <ListItemText primary={`${name} (Qty: ${qty})`} />
+              </ListItem>
+            ))}
+          </List>
+        </Box>
+      </Box>
+
+      {/* Notes */}
+      <Box sx={sxProps.titleContainer}>
+        <Typography variant='h4' sx={{ paddingTop: '10px' }}>Notes</Typography>
+        <TextField sx={{width: '95%'}} value={notes} error={isFieldEmpty(notes)} onChange={(e) => setNotes(e.target.value)}/>
       </Box>
 
       {/* Container for the save and cancel buttons */}
       <Box sx={sxProps.horizontalButtonsContainer}>
-        <Button variant='contained' onClick={handleSave}>
+        <Button variant='contained' onClick={handleSave} sx={{ width: "150px"}}>
           Save
         </Button>
-        <Button variant='contained' onClick={toggleCharacterSheet}>
+        <Button variant='contained' onClick={toggleCharacterSheet} sx={{ width: "150px"}}>
           Cancel
         </Button>
       </Box>
