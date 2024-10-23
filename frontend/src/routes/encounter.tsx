@@ -755,14 +755,6 @@ export default function Encounter() {
                 <Card sx={sxProps.columnCard}>
                     <Box sx={sxProps.actionGroup}>
                         <Box sx={sxProps.actionItem}>
-                            <Typography>Type</Typography>
-                            <TextField
-                            placeholder="Type here..."
-                            size="small"
-                            fullWidth
-                        />
-                        </Box>
-                        <Box sx={sxProps.actionItem}>
                             <Typography>Action</Typography>
                             <Select value={selectedAction} onChange={(e) => setSelectedAction(e.target.value as Action)} size="small" fullWidth>
                                 {actionOptions.map((action) => (
