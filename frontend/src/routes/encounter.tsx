@@ -572,7 +572,7 @@ export default function Encounter() {
                 {players.map((character, index) => (
                     <Card
                         key={character._id}
-                        sx={{ ...sxProps.columnCard, ...sxProps.initiativeItem, ...(isActive(character.name) && sxProps.initiativeItemActive) }}
+                        sx={{ ...sxProps.columnCard, ...sxProps.initiativeItem, ...(isActive(character.name) && sxProps.initiativeItemActive),  display: 'flex', justifyContent: 'space-between' }}
                     >
                         <Typography>{index + 1}. {character.name}</Typography>
                         {/* <Typography>Level {character.level} {character.class}</Typography> */}
