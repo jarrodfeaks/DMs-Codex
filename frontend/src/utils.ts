@@ -90,6 +90,15 @@ export function sortQueueByInitiative(queue: Array<{ name: string, initiative: n
 
 /**
     Returns hit attack string for the combat log.
+    @param customMessage - Message.
+    @returns The default combat log string.
+*/
+export function customCombatLogString(customMessage: string): string {
+    return `• ${customMessage}`;
+}
+
+/**
+    Returns hit attack string for the combat log.
     @param characterName - The name of the character.
     @param weapon - The action the character is taking.
     @param target - The target of the action.

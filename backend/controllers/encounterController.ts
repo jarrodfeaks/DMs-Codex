@@ -30,12 +30,18 @@ const getEncounterInformation = async (req: Request, res: Response) => {
 // @access Public
 const createEncounter = async (req: Request, res: Response) => {
     try {
-        const encounter = new Encounter(req.body);
-        await encounter.save();
-        res.status(201).json(encounter);
+        const { name, campaign_id } = req.body;
+        const encounter = await Encounter.findOne({ name, campaign_id });
+        if (encounter) {
+            return res.status(200).json({ exists: true, message: 'Encounter already exists' });
+        } else {
+            const encounter = new Encounter(req.body);
+            await encounter.save();
+            res.status(201).json(encounter);
+        }
     } catch (error: any) {
-        console.error(error.stack);
-        res.status(500).send({ message: 'An unexpected error occurred. Please try again later.' });
+        console.error('Error checking encounter existence:', error);
+        res.status(500).send({ message: 'Error checking encounter existence', error: error.message });
     }
 };
 

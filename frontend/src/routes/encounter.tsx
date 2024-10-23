@@ -30,12 +30,16 @@ import EncounterAddFromAI from "../components/modals/EncounterAddFromAI";
 import EncounterAddFromBestiary from "../components/modals/EncounterAddFromBestiary";
 import EncounterAddFromPlayers from "../components/modals/EncounterAddFromPlayers";
 import EncounterDefenses from "../components/modals/EncounterDefenses";
-import { missedCombatLogString, attackCombatLogString } from "../utils";
+import { missedCombatLogString, attackCombatLogString, customCombatLogString } from "../utils";
 import { Player } from "../types.ts";
 import AttackModal from "../components/modals/AttackModal";
 import {apiService} from "../services/apiService.ts";
+import { useCurrentCampaign } from "./app.context.ts";
+import { create } from "domain";
 
 export default function Encounter() {
+    const campaignId = useCurrentCampaign()?._id;
+    const [encountersList, setEncountersList] = useState(useCurrentCampaign()?.encounters);
     const [showRemoveButtons, setShowRemoveButtons] = useState(false);
     const removePlayerFromQueue = (playerId: string) => {
         const newPlayers = players.filter((player) => player._id !== playerId);
@@ -59,41 +63,32 @@ export default function Encounter() {
 const handleNextTurn = async () => {
     const nextTurn = (currentTurn + 1) % players.length;
     setCurrentTurn(nextTurn);
-    
+    const characterId = players[nextTurn]._id;
     try {
-        const response = await apiService.get(`/api/players/${players[nextTurn]._id}`);
-        setCurrentPlayer(response.data);
+        const response = await apiService.put(`/encounters/${encountersList[0]._id}/current-turn`, { currentTurnId: characterId });
+        setCurrentTurn(response.data);
     } catch (err) {
         setError('Failed to fetch player information');
     }
 };
-    
-
     const [showAddButtons, setShowAddButtons] = useState(true);
-
-    const [hitPoints, setHitPoints] = useState("30/50");
+    const [hitPoints, setHitPoints] = useState("0/0");
     const [originalHitPoints, setOriginalHitPoints] = useState(hitPoints);
-    const [tempHP, setTempHP] = useState(10);
-    const [armorClass, setArmorClass] = useState(21);
+    const [tempHP, setTempHP] = useState(0);
+    const [armorClass, setArmorClass] = useState(0);
     const [loadingStatus, setLoadingStatus] = useState(true);
     const [loadingConditions, setLoadingConditions] = useState(true);
     const [loadingDefenses, setLoadingDefenses] = useState(true);
     const [selectedAction, setSelectedAction] = useState<Action>(Action.Attack);
     const [selectedWeapon, setSelectedWeapon] = useState<Weapon | ''>('');
     const [selectedTarget, setSelectedTarget] = useState(null);
-    const [bonusModifier, setBonusModifier] = useState<number>(2);
-    const [accuracyDice, setAccuracyDice] = useState<number>(1);
-    const [combatLog, setCombatLog] = useState<string[]>([
-        '• Jarrod Feaks succeeded 2/3 Death Saving Throws!',
-        '• TURN 3',
-        '• Joseph Kizana used Dash.',
-        '• Sydney Melendres tries to opportunity attack Joseph Kizana with their Greatsword but misses!',
-        '• Mosaab Saleem deals 15 damage to Justin Tran with their Shortsword!',
-    ]);
+    const [bonusModifier, setBonusModifier] = useState<number>(0);
+    const [accuracyDice, setAccuracyDice] = useState<number>(0);
+    const [combatLog, setCombatLog] = useState<string[]>([]);
 
-    const [currentHP, setCurrentHP] = useState(30);
-    const [maxHP, setMaxHP] = useState(50);
-
+    const [currentHP, setCurrentHP] = useState(0);
+    const [maxHP, setMaxHP] = useState(0);
+0
     const handleCurrentHPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseInt(e.target.value);
         setCurrentHP(isNaN(value) ? 0 : value);
@@ -121,9 +116,14 @@ const handleNextTurn = async () => {
     useEffect(() => {
         const fetchCurrentPlayer = async () => {
             try {
-                // Assuming 'Justin Tran' is the current player and has an ID of '123'
-                const response = await apiService.get('/api/players/current/123');
-                setCurrentPlayer(response.data);
+                if (encountersList?.length === 0) {
+                    await createAndAddEncounter();
+                }
+                const combatLog = encountersList[0].combat_log;
+                setCombatLog(combatLog);
+                const response = encountersList[0].current_turn;
+                // it should find the id in the initative list and set the current turn to that index
+                setCurrentTurn(0);  
                 setLoadingStatus(false);
                 setLoadingConditions(false);
                 setLoadingDefenses(false);
@@ -138,6 +138,21 @@ const handleNextTurn = async () => {
         fetchCurrentPlayer();
     }, []);
 
+    const createAndAddEncounter = async () => {
+        try {
+            const createdEncounterResponse = await apiService.post(`/encounters`, { campaign_id: campaignId, name: 'Encounter' });
+            const createdEncounter = createdEncounterResponse;
+            if (createdEncounter) {
+                await apiService.post(`/campaigns/${campaignId}/encounters`, { encounterId: createdEncounter._id });
+                setEncountersList([createdEncounter]);
+            } else {
+                throw new Error('Encounter creation failed');
+            }
+        } catch (err) {
+            console.error(err);
+            setError('Failed to create and add encounter');
+        }
+    };
     const dialogs = useDialogs();
     const actionOptions = Object.values(Action);
 
@@ -146,7 +161,7 @@ const handleNextTurn = async () => {
     const [formatsByCharacter, setFormatsByCharacter] = useState({});
     const [players, setPlayers] = useState<Player[]>([]);
 
-    const [currentCharacterTurn, setCurrentCharacterTurn] = useState<string>('Justin Tran');
+    const [currentCharacterTurn, setCurrentCharacterTurn] = useState<string>('');
 
     const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
     const [selectedImmunities, setSelectedImmunities] = useState<string[]>([]);
@@ -285,18 +300,28 @@ const handleNextTurn = async () => {
         setAccuracyDice(parseInt(event.target.value));
     };
 
-    const addCombatLogEntry = (entry: string) => {
-        setCombatLog([...combatLog, entry]);
+    const addCombatLogEntry = async (entry: string) => {
+        try {
+            await apiService.put(`/encounters/${encountersList[0]._id}/combat-log`, { logEntry: entry });
+            setCombatLog([...combatLog, entry]);
+        } catch (err) {
+            console.error('Failed to update combat log', err);
+        }
     };
 
     const handleExecute = () => {
-        const accuracyDiceValue = accuracyDice ?? 0;
-        // 10 is temporary, should be replaced with the actual AC of the target
-        if (accuracyDiceValue + bonusModifier >= 0) {
-            handleAttackOpen();
+        if (Action.Attack === selectedAction) {
+            const accuracyDiceValue = accuracyDice ?? 0;
+            // 10 is temporary, should be replaced with the actual AC of the target
+            if (accuracyDiceValue + bonusModifier >= 0) {
+                handleAttackOpen();
+            }
+            else {
+                addCombatLogEntry(missedCombatLogString(currentCharacterTurn, selectedWeapon, selectedTarget));
+            }
         }
         else {
-            addCombatLogEntry(missedCombatLogString(currentCharacterTurn, selectedWeapon, selectedTarget));
+            addCombatLogEntry(customCombatLogString(currentCharacterTurn + " " + selectedAction));
         }
     };
 
@@ -345,15 +370,6 @@ const handleNextTurn = async () => {
             setTargetVulnerabilities(prev => prev.filter(v => v !== vulnerability));
         }
     };
-
-    // const initiativeOrder = [
-    //     { name: 'Joseph Kizana', initiative: 20, hp: 40, maxHp: 50, ac: 19 },
-    //     { name: 'Mosaab Saleem', initiative: 19, hp: 50, maxHp: 50, ac: 20 },
-    //     { name: 'Sydney Melendres', initiative: 16, hp: 25, maxHp: 50, ac: 15 },
-    //     { name: 'Justin Tran', initiative: 12, hp: 40, maxHp: 50, ac: 21 },
-    //     { name: 'Samuel Coa', initiative: 9, hp: 0, maxHp: 30, ac: 12 },
-    //     { name: 'Jarrod Feaks', initiative: 8, hp: 0, maxHp: 50, ac: 23 },
-    // ];
 
     const handleTargetStatChange = (stat, value) => {
         setSelectedTarget(prevTarget => ({

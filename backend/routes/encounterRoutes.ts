@@ -6,7 +6,7 @@ router.route('/')
     .post(createEncounter);
 router.route('/:id/reset/turns')
     .put(resetTurnsInEncounter);
-router.route('/:id/combat/log')
+router.route('/:id/combat-log')
     .get(getCombatLog)
     .put(addToCombatLog);
 router.route('/:id/character')

@@ -21,8 +21,8 @@ interface Campaign {
     dmId: string;
     name: string;
     players: Player[];
-    encounters: unknown[]; // TODO: define these types
-    monsters: unknown[];
+    encounters: Encounter[];
+    monsters: Monster[];
 }
 
 interface Player {
@@ -30,6 +30,46 @@ interface Player {
     name: string;
     level: number;
     class: string;
+}
+
+interface Monster {
+    _id: string;
+    name: string;
+    hp: number;
+    ac: number;
+    initiative: number;
+}
+
+interface Encounter {
+    _id: string;
+    name: string;
+    turns: Turn; //
+    players: Player[];
+    monsters: Monster[];
+    initiative_order: Player|Monster[];
+    current_turn: string;
+    combat_log: string[];
+}
+
+interface Turn {
+    _id: string;
+    unitTurn: Player|Monster;
+    action: string;
+    weapon: string;
+    custom: string;
+    targetUnits: [Monster|Player, boolean][];
+    hitDiceRoll: number;
+    damageRoll: number;
+    bonusAction: boolean;
+    reaction: boolean;
+}
+
+interface Weapon {
+    name: string;
+    damage: string;
+    type: string;
+    range: string;
+    properties: string;
 }
 
 enum AssistantMode {
