@@ -26,10 +26,10 @@ const createUser = async (req: Request, res: Response) => {
     }
 };
 
-// @desc Get user rulebookId by dmId
-// @route GET /users/:dmId/rulebook
+// @desc Get user's id for rulebook, assistant, and thread
+// @route GET /users/:dmId
 // @access Public
-const getRuleBookIdByDmId = async (req: Request, res: Response) => {
+const getAllUserInfo = async (req: Request, res: Response) => {
     try {
         const dmId = req.params.dmId;
 
@@ -46,20 +46,18 @@ const getRuleBookIdByDmId = async (req: Request, res: Response) => {
 };
 
 // @desc Update the rulebookId for a user
-// @route PUT /users/:id/rulebook
+// @route PUT /users/:dmId/rulebook
 // @access Public
 const updateRulebookId = async (req: Request, res: Response) => {
     try {
-        const userId = req.params.id;
+        const dmId = req.params.dmId;
         const { rulebookId } = req.body;
 
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).send({ message: 'User not found' });
-        }
-
-        user.rulebookId = rulebookId;
-        const updatedUser = await user.save();
+        const updatedUser = await User.findOneAndUpdate(
+            { dmId },
+            { rulebookId },
+            { new: true, upsert: true, setDefaultsOnInsert: true }
+        );
 
         res.status(200).json(updatedUser);
     } catch (error: any) {
@@ -68,4 +66,25 @@ const updateRulebookId = async (req: Request, res: Response) => {
     }
 };
 
-export { createUser, updateRulebookId, getRuleBookIdByDmId };
+// @desc Update the rulebookId for a user
+// @route PUT /users/:dmId/rulebook
+// @access Public
+const updateUserIds = async (req: Request, res: Response) => {
+    try {
+        const dmId = req.params.dmId;
+        const { rulebookId, threadId, assistantId } = req.body;
+
+        const updatedUser = await User.findOneAndUpdate(
+            { dmId },
+            { rulebookId, threadId, assistantId },
+            { new: true, upsert: true, setDefaultsOnInsert: true }
+        );
+
+        res.status(200).json(updatedUser);
+    } catch (error: any) {
+        console.error('Error updating rulebookId:', error);
+        res.status(500).send({ message: 'Error updating rulebookId', error: error.message });
+    }
+};
+
+export { createUser, updateRulebookId, getAllUserInfo, updateUserIds };

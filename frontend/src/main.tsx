@@ -1,7 +1,7 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 import { createBrowserRouter, redirect, RouterProvider } from "react-router-dom";
-import App from './routes/app.tsx'
+import App from "./routes/app.tsx";
 import Landing from "./routes/landing.tsx";
 import CampaignDashboard from "./routes/campaign.tsx";
 import { CssBaseline, ThemeProvider } from "@mui/material";
