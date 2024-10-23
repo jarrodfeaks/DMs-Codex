@@ -575,7 +575,7 @@ export default function Encounter() {
                         sx={{ ...sxProps.columnCard, ...sxProps.initiativeItem, ...(isActive(character.name) && sxProps.initiativeItemActive) }}
                     >
                         <Typography>{index + 1}. {character.name}</Typography>
-                        <Typography>Level {character.level} {character.class}</Typography>
+                        {/* <Typography>Level {character.level} {character.class}</Typography> */}
                         <ToggleButtonGroup
                             value={formatsByCharacter[character.name] || []}
                             onChange={(event, newFormats) => handleFormat(character.name, event, newFormats)}
