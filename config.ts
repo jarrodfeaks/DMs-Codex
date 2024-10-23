@@ -13,6 +13,7 @@ interface FolderPaths {
   FE_DASHBOARD_FOLDER: string;
   FE_MODALS_FOLDER: string;
   FE_ROUTES_FOLDER: string;
+  FE_ASSETS_FOLDER: string;
   // SHARED
   SHARED_FOLDER: string;
   }
@@ -28,6 +29,7 @@ const FE_ASSISTANT_FOLDER = process.env.FE_ROUTES_FOLDER || 'frontend/src/compon
 const FE_DASHBOARD_FOLDER = process.env.FE_ROUTES_FOLDER || 'frontend/src/components/dashboard';
 const FE_MODALS_FOLDER = process.env.FE_MODALS_FOLDER || 'frontend/src/components/modals';
 const FE_ROUTES_FOLDER = process.env.FE_ROUTES_FOLDER || 'frontend/src/routes';
+const FE_ASSETS_FOLDER = process.env.FE_ASSETS_FOLDER || 'frontend/src/assets';
 // SHARED
 const SHARED_FOLDER = process.env.SHARED_FOLDER || 'shared';
 
@@ -43,6 +45,7 @@ export const FOLDER_PATHS: FolderPaths = {
   FE_DASHBOARD_FOLDER,
   FE_MODALS_FOLDER,
   FE_ROUTES_FOLDER,
+  FE_ASSETS_FOLDER,
   // SHARED
   SHARED_FOLDER
 };
@@ -59,6 +62,7 @@ export {
   FE_DASHBOARD_FOLDER,
   FE_MODALS_FOLDER,
   FE_ROUTES_FOLDER,
+  FE_ASSETS_FOLDER,
   // SHARED
   SHARED_FOLDER
 };
