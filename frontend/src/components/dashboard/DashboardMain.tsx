@@ -7,7 +7,7 @@ import { useCurrentCampaign } from "../../routes/app.context.ts";
 import { Player } from "../../types.ts";
 
 export default function DashboardMain(
-    { onCreateCharacter }: { onCreateCharacter: (importData?: unknown) => void }) {
+    { onCreateCharacter}: { onCreateCharacter: (importData?: unknown, editData?: unknown, editId?: unknown) => void }) {
     const currentCampaign = useCurrentCampaign();
 
     const dialogs = useDialogs();
@@ -20,13 +20,18 @@ export default function DashboardMain(
         const result = await dialogs.open(ImportCharacterModal);
         // only returns a result if the import was successful
         if (result) {
-            onCreateCharacter(result);
+            onCreateCharacter(result, null, null);
         }
     };
 
-    const onEditCharacter = () => {
+    const onEditCharacter = async () => {
         if (selectedPlayerId !== null) {
             // Go to Character Sheet and load data for the selected player
+            const result = await apiService.get(`/players/${selectedPlayerId}`);
+
+            if (result) {
+              onCreateCharacter(null, result, selectedPlayerId);
+            }
         }
     };
 

@@ -1,6 +1,12 @@
 import { Schema, model, Document, ObjectId } from 'mongoose';
 import { Attribute, DamageType, Initative, Skill, Status } from '../../shared/enums';
 
+interface SkillModifier {
+  skill: string;
+  is_proficient: boolean;
+  modifier: number;
+}
+
 interface ICharacter extends Document {
     name: string;
     maxHitpoints: number;
@@ -15,7 +21,7 @@ interface ICharacter extends Document {
     armorClass: number;
     customModifiers: Map<Skill | Initative, number>;
     status: Status[];
-    temperaroaryModifiers: [Attribute | Skill, number][];
+    temperaroaryModifiers: SkillModifier[];
     damageImmunities: DamageType[];
     statusImmunities: Status[];
     resistances: DamageType[];
@@ -38,7 +44,7 @@ const characterSchema = new Schema<ICharacter>({
     charisma: { type: Number, required: true, default: 1 },
     armorClass: { type: Number, required: true, default: 1 },
     status: { type: [String], enum: Object.values(Status), required: false},
-    temperaroaryModifiers: { type: [[String, Number]], required: false, default: [] },
+    temperaroaryModifiers: { type: [{skill: { type: String, required: true }, is_proficient: { type: Boolean, required: true }, modifier: { type: Number, required: true },},], required: false, default: [] },
     damageImmunities: { type: [String], enum: Object.values(DamageType), required: false, default: [] },
     statusImmunities: { type: [String], enum: Object.values(Status), required: false, default: [] },
     resistances: { type: [String], enum: Object.values(DamageType), required: false, default: [] },

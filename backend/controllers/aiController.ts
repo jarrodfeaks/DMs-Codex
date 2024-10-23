@@ -17,10 +17,12 @@ const importCharacterSheet = async (req: Request, res: Response) => {
         }
         
         const formatted = await aiService.extractCharacterData(JSON.stringify(data));
+        console.log(formatted);
         res.json(formatted);
 
     } catch (err) {
         if (err instanceof OpenAI.APIError) {
+            console.log(err);
             const message = err.status === 401 ? "Invalid OpenAI API key" : err.type;
             res.status(err.status ?? 500).send(message);
         } else {

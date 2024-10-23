@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { Box, Typography, FormControlLabel, Switch, Dialog, Paper } from '@mui/material';
+import { DamageType } from '../../../../shared/enums.ts';
 
 const CharacterVulnerabilities: React.FC<{ payload: string[], open: boolean, onClose: (result: string[]) => Promise<void> }> = ({ payload, open, onClose }) => {
   const [activeVulnerabilities, setActiveVulnerabilities] = useState<string[]>(payload);
 
-  const vulnerabilities = [
-    "Piercing","Slashing","Lightning","Thunder","Poison","Cold","Radiant","Fire","Necrotic","Acid","Psychic","Force"
-  ];
+  const vulnerabilities = Object.values(DamageType);
 
   const handleSwitchChange = (condition: string, checked: boolean) => {
     const updatedVulnerabilities = checked
