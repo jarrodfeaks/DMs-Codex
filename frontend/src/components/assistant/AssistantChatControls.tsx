@@ -7,49 +7,36 @@ import { apiService } from "../../services/apiService";
 import useAssistant from "../../hooks/useAssistant";
 import { useUser } from "../../routes/app.context";
 
+interface UserInfo {
+    dmId: string;
+    rulebookId: string | null;
+    assistantId: string | null;
+    threadId: string | null;
+}
+
 function RulesControls() {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
-    const [existingRulebook, setExistingRulebook] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const assistant = useAssistant();
     const user = useUser();
 
+    const [rulebookId, setRulebookId] = useState<string | null>(null);
+    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+
     useEffect(() => {
-        const checkExistingRulebook = async () => {
+        const getUserInfo = async () => {
             try {
-                const res = await apiService.get(`/users/${user.sub}/rulebook`, { throwOnError: false, returnRawResponse: true });
-                console.log(res);
-                if (res.ok) {
-                    const data = await res.json();
-                    console.log(data);
-                    if (data.rulebookId) {
-                        setExistingRulebook(data.rulebookId);
-                    }
+                const userInfo: UserInfo = await apiService.get(`/users/${user.sub}`);
+                setUserInfo(userInfo);
+                setRulebookId(userInfo.rulebookId);
+                if (userInfo.assistantId && userInfo.threadId) {
+                    const chat = await apiService.get(`/ai/chat/${userInfo.threadId}`);
                 }
-                else if (res.status === 404) {
-                    await createUser();
-                }
-                else {
-                    throw new Error(`${res.status} ${res.statusText}`);
-                }
-            } catch (error) {
-                console.error('Error checking existing rulebook:', error);
-            } finally {
-                setIsLoading(false);
             }
-        };
-
-        checkExistingRulebook();
-    }, []);
-
-    const createUser = async () => {
-        try {
-            await apiService.post('/users', { dmId: user.sub });
-        } catch (error) {
-            console.error('Error creating user:', error);
         }
-    };
+        getUserInfo();
+    }, []);
 
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -57,9 +44,13 @@ function RulesControls() {
             setSelectedFile(file);
             setIsUploading(true);
             try {
-                const { assistantId, rulebookId } = await assistant.uploadRulebook(file);
-                console.log(`Assistant ID: ${assistantId}, Rulebook ID: ${rulebookId}`);
-                setExistingRulebook(rulebookId);
+                if (rulebookId) {
+                    // await apiService.post("/ai/rulebook", { assistantId: userInfo.assistantId, rulebookId });
+                } else {
+                    const fd = new FormData();
+                    fd.append('file', file);
+                    const res = await apiService.post(`/ai/rulebook/import`, fd);
+                }
                 
                 // update the user's rulebookId
                 await apiService.put(`/users/${user.sub}/rulebook`, { rulebookId });
@@ -84,17 +75,17 @@ function RulesControls() {
 
     return (
         <Stack spacing={2}>
-            {!existingRulebook && (
+            {!rulebookId && (
                 <Alert severity="info">
                     You must provide a rulebook for the AI to reference before starting a conversation.
                 </Alert>
             )}
             <Button
-                variant={existingRulebook ? 'outlined' : 'contained' }
+                variant={rulebookId ? 'outlined' : 'contained' }
                 component="label"
                 startIcon={<UploadFileIcon />}
             >
-                {existingRulebook ? 'Replace Rulebook PDF' : 'Upload Rulebook PDF'}
+                {rulebookId ? 'Replace Rulebook PDF' : 'Upload Rulebook PDF'}
                 <input
                     type="file"
                     hidden

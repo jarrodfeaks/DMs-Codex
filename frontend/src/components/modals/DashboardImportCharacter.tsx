@@ -17,7 +17,7 @@ export default function DashboardImportCharacter({ open, onClose }: { open: bool
         try {
             const fd = new FormData();
             fd.append('file', selectedFile);
-            const res = await apiService.post("/ai/import/character", fd);
+            const res = await apiService.post("/ai/character/import", fd);
             onClose(res);
         } catch (err) {
             const message = err instanceof Error ? err.message : "Unknown error";

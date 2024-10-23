@@ -5,16 +5,15 @@ import fs from "fs";
 import OpenAI from "openai";
 import { AssistantMode } from "../../shared/enums";
 
-interface RulesOptions {
-    mode: AssistantMode.Rules;
-    rulebookId: string;
-    threadId: string | null;
+interface CreateChatRequestBody {
+    assistantId: string;
+    threadId: string | null; // if there is an existing thread, we will clean it up
+    message: string;
 }
 
-interface SendMessageRequestBody {
-    message: string;
-    modeOptions: RulesOptions;
-}
+interface CreateChatRequest extends Request {
+    body: CreateChatRequestBody;
+  }
 
 const importCharacterSheet = async (req: Request, res: Response) => {
     try {
@@ -50,7 +49,7 @@ const importRulebook = async (req: Request, res: Response) => {
         }
         
         const stream = fs.createReadStream(req.file.path);
-        const { rulebookId, assistantId } = await aiService.createVectorStore(stream);
+        const { rulebookId, assistantId } = await aiService.createVectorStoreWithAssistant(stream);
     
         // clean up the uploaded file
         fs.unlinkSync(req.file.path);
@@ -62,10 +61,43 @@ const importRulebook = async (req: Request, res: Response) => {
     }
 }
 
+const deleteRulebook = async (req: Request, res: Response) => {
+    try {
+        const { assistantId, rulebookId } = req.body;
+        await aiService.deleteVectorStoreAndAssistant(assistantId, rulebookId);
+        res.send('Rulebook deleted');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error deleting rulebook');
+    }
+}
+
+const createChat = async (req: CreateChatRequest, res: Response) => {
+    try {
+        const { assistantId, threadId, message } = req.body;
+        const newThread = await aiService.createChat(assistantId, threadId, message);
+        res.json(newThread);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error creating chat');
+    }
+}
+
+const getChat = async (req: Request, res: Response) => {
+    try {
+        const threadId = req.params.threadId;
+        const messages = await aiService.getMessages(threadId);
+        res.json(messages);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error getting chat messages');
+    }
+}
+
 // const sendMessage = async (req: Request, res: Response) => {
 //     try {
 //         const { mode, message, rulebookId } = req.body;
 //     }
 // }
 
-export { importCharacterSheet, importRulebook };
+export { importCharacterSheet, importRulebook, deleteRulebook, createChat, getChat };

@@ -33,7 +33,7 @@ const createAssistant = async () => {
     return assistant;
 }
 
-const createVectorStore = async (stream: ReadStream) => {
+const createVectorStoreWithAssistant = async (stream: ReadStream) => {
     const vectorStore = await client.beta.vectorStores.create({
         name: 'User Rulebook Store',
     })
@@ -53,4 +53,27 @@ const createVectorStore = async (stream: ReadStream) => {
       return { rulebookId: vectorStore.id, assistantId: assistant.id };
 }
 
-export default { extractCharacterData, createVectorStore };
+const deleteVectorStoreAndAssistant = async (assistantId: string, rulebookId: string) => {
+  await client.beta.assistants.del(assistantId);
+  await client.beta.vectorStores.del(rulebookId);
+};
+
+const createChat = async (assistantId: string, existingThreadId: string | null, message: string) => {
+  if (existingThreadId) {
+    // clean up old thread
+    await client.beta.threads.del(existingThreadId);
+  }
+  return client.beta.threads.create({ messages: [{ role: "user", content: message }] });
+}
+
+const getMessages = async (threadId: string) => {
+  const messagesPage = await client.beta.threads.messages.list(threadId);
+  return messagesPage.data.map((message) => {
+    return {
+      role: message.role,
+      content: message.content,
+    }
+  })
+}
+
+export default { extractCharacterData, createVectorStoreWithAssistant, deleteVectorStoreAndAssistant, createChat, getMessages };
