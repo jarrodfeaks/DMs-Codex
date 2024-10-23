@@ -46,7 +46,7 @@ function EncounterAddFromPlayers({ open, onClose }: { open: boolean; onClose: (p
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
             Add from player list
           </Typography>
-          <List>
+          <List sx={{ maxHeight: 300, overflowY: 'auto' }}>
             {playerList.map((player) => (
               <ListItemButton
                 key={player._id}
@@ -58,20 +58,21 @@ function EncounterAddFromPlayers({ open, onClose }: { open: boolean; onClose: (p
               </ListItemButton>
             ))}
           </List>
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            sx={{ mt: 2 }}
-            disabled={!selectedPlayer}
-            onClick={handleAddToQueue}
-          >
-            Add to initiative queue
-          </Button>
+          <Box sx={{ position: 'sticky', bottom: 0, p: 2 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              disabled={!selectedPlayer}
+              onClick={handleAddToQueue}
+            >
+              Add to initiative queue
+            </Button>
+          </Box>
         </Paper>
       </Box>
     </Dialog>
   );
-};
+}
 
 export default EncounterAddFromPlayers;
