@@ -87,16 +87,14 @@ function EncounterAddFromBestiary({ open, onClose }: { open: boolean, onClose: (
     );
   };
 
-  const handleAddMonsterToQueue = async () => {
-    const formattedMonsterForMongo = formatMonsterForMongo(monsterDetails);
-    try {
-      const mongoDbResponse = await apiService.post("/monsters", formattedMonsterForMongo);
-      console.log('Monster added to database:', mongoDbResponse);
-    } catch (error) {
-      console.error('Error adding monster to database:', error);
+  const handleAddMonsterToQueue = () => {
+    const selectedMonsterDetails = monsters.find(monster => monster.index === selectedMonster);
+  
+    if (selectedMonsterDetails) {
+      onClose(selectedMonsterDetails); // Pass the full monster details instead of just the index
     }
-    onClose(monsterDetails);
   };
+  
 
   return (
     <Dialog open={open} onClose={() => onClose()} maxWidth="lg">

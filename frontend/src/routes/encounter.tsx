@@ -214,18 +214,16 @@ export default function Encounter() {
         }));
       };
 
-
-
     const handleOpenPlayerList = async () => {
         const player = await dialogs.open(EncounterAddFromPlayers);
         if (player) addPlayerToQueue(player);
     };
 
     const handleOpenBestiary = async () => {
-        const monster = await dialogs.open(EncounterAddFromBestiary);
-        // monster needs to be converted to player type
-        if (monster) addPlayerToQueue(monster);
-    }
+        const selectedMonster = await dialogs.open(EncounterAddFromBestiary);
+        if (selectedMonster) addPlayerToQueue(selectedMonster);  // Add monster to queue just like a player
+    };
+      
 
     const handleOpenAIGenerate = () => dialogs.open(EncounterAddFromAI);
 
