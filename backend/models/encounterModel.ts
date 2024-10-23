@@ -23,7 +23,7 @@ const encounterSchema = new Schema<IEncounter>({
             initiative_score: { type: Number, required: true }
         }
     ],
-    current_turn: { type: Schema.Types.ObjectId, refPath: 'initiative_order.entity_id' },
+    current_turn: { type: Schema.Types.ObjectId, refPath: 'character_turn' },
     combat_log: { type: [String], required: false, default: [] }
 },
     {

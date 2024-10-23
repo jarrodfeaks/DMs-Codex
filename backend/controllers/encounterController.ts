@@ -58,6 +58,25 @@ const updateEncounter = async (req: Request, res: Response) => {
     }
 };
 
+// @desc Get the combat log of an encounter
+// @route GET /encounters/:id/combat-log
+// @access Public
+const getCombatLog = async (req: Request, res: Response) => {
+    try {
+        const encounterId = req.params.id;
+
+        const encounter = await Encounter.findById(encounterId).select('combat_log');
+        if (!encounter) {
+            return res.status(404).json({ message: 'Encounter not found' });
+        }
+
+        res.status(200).json(encounter.combat_log);
+    } catch (error: any) {
+        console.error('Error retrieving combat log:', error);
+        res.status(500).send({ message: 'Error retrieving combat log', error: error.message });
+    }
+};
+
 // @desc Add a string to the combat log of an encounter
 // @route PUT /encounters/:id/combat-log
 // @access Public
@@ -157,6 +176,42 @@ const resetTurnsInEncounter = async (req: Request, res: Response) => {
     }
 };
 
+// @desc Get the current turn info of an encounter
+// @route GET /encounters/:id/current-turn
+// @access Public
+const getCurrentTurnInfo = async (req: Request, res: Response) => {
+    try {
+        const encounterId = req.params.id;
+
+        const encounter = await Encounter.findById(encounterId).populate('current_turn');
+        if (!encounter) {
+            return res.status(404).json({ message: 'Encounter not found' });
+        }
+
+        const currentTurnId = encounter.current_turn;
+        if (!currentTurnId) {
+            return res.status(404).json({ message: 'Current turn not set' });
+        }
+
+        // Check if the current turn is a player
+        let character = await Player.findById(currentTurnId);
+        if (character) {
+            return res.status(200).json({ character });
+        }
+
+        // Check if the current turn is a monster
+        character = await Monster.findById(currentTurnId);
+        if (character) {
+            return res.status(200).json({ character });
+        }
+
+        return res.status(404).json({ message: 'Character not found in players or monsters' });
+    } catch (error: any) {
+        console.error('Error retrieving current turn info:', error);
+        res.status(500).send({ message: 'Error retrieving current turn info', error: error.message });
+    }
+};
+
 // @desc Update the current turn in an encounter
 // @route PUT /encounters/:id/current-turn
 // @access Public
@@ -204,4 +259,4 @@ const deleteEncounter = async (req: Request, res: Response) => {
     }
 };
 
-export {addToCombatLog, addCharacterToEncounter, getEncounterInformation, createEncounter, resetTurnsInEncounter, updateEncounter, deleteEncounter, updateCurrentTurn };
+export {addToCombatLog, addCharacterToEncounter, getEncounterInformation, getCombatLog, getCurrentTurnInfo, createEncounter, resetTurnsInEncounter, updateEncounter, deleteEncounter, updateCurrentTurn };
