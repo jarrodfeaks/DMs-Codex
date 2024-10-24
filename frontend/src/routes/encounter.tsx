@@ -645,8 +645,8 @@ export default function Encounter() {
                     {/* Status */}
                     <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
                         <Typography variant="subtitle2">Status</Typography>
-                                
-                        {/* HP Row */}
+
+                        {/* HP */}
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                             <Typography sx={{ flexGrow: 1 }}>HP</Typography>
                             <TextField
@@ -654,7 +654,7 @@ export default function Encounter() {
                                 value={currentHP}
                                 onChange={handleCurrentHPChange}
                                 size="small"
-                                sx={{ width: 60, ml: 'auto' }}  // Text field aligned to the right
+                                sx={{ width: 60, ml: 'auto' }}
                             />
                             <Typography>/</Typography>
                             <TextField
@@ -665,8 +665,8 @@ export default function Encounter() {
                                 sx={{ width: 60 }}
                             />
                         </Box>
-                                
-                        {/* Temp HP Row */}
+
+                        {/* Temp HP */}
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                             <Typography sx={{ flexGrow: 1 }}>Temp HP</Typography>
                             <TextField
@@ -674,11 +674,11 @@ export default function Encounter() {
                                 value={tempHP}
                                 onChange={handleTempHPChange}
                                 size="small"
-                                sx={{ width: 100, ml: 'auto' }}  // Text field aligned to the right
+                                sx={{ width: 100, ml: 'auto' }}
                             />
                         </Box>
-                                
-                        {/* AC Row */}
+
+                        {/* AC */}
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Typography sx={{ flexGrow: 1 }}>AC</Typography>
                             <TextField
@@ -686,7 +686,7 @@ export default function Encounter() {
                                 value={armorClass}
                                 onChange={handleArmorClassChange}
                                 size="small"
-                                sx={{ width: 100, ml: 'auto' }}  // Text field aligned to the right
+                                sx={{ width: 100, ml: 'auto' }}
                             />
                         </Box>
                     </Card>
