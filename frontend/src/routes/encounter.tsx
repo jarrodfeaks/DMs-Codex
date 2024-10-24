@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Send } from '@mui/icons-material';
+import { Send, CheckBoxOutlineBlank, CheckBox, Cancel } from '@mui/icons-material';
 import { Action, Dice, Weapon, WeaponCategories } from '../../../shared/enums.ts';
 import AddIcon from "@mui/icons-material/Add";
 import {
@@ -30,6 +30,25 @@ import { Player } from "../types.ts";
 import AttackModal from "../components/modals/AttackModal";
 import {apiService} from "../services/apiService.ts";
 
+const DeathSaveBox = ({ state, onClick }) => {
+    const renderIcon = () => {
+        switch (state) {
+            case 1:
+                return <CheckBox />; // Ticked
+            case 2:
+                return <Cancel />; // Crossed
+            default:
+                return <CheckBoxOutlineBlank />; // Empty
+        }
+    };
+
+    return (
+        <IconButton onClick={onClick}>
+            {renderIcon()}
+        </IconButton>
+    );
+};
+
 export default function Encounter() {
     const [hitPoints, setHitPoints] = useState("30/50");
     const [originalHitPoints, setOriginalHitPoints] = useState(hitPoints);
@@ -55,6 +74,8 @@ export default function Encounter() {
     const [currentHP, setCurrentHP] = useState(30);
     const [maxHP, setMaxHP] = useState(50);
 
+    const [deathSaves, setDeathSaves] = useState([0, 0, 0, 0, 0]);
+
     const handleCurrentHPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseInt(e.target.value);
         setCurrentHP(isNaN(value) ? 0 : value);
@@ -73,6 +94,12 @@ export default function Encounter() {
     const handleArmorClassChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseInt(e.target.value);
         setArmorClass(isNaN(value) ? 0 : value);
+    };
+
+    const handleToggleDeathSave = (index) => {
+        const newDeathSaves = [...deathSaves];
+        newDeathSaves[index] = (newDeathSaves[index] + 1) % 3;
+        setDeathSaves(newDeathSaves);
     };
 
     const handleSendLog = () => {
@@ -500,9 +527,17 @@ export default function Encounter() {
                         </Box>
 
                         {/* Death Saves */}
-                        <Box sx={sxProps.deathSaves}>
-                            <Typography>☠</Typography>
-                            <Box>□□□□□</Box>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <Typography>Death Saves</Typography>
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                {deathSaves.map((state, index) => (
+                                    <DeathSaveBox
+                                        key={index}
+                                        state={state}
+                                        onClick={() => handleToggleDeathSave(index)}
+                                    />
+                                ))}
+                            </Box>
                         </Box>
                     </Card>
 
@@ -670,7 +705,7 @@ export default function Encounter() {
                 </Box>
                 
                 {/* Add Button */}
-                <Card sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 1, borderRadius: 0.5 }}>
+                <Card sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 1, borderRadius: 0.5, width: '18vw' }}>
                     <IconButton size="small">
                         <AddIcon onClick={handleAddInitiative} />
                     </IconButton>
@@ -747,9 +782,17 @@ export default function Encounter() {
                         </Box>
 
                         {/* Death Saves */}
-                        <Box sx={sxProps.deathSaves}>
-                            <Typography>☠</Typography>
-                            <Box>□□□□□</Box>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <Typography>Death Saves</Typography>
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                {deathSaves.map((state, index) => (
+                                    <DeathSaveBox
+                                        key={index}
+                                        state={state}
+                                        onClick={() => handleToggleDeathSave(index)}
+                                    />
+                                ))}
+                            </Box>
                         </Box>
                     </Card>
 
