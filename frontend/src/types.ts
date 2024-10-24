@@ -9,6 +9,14 @@ interface User {
     sub: string; // user ID
 }
 
+// used for assistant state management
+interface UserInfo {
+    dmId: string;
+    rulebookId: string | null;
+    assistantId: string | null;
+    threadId: string | null;
+}
+
 enum LoginStatus {
     Fetching,
     LoggedIn,
@@ -39,11 +47,11 @@ enum AssistantMode {
 }
 
 interface Message {
-    id: number;
+    id: string;
     role: 'user' | 'assistant';
-    content: string;
+    content: string | null;
 }
 
 export { LoginStatus, AssistantMode };
-export type { User, Campaign, Player, Message };
+export type { User, UserInfo, Campaign, Player, Message };
 

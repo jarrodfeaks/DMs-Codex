@@ -32,10 +32,12 @@ export default function Assistant() {
         }
     }
 
-    const { mode, changeMode } = useAssistant();
+    const assistant = useAssistant();
+    const { mode, setMode } = assistant;
 
-    const handleChoiceSelected = (choice: AssistantMode) => {
-        changeMode(choice);
+    const handleChoiceSelected = (choice: AssistantMode | null) => {
+        setMode(choice);
+        assistant.setMessages([]);
     }
 
     return (
@@ -46,7 +48,7 @@ export default function Assistant() {
                     <Button 
                         sx={sxProps.resetButton} 
                         startIcon={<RestartAltIcon />} 
-                        onClick={() => changeMode(null)}
+                        onClick={() => handleChoiceSelected(null)}
                         disabled={mode === null}
                     >
                         Reset Assistant
@@ -56,7 +58,7 @@ export default function Assistant() {
                     {mode === null ? (
                         <AssistantChoices onChoiceSelected={handleChoiceSelected} />
                     ) : (
-                        <AssistantChat mode={mode} />
+                        <AssistantChat mode={mode} assistant={assistant} />
                     )}
                 </Paper>
             </Box>

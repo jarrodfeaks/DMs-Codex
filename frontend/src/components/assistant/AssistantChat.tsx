@@ -1,11 +1,14 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Box, Divider, Grow, IconButton, InputAdornment, TextField, Typography } from "@mui/material";
 import SendIcon from '@mui/icons-material/Send';
-import { AssistantMode, Message } from "../../types"
+import { AssistantMode, Message, UserInfo } from "../../types"
 import AssistantChatMessage from './AssistantChatMessage';
 import AssistantChatControls from './AssistantChatControls';
+import useAssistant from '../../hooks/useAssistant';
+import { useUser } from '../../routes/app.context';
+import { apiService } from '../../services/apiService';
 
-export default function AssistantChat({ mode }: { mode: AssistantMode }) {
+export default function AssistantChat({ mode, assistant }: { mode: AssistantMode, assistant: ReturnType<typeof useAssistant> }) {
     const sxProps = {
         container: { 
             display: 'flex', 
@@ -47,30 +50,83 @@ export default function AssistantChat({ mode }: { mode: AssistantMode }) {
         },
     };
 
-    const exampleMessages: Message[] = [
-        { id: 1, role: 'user', content: 'What are the basic rules for combat in D&D 5e?' },
-        { id: 2, role: 'assistant', content: 'The basic rules for combat in D&D 5e include: 1. Roll for initiative to determine turn order. 2. On your turn, you can move and take one action. 3. Actions include Attack, Cast a Spell, Dash, Disengage, Dodge, Help, Hide, Ready, Search, and Use an Object. 4. You may also take one bonus action if available. 5. You can interact with one object or feature of the environment for free. Would you like more details on any specific aspect of combat?' },
-    ];
+    const [ allowInput, setAllowInput ] = React.useState(false);
 
-    const [messages, setMessages] = React.useState<Message[]>(mode === AssistantMode.Rules ? exampleMessages : []);
+    const handleAllowInputChange = (allow: boolean) => {
+        setAllowInput(allow);
+    };
+
+    const user = useUser();
+    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+
+    useEffect(() => {
+        const getUserInfo = async () => {
+            try {
+                const userInfo: UserInfo = await apiService.put(`/users/${user.sub}`, {});
+                setUserInfo(userInfo);
+            } catch (err) {
+                console.log('Error fetching user info');
+                console.error(err);
+            }
+        }
+
+        if (assistant.mode === AssistantMode.Rules) {
+            getUserInfo();
+        }
+    }, [])
+
+    const [messages, setMessages] = [assistant.messages, assistant.setMessages];
+
+    // used to animate new messages
+    const [newMessageId, setNewMessageId] = useState('');
+
     const [inputMessage, setInputMessage] = React.useState('');
 
+    const [isAwaitingResponse, setIsAwaitingResponse] = useState(false);
+
     const addMessage = (newMessage: Message) => {
+        setNewMessageId(newMessage.id);
         setMessages(prevMessages => [...prevMessages, newMessage]);
     };
 
-    const handleSendMessage = () => {
+    const handleSubmit = () => {
         if (inputMessage.trim()) {
+            const isNewChat = messages.length === 0;
             const newMessage: Message = {
-                id: messages.length + 1,
+                id: 'user-' + messages.length + 1,
                 role: 'user',
                 content: inputMessage.trim()
             };
             addMessage(newMessage);
             setInputMessage('');
-            console.log('Sent message:', newMessage);
+            sendMessage(newMessage, isNewChat);
         }
     };
+
+    const sendMessage = async (message: Message, isNewChat: boolean) => {
+        try {
+            setIsAwaitingResponse(true);
+            const responseMessage: Message = {
+                id: 'assistant-' + messages.length + 1,
+                role: 'assistant',
+                content: null
+            }
+            setTimeout(() => {
+                addMessage(responseMessage);
+            }, 300);
+            if (isNewChat) {
+                const res = await apiService.post('/ai/chat/new', { assistantId: userInfo?.assistantId, threadId: userInfo?.threadId, message: message.content });
+                await apiService.put(`/users/${user.sub}`, { threadId: res.threadId }); // update with new threadId
+                setMessages(prevMessages => prevMessages.map(m => m.id === responseMessage.id ? { ...m, content: res.messages[0].content[0].text.value } : m));
+            } else {
+                console.log('continuing chat');
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsAwaitingResponse(false);
+        }
+    }
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -83,14 +139,14 @@ export default function AssistantChat({ mode }: { mode: AssistantMode }) {
     const handleInputKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            handleSendMessage();
+            handleSubmit();
         }
     };
 
     const inputProps = {
         endAdornment: (
             <InputAdornment position="end">
-                <IconButton onClick={handleSendMessage}>
+                <IconButton onClick={handleSubmit} disabled={!allowInput || isAwaitingResponse}>
                     <SendIcon />
                 </IconButton>
             </InputAdornment>
@@ -106,9 +162,10 @@ export default function AssistantChat({ mode }: { mode: AssistantMode }) {
                             key={message.id}
                             in={true}
                             timeout={300}
+                            appear={newMessageId === message.id}
                         >
                             <div>
-                                <AssistantChatMessage message={message} />
+                                <AssistantChatMessage message={message} loading={!message.content} />
                             </div>
                         </Grow>
                     ))}
@@ -126,6 +183,7 @@ export default function AssistantChat({ mode }: { mode: AssistantMode }) {
                         onChange={(e) => setInputMessage(e.target.value)}
                         onKeyDown={handleInputKeyDown}
                         slotProps={{ input: inputProps }}
+                        disabled={!allowInput || isAwaitingResponse}
                     />
                 </Box>
             </Box>
@@ -133,7 +191,7 @@ export default function AssistantChat({ mode }: { mode: AssistantMode }) {
             <Box sx={sxProps.settingsColumn}>
                 <Typography variant="h6">Controls</Typography>
                 <Divider />
-                <AssistantChatControls mode={mode} />
+                <AssistantChatControls mode={mode} userInfo={userInfo} setUserInfo={setUserInfo} onAllowInputChange={handleAllowInputChange} />
             </Box>
         </Box>
     )

@@ -1,59 +1,60 @@
-import { Box, Button, MenuItem, Select, Slider, Stack, TextField, Typography, Alert, Backdrop, CircularProgress } from "@mui/material";
-import { AssistantMode } from "../../types";
+import { Box, Button, MenuItem, Select, Slider, Stack, TextField, Typography, Alert, Backdrop, CircularProgress, Paper, IconButton } from "@mui/material";
+import { AssistantMode, UserInfo } from "../../types";
 import UploadFileIcon from '@mui/icons-material/UploadFile';
-import AttachmentIcon from '@mui/icons-material/Attachment';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useState, useEffect } from "react";
 import { apiService } from "../../services/apiService";
-import useAssistant from "../../hooks/useAssistant";
 import { useUser } from "../../routes/app.context";
 
-interface UserInfo {
-    dmId: string;
-    rulebookId: string | null;
-    assistantId: string | null;
-    threadId: string | null;
-}
-
-function RulesControls() {
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [isUploading, setIsUploading] = useState(false);
+function RulesControls({ userInfo, setUserInfo, onHasRulebookChange }: { userInfo: UserInfo | null, setUserInfo: (userInfo: UserInfo) => void, onHasRulebookChange: (hasRulebook: boolean) => void }) {
     const [isLoading, setIsLoading] = useState(true);
-    const assistant = useAssistant();
+
+    const [hasRulebook, setHasRulebook] = useState(false);
+    const [rulebookName, setRulebookName] = useState<string | null>(null);
+
+    const [isUploading, setIsUploading] = useState(false);
+
     const user = useUser();
 
-    const [rulebookId, setRulebookId] = useState<string | null>(null);
-    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-
     useEffect(() => {
-        const getUserInfo = async () => {
+        const getUserRulebook = async () => {
             try {
-                const userInfo: UserInfo = await apiService.get(`/users/${user.sub}`);
-                setUserInfo(userInfo);
-                setRulebookId(userInfo.rulebookId);
-                if (userInfo.assistantId && userInfo.threadId) {
-                    const chat = await apiService.get(`/ai/chat/${userInfo.threadId}`);
+                if (userInfo!.rulebookId) {
+                    setHasRulebook(true);
+                    const { name } = await apiService.get(`/ai/rulebook/${user.sub}`);
+                    setRulebookName(name);
+                    onHasRulebookChange(true);
                 }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setIsLoading(false);
             }
         }
-        getUserInfo();
-    }, []);
+
+        if (userInfo) getUserRulebook();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userInfo]);
 
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file && file.type === 'application/pdf') {
-            setSelectedFile(file);
             setIsUploading(true);
             try {
-                if (rulebookId) {
-                    // await apiService.post("/ai/rulebook", { assistantId: userInfo.assistantId, rulebookId });
-                } else {
-                    const fd = new FormData();
-                    fd.append('file', file);
-                    const res = await apiService.post(`/ai/rulebook/import`, fd);
+                if (hasRulebook) {
+                    await apiService.delete(`/ai/rulebook/${user.sub}`);
                 }
-                
-                // update the user's rulebookId
-                await apiService.put(`/users/${user.sub}/rulebook`, { rulebookId });
+                const fd = new FormData();
+                fd.append('file', file);
+
+                // upload rulebook then attach to user
+                const { rulebookId, assistantId } = await apiService.post(`/ai/rulebook/import`, fd);
+                // await apiService.put(`/users/${user.sub}`, { rulebookId, assistantId });
+                await updateUserInfo({ rulebookId, assistantId });
+                setHasRulebook(true);
+                setRulebookName(file.name);
+                onHasRulebookChange(true);
             } catch (error) {
                 console.error('Error uploading rulebook:', error);
             } finally {
@@ -61,9 +62,26 @@ function RulesControls() {
             }
         } else {
             console.error('Please upload a PDF file');
-            setSelectedFile(null);
         }
     };
+
+    const handleDeleteRulebook = async () => {
+        try {
+            await apiService.delete(`/ai/rulebook/${user.sub}`);
+            await updateUserInfo({ rulebookId: null, assistantId: null });
+            // await apiService.put(`/users/${user.sub}`, { rulebookId: null, assistantId: null });
+            setHasRulebook(false);
+            setRulebookName(null);
+            onHasRulebookChange(false);
+        } catch (error) {
+            console.error('Error deleting rulebook:', error);
+        }
+    };
+
+    const updateUserInfo = async ({ rulebookId, assistantId }: { rulebookId: string | null, assistantId: string | null }) => {
+        const updatedUserInfo = await apiService.put(`/users/${user.sub}`, { rulebookId, assistantId });
+        setUserInfo(updatedUserInfo);
+    }
 
     if (isLoading) {
         return (
@@ -75,17 +93,17 @@ function RulesControls() {
 
     return (
         <Stack spacing={2}>
-            {!rulebookId && (
+            {!hasRulebook && (
                 <Alert severity="info">
                     You must provide a rulebook for the AI to reference before starting a conversation.
                 </Alert>
             )}
             <Button
-                variant={rulebookId ? 'outlined' : 'contained' }
+                variant={hasRulebook ? 'outlined' : 'contained' }
                 component="label"
                 startIcon={<UploadFileIcon />}
             >
-                {rulebookId ? 'Replace Rulebook PDF' : 'Upload Rulebook PDF'}
+                {hasRulebook ? 'Replace Rulebook PDF' : 'Upload Rulebook PDF'}
                 <input
                     type="file"
                     hidden
@@ -93,11 +111,35 @@ function RulesControls() {
                     onChange={handleFileUpload}
                 />
             </Button>
-            {selectedFile && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <AttachmentIcon />
-                    <Typography variant="body2">{selectedFile.name}</Typography>
-                </Box>
+            {hasRulebook && (
+                <Paper
+                    elevation={4}
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        p: 1,
+                        pl: 2,
+                        borderRadius: 1,
+                    }}
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, overflow: 'hidden' }}>
+                        <PictureAsPdfIcon />
+                        <Typography variant="body2" noWrap>{rulebookName}</Typography>
+                    </Box>
+                    <IconButton
+                        size="small"
+                        onClick={handleDeleteRulebook}
+                    >
+                        <DeleteIcon sx={{ 
+                            color: 'text.secondary',
+                            transition: 'color 0.3s ease',
+                            '&:hover': {
+                                color: 'error.main'
+                            }
+                        }} />
+                    </IconButton>
+                </Paper>
             )}
             <Backdrop
                 sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
@@ -178,10 +220,17 @@ function ChatControls() {
     )
 }
 
-export default function AssistantChatControls({ mode }: { mode: AssistantMode }) {
+export default function AssistantChatControls({ mode, userInfo, setUserInfo, onAllowInputChange }: { mode: AssistantMode, userInfo: UserInfo | null, setUserInfo: (userInfo: UserInfo) => void, onAllowInputChange: (allow: boolean) => void }) {
+    useEffect(() => {
+        if (mode === AssistantMode.Encounter || mode === AssistantMode.Chat) {
+            console.log('allowing input');
+            onAllowInputChange(true);
+        }
+      }, [mode, onAllowInputChange]);
+
     return (
         <Stack>
-            {mode === AssistantMode.Rules && <RulesControls />}
+            {mode === AssistantMode.Rules && <RulesControls userInfo={userInfo} setUserInfo={setUserInfo} onHasRulebookChange={onAllowInputChange} />}
             {mode === AssistantMode.Encounter && <EncounterControls />}
             {mode === AssistantMode.Chat && <ChatControls />}
         </Stack>

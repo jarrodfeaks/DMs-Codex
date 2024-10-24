@@ -4,6 +4,7 @@ import aiService from "../services/aiService";
 import fs from "fs";
 import OpenAI from "openai";
 import { AssistantMode } from "../../shared/enums";
+import User from "../models/userModel";
 
 interface CreateChatRequestBody {
     assistantId: string;
@@ -11,9 +12,19 @@ interface CreateChatRequestBody {
     message: string;
 }
 
+interface SendMessageRequestBody {
+    threadId: string;
+    assistantId: string;
+    message: string;
+}
+
 interface CreateChatRequest extends Request {
     body: CreateChatRequestBody;
   }
+
+interface SendMessageRequest extends Request {
+    body: SendMessageRequestBody;
+}
 
 const importCharacterSheet = async (req: Request, res: Response) => {
     try {
@@ -49,7 +60,7 @@ const importRulebook = async (req: Request, res: Response) => {
         }
         
         const stream = fs.createReadStream(req.file.path);
-        const { rulebookId, assistantId } = await aiService.createVectorStoreWithAssistant(stream);
+        const { rulebookId, assistantId } = await aiService.createVectorStoreWithAssistant(stream, req.file.originalname);
     
         // clean up the uploaded file
         fs.unlinkSync(req.file.path);
@@ -61,11 +72,40 @@ const importRulebook = async (req: Request, res: Response) => {
     }
 }
 
+const getRulebook = async (req: Request, res: Response) => {
+    try {
+        const dmId = req.params.dmId;
+        const user = await User.findOne({ dmId });
+        if (!user) {
+            res.status(404).send('User not found');
+            return;
+        }
+        if (!user.assistantId) {
+            res.status(400).send('Assistant not found');
+            return;
+        }
+        const rulebookName = await aiService.getRulebookName(user.assistantId); // original file name is stored in the assistant metadata
+        res.json({ id: user.rulebookId, name: rulebookName });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error getting rulebook');
+    }
+}
+
 const deleteRulebook = async (req: Request, res: Response) => {
     try {
-        const { assistantId, rulebookId } = req.body;
-        await aiService.deleteVectorStoreAndAssistant(assistantId, rulebookId);
-        res.send('Rulebook deleted');
+        const dmId = req.params.dmId;
+        const user = await User.findOne({ dmId });
+        if (!user) {
+            res.status(404).send('User not found');
+            return;
+        }
+        if (!user.assistantId || !user.rulebookId) {
+            res.status(400).send('User does not have an assistant or rulebook');
+            return;
+        }
+        await aiService.deleteVectorStoreAndAssistant(user.assistantId, user.rulebookId);
+        res.status(204).json({ message: 'Rulebook deleted' });
     } catch (error) {
         console.error(error);
         res.status(500).send('Error deleting rulebook');
@@ -75,8 +115,9 @@ const deleteRulebook = async (req: Request, res: Response) => {
 const createChat = async (req: CreateChatRequest, res: Response) => {
     try {
         const { assistantId, threadId, message } = req.body;
-        const newThread = await aiService.createChat(assistantId, threadId, message);
-        res.json(newThread);
+        const newThreadId = await aiService.createThread(assistantId, threadId, message);
+        const messages = await aiService.runThread(newThreadId, assistantId);
+        res.json({ newThreadId, messages });
     } catch (error) {
         console.error(error);
         res.status(500).send('Error creating chat');
@@ -94,10 +135,16 @@ const getChat = async (req: Request, res: Response) => {
     }
 }
 
-// const sendMessage = async (req: Request, res: Response) => {
-//     try {
-//         const { mode, message, rulebookId } = req.body;
-//     }
-// }
+const sendMessage = async (req: SendMessageRequest, res: Response) => {
+    try {
+        const { threadId, assistantId, message } = req.body;
+        await aiService.appendMessage(threadId, message);
+        const messages = await aiService.runThread(threadId, assistantId);
+        res.json({ threadId, messages });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error sending message');
+    }
+}
 
-export { importCharacterSheet, importRulebook, deleteRulebook, createChat, getChat };
+export { importCharacterSheet, importRulebook, getRulebook, deleteRulebook, createChat, getChat, sendMessage };

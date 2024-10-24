@@ -1,5 +1,5 @@
 import express from 'express';
-import { importCharacterSheet, importRulebook, deleteRulebook, createChat, getChat } from "../controllers/aiController";
+import { importCharacterSheet, importRulebook, deleteRulebook, createChat, getChat, getRulebook, sendMessage } from "../controllers/aiController";
 import multer from "multer";
 
 const diskStorage = multer.diskStorage({
@@ -18,7 +18,7 @@ router.post("/character/import", upload.single('file'), importCharacterSheet);
 router.post("/rulebook/import", diskUpload.single('file'), importRulebook);
 router.route("/rulebook/:dmId").get(getRulebook).delete(deleteRulebook);
 
-router.route("/chat/:threadId").get(getChat).post(sendMessage);
 router.post("/chat/new", createChat);
+router.route("/chat/:threadId").get(getChat).post(sendMessage);
 
 export default router;

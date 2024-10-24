@@ -6,6 +6,10 @@ import { ReadStream } from "fs";
 
 const client = new OpenAI();
 
+interface AssistantMetadata {
+  rulebookName: string;
+}
+
 const extractCharacterData = async (json: string) => {
     const completion = await client.beta.chat.completions.parse({
         model: "gpt-4o-2024-08-06",
@@ -33,7 +37,7 @@ const createAssistant = async () => {
     return assistant;
 }
 
-const createVectorStoreWithAssistant = async (stream: ReadStream) => {
+const createVectorStoreWithAssistant = async (stream: ReadStream, rulebookName: string) => {
     const vectorStore = await client.beta.vectorStores.create({
         name: 'User Rulebook Store',
     })
@@ -48,6 +52,7 @@ const createVectorStoreWithAssistant = async (stream: ReadStream) => {
             vector_store_ids: [vectorStore.id],
           },
         },
+        metadata: { rulebookName }
       });
 
       return { rulebookId: vectorStore.id, assistantId: assistant.id };
@@ -58,22 +63,38 @@ const deleteVectorStoreAndAssistant = async (assistantId: string, rulebookId: st
   await client.beta.vectorStores.del(rulebookId);
 };
 
-const createChat = async (assistantId: string, existingThreadId: string | null, message: string) => {
+const getRulebookName = async (assistantId: string) => {
+  const assistant = await client.beta.assistants.retrieve(assistantId);
+  return (assistant.metadata as AssistantMetadata).rulebookName;
+}
+
+const createThread = async (assistantId: string, existingThreadId: string | null, message: string) => {
   if (existingThreadId) {
     // clean up old thread
     await client.beta.threads.del(existingThreadId);
   }
-  return client.beta.threads.create({ messages: [{ role: "user", content: message }] });
+  const thread = await client.beta.threads.create({ messages: [{ role: "user", content: message }] });
+  return thread.id;
 }
 
 const getMessages = async (threadId: string) => {
   const messagesPage = await client.beta.threads.messages.list(threadId);
   return messagesPage.data.map((message) => {
     return {
+      id: message.id,
       role: message.role,
       content: message.content,
     }
   })
 }
 
-export default { extractCharacterData, createVectorStoreWithAssistant, deleteVectorStoreAndAssistant, createChat, getMessages };
+const appendMessage = async (threadId: string, message: string) => {
+  return client.beta.threads.messages.create(threadId, { role: "user", content: message });
+}
+
+const runThread = async (threadId: string, assistantId: string) => {
+  await client.beta.threads.runs.createAndPoll(threadId, { assistant_id: assistantId });
+  return getMessages(threadId);
+}
+
+export default { extractCharacterData, createVectorStoreWithAssistant, deleteVectorStoreAndAssistant, getRulebookName, createThread, getMessages, runThread, appendMessage };
