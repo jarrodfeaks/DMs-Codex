@@ -442,7 +442,7 @@ export default function Encounter() {
         return (
           <Box sx={sxProps.targetSection}>
             <Typography variant="h6">{selectedTarget.name}</Typography>
-            <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+            <Box sx={{ display: 'flex', gap: 1}}>
                 
                     {/* Status */}
                     <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
@@ -595,38 +595,70 @@ export default function Encounter() {
                 <Typography variant="h6" sx={sxProps.columnTitle}>INITIATIVE</Typography>
                 {players.map((character, index) => (
                     <Card
-                        key={character._id}
-                        sx={{ ...sxProps.columnCard, ...sxProps.initiativeItem, ...(isActive(character.name) && sxProps.initiativeItemActive) }}
+                    key={character._id}
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        ...sxProps.columnCard,
+                        ...sxProps.initiativeItem,
+                        ...(isActive(character.name) && sxProps.initiativeItemActive),
+                    }}
+                >
+                    <Typography
+                        sx={{
+                            fontWeight: 'bold',
+                            fontSize: '24px',
+                            textAlign: 'center',
+                            p: 1,
+                            backgroundColor: 'primary.dark',
+                            color: 'white',
+                            height: '100%',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            width: '40px',
+                            borderRadius: '5px',
+                        }}
                     >
-                        <Typography>{index + 1}. {character.name}</Typography>
-                        <Typography>Level {character.level} {character.class}</Typography>
+                        {index + 1}
+                    </Typography>
+                
+                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', ml: 2 }}>
+                        <Typography sx={{ fontWeight: 'bold', mb: 1 }}>{character.name}</Typography>
+                        <Typography sx={{ mb: 1 }}>
+                            Level {character.level} {character.class}
+                        </Typography>
                         <ToggleButtonGroup
                             value={formatsByCharacter[character.name] || []}
                             onChange={(event, newFormats) => handleFormat(character.name, event, newFormats)}
-                            sx={{ maxHeight: '40px' }}>
-                            {['action', 'bonus', 'reaction'].map(type => (
+                            sx={{ maxHeight: '40px' }}
+                        >
+                            {['action', 'bonus', 'reaction'].map((type) => (
                                 <ToggleButton
                                     key={type}
                                     value={type}
                                     sx={{
                                         backgroundColor: (formatsByCharacter[character.name] || []).includes(type)
-                                            ? 'primary.dark' //when selected
-                                            : 'primary.main', //not selcted
+                                            ? 'primary.dark' // when selected
+                                            : 'primary.main', // not selected
                                         color: (formatsByCharacter[character.name] || []).includes(type)
-                                            ? 'black' //selected
-                                            : 'white', //notselected
+                                            ? 'black' // selected
+                                            : 'white', // not selected
                                         '&:hover': {
                                             backgroundColor: (formatsByCharacter[character.name] || []).includes(type)
-                                                ? 'primary.main' //hoverselected
+                                                ? 'primary.main' // hover selected
                                                 : 'primary.dark',
-                                            color: 'white' //hovertext
-                                        }
-                                    }}>
+                                            color: 'white', // hover text
+                                        },
+                                    }}
+                                >
                                     {type.charAt(0).toUpperCase() + type.slice(1)}
                                 </ToggleButton>
                             ))}
                         </ToggleButtonGroup>
-                    </Card>
+                    </Box>
+                </Card>
+                
                 ))}
                 <Card sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 1, borderRadius: 0.5 }}>
                     <IconButton size="small" >
@@ -652,7 +684,7 @@ export default function Encounter() {
             {/* PLAYER SELECTED OR CURRENT TURN IN INITIATIVE ORDER IN QUEUE */}
             <Box sx={sxProps.encounterColumn}>
                 <Typography variant="h6" sx={sxProps.columnTitle}>CURRENT TURN</Typography> {/* Should this display character name instead? */} 
-                <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                <Box sx={{ display: 'flex', gap: 1 }}>
                 
                     {/* Status */}
                     <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
