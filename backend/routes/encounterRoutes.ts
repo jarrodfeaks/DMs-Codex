@@ -10,7 +10,7 @@ router.route('/:id/combat-log')
     .get(getCombatLog)
     .put(addToCombatLog);
 router.route('/:id/character')
-    .get(addCharacterToEncounter);
+    .put(addCharacterToEncounter);
 router.route('/:id/current-turn')
     .get(getCurrentTurnInfo)
     .put(updateCurrentTurn);

@@ -14,13 +14,13 @@ const getAllWeaponsList = async (req: Request, res: Response) => {
     }
 };
 
-// @desc Get a specific weapon
+// @desc Get a specific weapon by name
 // @route GET /weapons/:id
 // @access Public
 const getWeaponInformation = async (req: Request, res: Response) => {
     try {
-        const weaponId = req.params.id;
-        const weapon = await Weapon.findById(weaponId);
+        const weaponName = req.params.id;
+        const weapon = await Weapon.findOne({ name: weaponName });
         if (weapon) {
             res.status(200).json(weapon);
         } else {

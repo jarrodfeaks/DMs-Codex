@@ -1,22 +1,22 @@
 import { Box, Button, Dialog, Grid, TextField, Typography } from "@mui/material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dice } from "../../../../shared/enums";
 import { GetMaxValueForDice } from "../../utils";
 
 interface AttackModalProps {
     open: boolean;
     onClose: (result?: { totalDamageDealt: number }) => void;
-    payload: { damageDices: [Dice, number][] };
+    payload: { damageDice: [Dice, number][] };
 }
 
 export default function AttackModal({ open, onClose, payload }: AttackModalProps) {
-    const { damageDices = [] } = payload || {};
-    const initialDamageValues = damageDices.map(([_, num]) => Array(num).fill(''));
+    const { damageDice = [] } = payload || { };
+    const initialDamageValues = damageDice.map(([_, num]) => Array(num).fill(0));
     const [damageValues, setDamageValues] = useState<number[][]>(initialDamageValues);
 
     const handleInputChange = (diceIndex: number, rollIndex: number, value: string) => {
         const intValue = parseInt(value, 10);
-        const maxValue = GetMaxValueForDice(damageDices[diceIndex][0]);
+        const maxValue = GetMaxValueForDice(damageDice[diceIndex][0]);
         if (!isNaN(intValue) && intValue >= 0 && intValue <= maxValue) {
             const newValues = [...damageValues];
             newValues[diceIndex][rollIndex] = intValue;
@@ -33,7 +33,7 @@ export default function AttackModal({ open, onClose, payload }: AttackModalProps
         let isValid = true;
     
         damageValues.forEach((diceValues, diceIndex) => {
-            const maxValue = GetMaxValueForDice(damageDices[diceIndex][0]);
+            const maxValue = GetMaxValueForDice(damageDice[diceIndex][0]);
             diceValues.forEach((value) => {
                 const intValue = parseInt(value, 10);
                 if (isNaN(intValue) || intValue <= 0 || intValue > maxValue) {
@@ -69,7 +69,7 @@ export default function AttackModal({ open, onClose, payload }: AttackModalProps
                     Roll Damage
                 </Typography>
 
-                {damageDices.map(([dice, num], diceIndex) => (
+                {damageDice.map(([dice, num], diceIndex) => (
                     <Box key={diceIndex} sx={{ mb: 2 }}>
                         <Grid container spacing={2}>
                             {damageValues[diceIndex].map((value, rollIndex) => (

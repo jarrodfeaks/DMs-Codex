@@ -1,3 +1,5 @@
+import { Attribute, DamageType, Initative, Skill, Status } from "../../shared/enums";
+
 interface User {
     sid: string; // session ID
     nickname: string;
@@ -30,14 +32,47 @@ interface Player {
     name: string;
     level: number;
     class: string;
+    maxHitpoints: number;
+    currentHitpoints: number;
+    tempHitpoints: number;
+    strength: number;
+    dexterity: number;
+    constitution: number;
+    intelligence: number;
+    wisdom: number;
+    charisma: number;
+    armorClass: number;
+    customModifiers: Map<Skill | Initative, number>;
+    status: Status[];
+    temperaroaryModifiers: [Attribute | Skill, number][];
+    damageImmunities: DamageType[];
+    statusImmunities: Status[];
+    resistances: DamageType[];
+    vulnerabilities: DamageType[];
+    proficiencies: [Attribute | Skill];
 }
 
 interface Monster {
     _id: string;
     name: string;
-    hp: number;
-    ac: number;
-    initiative: number;
+    level: number;
+    maxHitpoints: number;
+    currentHitpoints: number;
+    tempHitpoints: number;
+    strength: number;
+    dexterity: number;
+    constitution: number;
+    intelligence: number;
+    wisdom: number;
+    charisma: number;
+    armorClass: number;
+    customModifiers: Map<Skill | Initative, number>;
+    status: Status[];
+    temperaroaryModifiers: [Attribute | Skill, number][];
+    damageImmunities: DamageType[];
+    statusImmunities: Status[];
+    resistances: DamageType[];
+    vulnerabilities: DamageType[];
 }
 
 interface Encounter {
@@ -85,5 +120,5 @@ interface Message {
 }
 
 export { LoginStatus, AssistantMode };
-export type { User, Campaign, Player, Message };
+export type { User, Campaign, Player, Message, Monster, Encounter, Turn, Weapon };
 

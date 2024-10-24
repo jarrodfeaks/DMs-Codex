@@ -31,19 +31,21 @@ import EncounterAddFromBestiary from "../components/modals/EncounterAddFromBesti
 import EncounterAddFromPlayers from "../components/modals/EncounterAddFromPlayers";
 import EncounterDefenses from "../components/modals/EncounterDefenses";
 import { missedCombatLogString, attackCombatLogString, customCombatLogString } from "../utils";
-import { Player } from "../types.ts";
+import { Monster, Player } from "../types.ts";
 import AttackModal from "../components/modals/AttackModal";
 import {apiService} from "../services/apiService.ts";
 import { useCurrentCampaign } from "./app.context.ts";
 import { create } from "domain";
+
+type PlayerOrMonster = Player | Monster;
 
 export default function Encounter() {
     const campaignId = useCurrentCampaign()?._id;
     const [encountersList, setEncountersList] = useState(useCurrentCampaign()?.encounters);
     const [showRemoveButtons, setShowRemoveButtons] = useState(false);
     const removePlayerFromQueue = (playerId: string) => {
-        const newPlayers = players.filter((player) => player._id !== playerId);
-        setPlayers(newPlayers);
+        const newPlayers = characters.filter((player) => player._id !== playerId);
+        setCharacters(newPlayers);
         if (newPlayers.length === 0) {
           setShowAddButtons(true);
           setShowRemoveButtons(false);
@@ -54,16 +56,16 @@ export default function Encounter() {
     const [currentTurn, setCurrentTurn] = useState(0);
 
     const handleStartInitiative = () => {
-        if (players.length > 0) {
+        if (characters.length > 0) {
             setInitiativeStarted(true);
             setCurrentTurn(0);
         }
     };
 
 const handleNextTurn = async () => {
-    const nextTurn = (currentTurn + 1) % players.length;
+    const nextTurn = (currentTurn + 1) % characters.length;
     setCurrentTurn(nextTurn);
-    const characterId = players[nextTurn]._id;
+    const characterId = characters[nextTurn]._id;
     try {
         const response = await apiService.put(`/encounters/${encountersList[0]._id}/current-turn`, { currentTurnId: characterId });
         setCurrentTurn(response.data);
@@ -92,7 +94,7 @@ const handleNextTurn = async () => {
     const handleCurrentHPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseInt(e.target.value);
         setCurrentHP(isNaN(value) ? 0 : value);
-    };
+    }; 
 
     const handleMaxHPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseInt(e.target.value);
@@ -123,10 +125,17 @@ const handleNextTurn = async () => {
                 setCombatLog(combatLog);
                 const response = encountersList[0].current_turn;
                 // it should find the id in the initative list and set the current turn to that index
-                setCurrentTurn(0);  
-                setLoadingStatus(false);
-                setLoadingConditions(false);
-                setLoadingDefenses(false);
+                if (response) {
+                    // set hp, max hp, temp hp, ac, death saving, def, con, def
+
+                }
+                else {
+                    setCurrentTurn(0);
+                    setNotes("");
+                    setLoadingStatus(false);
+                    setLoadingConditions(false);
+                    setLoadingDefenses(false);
+                }
             } catch (err) {
                 setError('Failed to fetch player information');
                 setLoadingStatus(false);
@@ -159,7 +168,7 @@ const handleNextTurn = async () => {
     const [suggestion, setSuggestion] = useState('5 goblins with spears');
     const [showButtons, setShowButtons] = useState(false);
     const [formatsByCharacter, setFormatsByCharacter] = useState({});
-    const [players, setPlayers] = useState<Player[]>([]);
+    const [characters, setCharacters] = useState<PlayerOrMonster[]>([]);
 
     const [currentCharacterTurn, setCurrentCharacterTurn] = useState<string>('');
 
@@ -285,11 +294,9 @@ const handleNextTurn = async () => {
         setTargetDefensesOpen(false);
     };
     
-    
     const handleAttackOpen = async () => {
-        //Examnple of payload
-        const payload = { damageDices: [[Dice.D6, 3]]};        
-        const result = await dialogs.open<undefined, { combatLog: string; totalDamageDealt: number }>(AttackModal, payload);
+        const weaponInformation = await apiService.get(`/weapons/${selectedWeapon}`);
+        const result = await dialogs.open<undefined, { combatLog: string; totalDamageDealt: number }>(AttackModal, weaponInformation);
         if (result) {
             const successfulAttackLog = attackCombatLogString(currentCharacterTurn, selectedWeapon, selectedTarget, result.totalDamageDealt);
             addCombatLogEntry(successfulAttackLog);
@@ -313,7 +320,7 @@ const handleNextTurn = async () => {
         if (Action.Attack === selectedAction) {
             const accuracyDiceValue = accuracyDice ?? 0;
             // 10 is temporary, should be replaced with the actual AC of the target
-            if (accuracyDiceValue + bonusModifier >= 0) {
+            if (accuracyDiceValue + bonusModifier >= 0 && selectedWeapon) {
                 handleAttackOpen();
             }
             else {
@@ -388,7 +395,9 @@ const handleNextTurn = async () => {
     const handleOpenBestiary = async () => {
         const monster = await dialogs.open(EncounterAddFromBestiary);
         // monster needs to be converted to player type
-        if (monster) addPlayerToQueue(monster);
+        if (monster) {
+            addPlayerToQueue(monster);
+        }
     }
 
     const handleOpenAIGenerate = () => dialogs.open(EncounterAddFromAI);
@@ -411,8 +420,8 @@ const handleNextTurn = async () => {
         setSuggestion('5 goblins with spears');
     };
 
-    const addPlayerToQueue = (player: Player) => {
-        setPlayers([...players, player]);
+    const addPlayerToQueue = (player: Player | Monster) => {
+        setCharacters([...characters, player]);
         setShowAddButtons(false);
       };
 
@@ -520,25 +529,10 @@ const handleNextTurn = async () => {
         return name === 'Justin Tran';
     };
 
-    const [notes, setNotes] = useState([]);
-
-    const handleNoteChange = (index, value) => {
-        const newNotes = [...notes];
-        newNotes[index] = value;
-        setNotes(newNotes);
-    };
-
-    const addNote = () => {
-        setNotes([...notes, ""]);
-    };
-
-    const removeNote = (index) => {
-        const newNotes = notes.filter((_, i) => i !== index);
-        setNotes(newNotes);
-    };
+    const [notes, setNotes] = useState("");
 
     const handleTargetSelection = (targetId) => {
-        const target = players.find(player => player._id === targetId);
+        const target = characters.find(player => player._id === targetId);
         setSelectedTarget(target);
     };
 
@@ -775,7 +769,7 @@ const handleNextTurn = async () => {
         <Box sx={sxProps.encounterScreen}>
             <Box sx={sxProps.encounterColumn}>
                 <Typography variant="h6" sx={sxProps.columnTitle}>INITIATIVE</Typography>
-                {players.map((player, index) => (
+                {characters.map((player, index) => (
                     <Card
                         key={player._id}
                         sx={{
@@ -867,7 +861,7 @@ const handleNextTurn = async () => {
                         variant="contained"
                         color="primary"
                         sx={{ width: '100%', marginTop: '10px' }}
-                        disabled={players.length === 0}
+                        disabled={characters.length === 0}
                     >
                         Start Initiative
                     </Button>
@@ -1045,7 +1039,7 @@ const handleNextTurn = async () => {
                                 size="small" 
                                 fullWidth
                             >
-                                {players.map((player) => (
+                                {characters.map((player) => (
                                     <MenuItem key={player._id} value={player._id}>{player.name}</MenuItem>
                                 ))}
                             </Select>
@@ -1055,7 +1049,7 @@ const handleNextTurn = async () => {
                 </Card>
                 <Card sx={sxProps.columnCard}>
                     <Typography variant="subtitle2">Notes</Typography>
-                    <TextField fullWidth multiline rows={4} placeholder="Add notes here..." />
+                    <TextField fullWidth multiline rows={4} value={notes} placeholder="Add notes here..." />
                 </Card>
             </Box>
 
