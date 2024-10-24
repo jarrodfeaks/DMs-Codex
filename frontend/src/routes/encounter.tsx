@@ -70,7 +70,7 @@ export default function Encounter() {
         const characterId = characters[nextTurn]._id;
         try {
             const response = await apiService.put(`/encounters/${encountersList[0]._id}/current-turn`, { currentTurnId: characterId });
-            setCurrentTurn(response.data);
+            updateCurrentPlayerStats(nextTurn);
         } catch (err) {
             setError('Failed to fetch player information');
         }
@@ -141,20 +141,14 @@ export default function Encounter() {
                 const characterTurnId = encountersList[0].current_turn;
                 if (characterTurnId) {
                     // set hp, max hp, temp hp, ac, death saving, def, con, def
-                    const characterStats = await apiService.get(`/encounters/${encountersList[0]._id}/current-turn`);
-                    const character = characterStats.character;
                     const currentTurnIndex = encountersList[0].initiative_order.findIndex(item => {
                         return item.entity_id == characterTurnId;
                     });
                     if (currentTurnIndex !== -1) {
-                        console.log("Current turn: " + currentTurnIndex);
                         setCurrentTurn(currentTurnIndex);
                         setInitiativeStarted(true);
                     }
-                    setCurrentHP(character.currentHitpoints)
-                    setMaxHP(character.maxHitpoints);
-                    setArmorClass(character.armorClass);
-                    setTempHP(character.tempHitpoints);
+                    updateCurrentPlayerStats();
                 }
                 else {
                     setCurrentTurn(0);
@@ -343,6 +337,18 @@ export default function Encounter() {
             console.error('Failed to update combat log', err);
         }
     };
+
+    const updateCurrentPlayerStats = async (updatedTurnNumber?: number) => {
+        const characterStats = await apiService.get(`/encounters/${encountersList[0]._id}/current-turn`);
+        const character = characterStats.character;
+        setCurrentHP(character.currentHitpoints)
+        setMaxHP(character.maxHitpoints);
+        setArmorClass(character.armorClass);
+        setTempHP(character.tempHitpoints);
+        if (updatedTurnNumber !== undefined) {
+            setCurrentTurn(updatedTurnNumber);
+        }
+    }
 
     const handleExecute = () => {
         if (Action.Attack === selectedAction) {
