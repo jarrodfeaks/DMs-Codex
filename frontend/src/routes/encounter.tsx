@@ -442,137 +442,149 @@ export default function Encounter() {
         return (
           <Box sx={sxProps.targetSection}>
             <Typography variant="h6">{selectedTarget.name}</Typography>
-            <Card sx={sxProps.columnCard}>
-                {/* Status */}
-                <Typography variant="subtitle2">Status</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <Typography>HP</Typography>
-                    <TextField
-                      type="number"
-                      value={selectedTarget.hp}
-                      onChange={(e) => handleTargetStatChange('hp', e.target.value)}
-                      size="small"
-                      sx={{ width: 60 }}
-                    />
-                    <Typography>/</Typography>
-                    <TextField
-                      type="number"
-                      value={selectedTarget.maxHp}
-                      onChange={(e) => handleTargetStatChange('maxHp', e.target.value)}
-                      size="small"
-                      sx={{ width: 60 }}
-                    />
+            <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                
+                    {/* Status */}
+                    <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
+                        <Typography variant="subtitle2">Status</Typography>
+
+                        {/* HP */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                            <Typography sx={{ flexGrow: 1 }}>HP</Typography>
+                            <TextField
+                                type="number"
+                                value={selectedTarget.hp}
+                                onChange={handleCurrentHPChange}
+                                size="small"
+                                sx={{ width: 60, ml: 'auto' }}
+                            />
+                            <Typography>/</Typography>
+                            <TextField
+                                type="number"
+                                value={selectedTarget.maxHp}
+                                onChange={handleMaxHPChange}
+                                size="small"
+                                sx={{ width: 60 }}
+                            />
+                        </Box>
+
+                        {/* Temp HP */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                            <Typography sx={{ flexGrow: 1 }}>Temp HP</Typography>
+                            <TextField
+                                type="number"
+                                value={selectedTarget.tempHp}
+                                onChange={handleTempHPChange}
+                                size="small"
+                                sx={{ width: 100, ml: 'auto' }}
+                            />
+                        </Box>
+
+                        {/* AC */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography sx={{ flexGrow: 1 }}>AC</Typography>
+                            <TextField
+                                type="number"
+                                value={selectedTarget.ac}
+                                onChange={handleArmorClassChange}
+                                size="small"
+                                sx={{ width: 100, ml: 'auto' }}
+                            />
+                        </Box>
+
+                        {/* Death Saves */}
+                        <Box sx={sxProps.deathSaves}>
+                            <Typography>☠</Typography>
+                            <Box>□□□□□</Box>
+                        </Box>
+                    </Card>
+
+
+                    {/* Notes */}
+                    <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
+                        <Typography variant="subtitle2">Notes</Typography>
+                        <TextField fullWidth multiline rows={4} placeholder="Add notes here..." />
+                    </Card>
+                    
                 </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <Typography>Temp HP</Typography>
-                    <TextField
-                      type="number"
-                      value={selectedTarget.tempHp || 0}
-                      onChange={(e) => handleTargetStatChange('tempHp', e.target.value)}
-                      size="small"
-                      sx={{ width: 60 }}
-                    />
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography>AC</Typography>
-                    <TextField
-                      type="number"
-                      value={selectedTarget.ac}
-                      onChange={(e) => handleTargetStatChange('ac', e.target.value)}
-                      size="small"
-                      sx={{ width: 60 }}
-                    />
-                </Box>
-                <Box sx={sxProps.deathSaves}>
-                    <Typography>☠</Typography>
-                    <Box>□□□□□</Box>
-                </Box>
-                <Box sx={sxProps.targetSection}>
-                    <Card sx={sxProps.columnCard}>
+                
+
+                <Box sx={{ display: 'flex', gap: 1 }}>
+
+                    {/* Conditions */}
+                    <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                             <Typography variant="subtitle2">Conditions</Typography>
                             <IconButton size="small" onClick={handleConditionsOpen}><AddIcon /></IconButton>
                         </Box>
-                        {loadingConditions ? (
-                            <Box display="flex" justifyContent="center" alignItems="center" height={50}>
-                                <CircularProgress size={24} />
-                            </Box>
-                        ) : (
-                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                {selectedConditions.map((condition, index) => (
-                                    <Chip
-                                        key={index}
-                                        label={condition}
-                                        size="small"
-                                        color="primary"
-                                        onDelete={() => handleDeleteCondition(condition)}
-                                    />
-                                ))}
-                                {selectedConditions.length === 0 && <Typography>No conditions</Typography>}
-                            </Box>
-                        )}
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                            {selectedConditions.map((condition, index) => (
+                                <Chip
+                                    key={index}
+                                    label={condition}
+                                    size="small"
+                                    color="primary"
+                                    onDelete={() => handleDeleteCondition(condition)}
+                                />
+                            ))}
+                            {selectedConditions.length === 0 && <Typography>No conditions</Typography>}
+                        </Box>
                     </Card>
-                    <Card sx={sxProps.columnCard}>
+                        
+                    {/* Defenses */}
+                    <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                             <Typography variant="subtitle2">Defenses</Typography>
                             <IconButton size="small" onClick={handleDefensesOpen}><AddIcon /></IconButton>
                         </Box>
-                        {loadingDefenses ? (
-                            <Box display="flex" justifyContent="center" alignItems="center" height={100}>
-                                <CircularProgress size={24} />
+                        <Box sx={{ mb: 1 }}>
+                            <Typography variant="body2">Immunities</Typography>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                                {selectedImmunities.map((immunity, index) => (
+                                    <Chip
+                                        key={index}
+                                        label={immunity}
+                                        size="small"
+                                        color="primary"
+                                        onDelete={() => handleDeleteImmunity(immunity)}
+                                    />
+                                ))}
+                                {selectedImmunities.length === 0 && <Typography>No immunities</Typography>}
                             </Box>
-                        ) : (
-                            <>
-                                <Box sx={{ mb: 1 }}>
-                                    <Typography variant="body2">Immunities</Typography>
-                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                                        {selectedImmunities.map((immunity, index) => (
-                                            <Chip
-                                                key={index}
-                                                label={immunity}
-                                                size="small"
-                                                color="primary"
-                                                onDelete={() => handleDeleteImmunity(immunity)}
-                                            />
-                                        ))}
-                                        {selectedImmunities.length === 0 && <Typography>No immunities</Typography>}
-                                    </Box>
-                                </Box>
-                                <Box sx={{ mb: 1 }}>
-                                    <Typography variant="body2">Resistances</Typography>
-                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                                        {selectedResistances.map((resistance, index) => (
-                                            <Chip
-                                                key={index}
-                                                label={resistance}
-                                                size="small"
-                                                color="primary"
-                                                onDelete={() => handleDeleteResistance(resistance)}
-                                            />
-                                        ))}
-                                        {selectedResistances.length === 0 && <Typography>No resistances</Typography>}
-                                    </Box>
-                                </Box>
-                                <Box>
-                                    <Typography variant="body2">Vulnerabilities</Typography>
-                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                                        {selectedVulnerabilities.map((vulnerability, index) => (
-                                            <Chip
-                                                key={index}
-                                                label={vulnerability}
-                                                size="small"
-                                                color="primary"
-                                                onDelete={() => handleDeleteVulnerability(vulnerability)}
-                                            />
-                                        ))}
-                                        {selectedVulnerabilities.length === 0 && <Typography>No vulnerabilities</Typography>}
-                                    </Box>
-                                </Box>
-                            </>
-                        )}
+                        </Box>
+                        <Box sx={{ mb: 1 }}>
+                            <Typography variant="body2">Resistances</Typography>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                                {selectedResistances.map((resistance, index) => (
+                                    <Chip
+                                        key={index}
+                                        label={resistance}
+                                        size="small"
+                                        color="primary"
+                                        onDelete={() => handleDeleteResistance(resistance)}
+                                    />
+                                ))}
+                                {selectedResistances.length === 0 && <Typography>No resistances</Typography>}
+                            </Box>
+                        </Box>
+                        <Box>
+                            <Typography variant="body2">Vulnerabilities</Typography>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                                {selectedVulnerabilities.map((vulnerability, index) => (
+                                    <Chip
+                                        key={index}
+                                        label={vulnerability}
+                                        size="small"
+                                        color="primary"
+                                        onDelete={() => handleDeleteVulnerability(vulnerability)}
+                                    />
+                                ))}
+                                {selectedVulnerabilities.length === 0 && <Typography>No vulnerabilities</Typography>}
+                            </Box>
+                        </Box>
                     </Card>
+
                 </Box>
-            </Card>
           </Box>
         );
       };
@@ -689,6 +701,12 @@ export default function Encounter() {
                                 sx={{ width: 100, ml: 'auto' }}
                             />
                         </Box>
+
+                        {/* Death Saves */}
+                        <Box sx={sxProps.deathSaves}>
+                            <Typography>☠</Typography>
+                            <Box>□□□□□</Box>
+                        </Box>
                     </Card>
 
 
@@ -703,7 +721,7 @@ export default function Encounter() {
 
                 <Box sx={{ display: 'flex', gap: 1 }}>
 
-                    {/* Conditions Section */}
+                    {/* Conditions */}
                     <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                             <Typography variant="subtitle2">Conditions</Typography>
@@ -723,7 +741,7 @@ export default function Encounter() {
                         </Box>
                     </Card>
                         
-                    {/* Defenses Section */}
+                    {/* Defenses */}
                     <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                             <Typography variant="subtitle2">Defenses</Typography>
