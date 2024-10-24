@@ -33,7 +33,7 @@ import EncounterDefenses from "../components/modals/EncounterDefenses";
 import { missedCombatLogString, attackCombatLogString, customCombatLogString } from "../utils";
 import { Monster, Player } from "../types.ts";
 import AttackModal from "../components/modals/AttackModal";
-import {apiService} from "../services/apiService.ts";
+import { apiService } from "../services/apiService.ts";
 import { useCurrentCampaign } from "./app.context.ts";
 import { create } from "domain";
 
@@ -43,14 +43,14 @@ export default function Encounter() {
     const campaignId = useCurrentCampaign()?._id;
     const [encountersList, setEncountersList] = useState(useCurrentCampaign()?.encounters);
     const [showRemoveButtons, setShowRemoveButtons] = useState(false);
-    const removePlayerFromQueue = (playerId: string) => {
-        const newPlayers = characters.filter((player) => player._id !== playerId);
-        setCharacters(newPlayers);
-        if (newPlayers.length === 0) {
-          setShowAddButtons(true);
-          setShowRemoveButtons(false);
+    const removePlayerFromQueue = (characterId: string) => {
+        const newCharacters = characters.filter((character) => character._id !== characterId);
+        setCharacters(newCharacters);
+        if (newCharacters.length === 0) {
+            setShowAddButtons(true);
+            setShowRemoveButtons(false);
         }
-      };
+    };
 
     const [initiativeStarted, setInitiativeStarted] = useState(false);
     const [currentTurn, setCurrentTurn] = useState(0);
@@ -62,17 +62,18 @@ export default function Encounter() {
         }
     };
 
-const handleNextTurn = async () => {
-    const nextTurn = (currentTurn + 1) % characters.length;
-    setCurrentTurn(nextTurn);
-    const characterId = characters[nextTurn]._id;
-    try {
-        const response = await apiService.put(`/encounters/${encountersList[0]._id}/current-turn`, { currentTurnId: characterId });
-        setCurrentTurn(response.data);
-    } catch (err) {
-        setError('Failed to fetch player information');
-    }
-};
+    const handleNextTurn = async () => {
+        const nextTurn = (currentTurn + 1) % characters.length;
+        setCurrentTurn(nextTurn);
+        const characterId = characters[nextTurn]._id;
+        try {
+            const response = await apiService.put(`/encounters/${encountersList[0]._id}/current-turn`, { currentTurnId: characterId });
+            setCurrentTurn(response.data);
+        } catch (err) {
+            setError('Failed to fetch player information');
+        }
+    };
+
     const [showAddButtons, setShowAddButtons] = useState(true);
     const [hitPoints, setHitPoints] = useState("0/0");
     const [originalHitPoints, setOriginalHitPoints] = useState(hitPoints);
@@ -87,14 +88,13 @@ const handleNextTurn = async () => {
     const [bonusModifier, setBonusModifier] = useState<number>(0);
     const [accuracyDice, setAccuracyDice] = useState<number>(0);
     const [combatLog, setCombatLog] = useState<string[]>([]);
-
     const [currentHP, setCurrentHP] = useState(0);
     const [maxHP, setMaxHP] = useState(0);
-0
+
     const handleCurrentHPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseInt(e.target.value);
         setCurrentHP(isNaN(value) ? 0 : value);
-    }; 
+    };
 
     const handleMaxHPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseInt(e.target.value);
@@ -112,7 +112,7 @@ const handleNextTurn = async () => {
     };
 
     const [currentPlayer, setCurrentPlayer] = useState(null);
-    
+
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -127,7 +127,7 @@ const handleNextTurn = async () => {
                 // it should find the id in the initative list and set the current turn to that index
                 if (response) {
                     // set hp, max hp, temp hp, ac, death saving, def, con, def
-
+                    
                 }
                 else {
                     setCurrentTurn(0);
@@ -180,29 +180,29 @@ const handleNextTurn = async () => {
     const handleConditionsOpen = async (type: 'current' | 'target') => {
         const conditions = await dialogs.open(CharacterConditions, type === 'current' ? currentConditions : targetConditions);
         if (type === 'current') {
-          setCurrentConditions(conditions);
+            setCurrentConditions(conditions);
         } else {
-          setTargetConditions(conditions);
+            setTargetConditions(conditions);
         }
-      };
-      
-      const handleDefensesOpen = async (type: 'current' | 'target') => {
-        const defenses = await dialogs.open(EncounterDefenses, { 
-          immunities: type === 'current' ? currentImmunities : targetImmunities, 
-          resistances: type === 'current' ? currentResistances : targetResistances, 
-          vulnerabilities: type === 'current' ? currentVulnerabilities : targetVulnerabilities 
+    };
+
+    const handleDefensesOpen = async (type: 'current' | 'target') => {
+        const defenses = await dialogs.open(EncounterDefenses, {
+            immunities: type === 'current' ? currentImmunities : targetImmunities,
+            resistances: type === 'current' ? currentResistances : targetResistances,
+            vulnerabilities: type === 'current' ? currentVulnerabilities : targetVulnerabilities
         });
-        
+
         if (type === 'current') {
-          setCurrentImmunities(defenses.immunities || []);
-          setCurrentResistances(defenses.resistances || []);
-          setCurrentVulnerabilities(defenses.vulnerabilities || []);
+            setCurrentImmunities(defenses.immunities || []);
+            setCurrentResistances(defenses.resistances || []);
+            setCurrentVulnerabilities(defenses.vulnerabilities || []);
         } else {
-          setTargetImmunities(defenses.immunities || []);
-          setTargetResistances(defenses.resistances || []);
-          setTargetVulnerabilities(defenses.vulnerabilities || []);
+            setTargetImmunities(defenses.immunities || []);
+            setTargetResistances(defenses.resistances || []);
+            setTargetVulnerabilities(defenses.vulnerabilities || []);
         }
-      };
+    };
 
     // For current player
     const [currentConditionsOpen, setCurrentConditionsOpen] = useState(false);
@@ -219,8 +219,8 @@ const handleNextTurn = async () => {
     // Handler functions for current player
     const handleCurrentConditionsOpen = () => setCurrentConditionsOpen(true);
     const handleCurrentConditionsClose = async (result) => {
-    setCurrentConditions(result);
-    setCurrentConditionsOpen(false);
+        setCurrentConditions(result);
+        setCurrentConditionsOpen(false);
     };
 
     // Similar handlers for immunities, resistances, and vulnerabilities
@@ -235,20 +235,20 @@ const handleNextTurn = async () => {
         setCurrentResistances(result);
         setCurrentResistancesOpen(false);
     }
-    
+
     const handleCurrentVulnerabilitiesOpen = () => setCurrentVulnerabilitiesOpen(true);
     const handleCurrentVulnerabilitiesClose = async (result) => {
         setCurrentVulnerabilities(result);
         setCurrentVulnerabilitiesOpen(false);
     }
-    
+
     // Handler functions for target player
     const handleTargetConditionsOpen = () => setTargetConditionsOpen(true);
     const handleTargetConditionsClose = async (result) => {
         setTargetConditions(result);
         setTargetConditionsOpen(false);
     };
-    
+
     // Similar handlers for immunities, resistances, and vulnerabilities
     const handleTargetImmunitiesOpen = () => setTargetImmunitiesOpen(true);
     const handleTargetImmunitiesClose = async (result) => {
@@ -261,7 +261,7 @@ const handleNextTurn = async () => {
         setTargetResistances(result);
         setTargetResistancesOpen(false);
     }
-    
+
     const handleTargetVulnerabilitiesOpen = () => setTargetVulnerabilitiesOpen(true);
     const handleTargetVulnerabilitiesClose = async (result) => {
         setTargetVulnerabilities(result);
@@ -293,7 +293,7 @@ const handleNextTurn = async () => {
         }
         setTargetDefensesOpen(false);
     };
-    
+
     const handleAttackOpen = async () => {
         const weaponInformation = await apiService.get(`/weapons/${selectedWeapon}`);
         const result = await dialogs.open<undefined, { combatLog: string; totalDamageDealt: number }>(AttackModal, weaponInformation);
@@ -349,7 +349,7 @@ const handleNextTurn = async () => {
     };
 
     const handleDeleteCondition = (conditionToDelete) => {
-        setCurrentConditions(prevConditions => 
+        setCurrentConditions(prevConditions =>
             prevConditions.filter(condition => condition !== conditionToDelete)
         );
     };
@@ -361,7 +361,7 @@ const handleNextTurn = async () => {
             setTargetImmunities(prev => prev.filter(i => i !== immunity));
         }
     };
-    
+
     const handleDeleteResistance = (resistance: string, isCurrentPlayer: boolean) => {
         if (isCurrentPlayer) {
             setCurrentResistances(prev => prev.filter(r => r !== resistance));
@@ -369,7 +369,7 @@ const handleNextTurn = async () => {
             setTargetResistances(prev => prev.filter(r => r !== resistance));
         }
     };
-    
+
     const handleDeleteVulnerability = (vulnerability: string, isCurrentPlayer: boolean) => {
         if (isCurrentPlayer) {
             setCurrentVulnerabilities(prev => prev.filter(v => v !== vulnerability));
@@ -380,23 +380,24 @@ const handleNextTurn = async () => {
 
     const handleTargetStatChange = (stat, value) => {
         setSelectedTarget(prevTarget => ({
-          ...prevTarget,
-          [stat]: parseInt(value, 10)
+            ...prevTarget,
+            [stat]: parseInt(value, 10)
         }));
-      };
-
-
+    };
 
     const handleOpenPlayerList = async () => {
         const player = await dialogs.open(EncounterAddFromPlayers);
-        if (player) addPlayerToQueue(player);
+        if (player) {
+            addCharacterToQueue(player, player._id);
+        }
     };
 
     const handleOpenBestiary = async () => {
-        const monster = await dialogs.open(EncounterAddFromBestiary);
-        // monster needs to be converted to player type
-        if (monster) {
-            addPlayerToQueue(monster);
+        const result = await dialogs.open(EncounterAddFromBestiary);
+        if (result) {
+            const { monster, _id } = result;
+            const formattedMonster = await apiService.get(`/monsters/${_id}`);
+            addCharacterToQueue(formattedMonster, _id);
         }
     }
 
@@ -420,10 +421,34 @@ const handleNextTurn = async () => {
         setSuggestion('5 goblins with spears');
     };
 
-    const addPlayerToQueue = (player: Player | Monster) => {
-        setCharacters([...characters, player]);
+    const addCharacterToQueue = (character: Player | Monster, id: string) => {
+        setCharacters([...characters, character]);
+        addCharacterToEncounter(id);
+        addCharactersToInitiative(id, 0);
         setShowAddButtons(false);
-      };
+    };
+
+    const addCharacterToEncounter = async (characterId: string) => {
+        try {
+            await apiService.put(`/encounters/${encountersList[0]._id}/character`, { characterId: characterId });
+            console.log(`Character ${characterId} add to ${encountersList[0]._id}`);
+        } catch (error) {
+            console.error('Error adding character to queue:', error);
+        }
+    };
+
+    const addCharactersToInitiative = async (characterId: string, initiative: number) => {
+        try {
+            const updatedInitiativeOrder = [
+                ...encountersList[0].initiative_order,
+                { entity_id: characterId, initiative_score: initiative }
+            ];
+            await apiService.put(`/encounters/${encountersList[0]._id}/initiative-order`, { initiative_order: updatedInitiativeOrder });
+            
+        } catch (error) {
+            console.error('Error adding character to initiative order:', error);
+        }
+    };
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -441,27 +466,27 @@ const handleNextTurn = async () => {
 
     const DeathSaves = () => {
         const [deathSaves, setDeathSaves] = useState([false, false, false, false, false]);
-      
+
         const handleDeathSaveToggle = (index) => {
-          const newDeathSaves = [...deathSaves];
-          newDeathSaves[index] = !newDeathSaves[index];
-          setDeathSaves(newDeathSaves);
+            const newDeathSaves = [...deathSaves];
+            newDeathSaves[index] = !newDeathSaves[index];
+            setDeathSaves(newDeathSaves);
         };
-      
+
         return (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <FaceRetouchingOffIcon />
-            {deathSaves.map((checked, index) => (
-              <Checkbox
-                key={index}
-                checked={checked}
-                onChange={() => handleDeathSaveToggle(index)}
-                size="small"
-              />
-            ))}
-          </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <FaceRetouchingOffIcon />
+                {deathSaves.map((checked, index) => (
+                    <Checkbox
+                        key={index}
+                        checked={checked}
+                        onChange={() => handleDeathSaveToggle(index)}
+                        size="small"
+                    />
+                ))}
+            </Box>
         );
-      };
+    };
 
     const sxProps = {
         encounterScreen: {
@@ -532,7 +557,7 @@ const handleNextTurn = async () => {
     const [notes, setNotes] = useState("");
 
     const handleTargetSelection = (targetId) => {
-        const target = characters.find(player => player._id === targetId);
+        const target = characters.find(character => character._id === targetId);
         setSelectedTarget(target);
     };
 
@@ -614,156 +639,156 @@ const handleNextTurn = async () => {
         if (!selectedTarget) return null;
 
         return (
-          <Box sx={sxProps.targetSection}>
+            <Box sx={sxProps.targetSection}>
                 <Typography variant="h6">{selectedTarget.name}</Typography>
                 <Card sx={sxProps.columnCard}>
-                <Typography variant="subtitle2">Status</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <Typography><FavoriteIcon />  Hit Points:</Typography>
-                    <TextField
-                        type="number"
-                        value={selectedTarget.hp}
-                        onChange={(e) => handleTargetStatChange('hp', e.target.value)}
-                        size="small"
-                        sx={{ width: 60 }}
+                    <Typography variant="subtitle2">Status</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                        <Typography><FavoriteIcon />  Hit Points:</Typography>
+                        <TextField
+                            type="number"
+                            value={selectedTarget.hp}
+                            onChange={(e) => handleTargetStatChange('hp', e.target.value)}
+                            size="small"
+                            sx={{ width: 60 }}
                         />
                         <Typography>/</Typography>
                         <TextField
-                        type="number"
-                        value={selectedTarget.maxHp}
-                        onChange={(e) => handleTargetStatChange('maxHp', e.target.value)}
-                        size="small"
-                        sx={{ width: 60 }}
+                            type="number"
+                            value={selectedTarget.maxHp}
+                            onChange={(e) => handleTargetStatChange('maxHp', e.target.value)}
+                            size="small"
+                            sx={{ width: 60 }}
                         />
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <Typography><FavoriteBorderIcon />  Temp HP:</Typography>
-                    <TextField
-                    type="number"
-                    value={selectedTarget.tempHp || 0}
-                    onChange={(e) => handleTargetStatChange('tempHp', e.target.value)}
-                    size="small"
-                    sx={{ width: 60 }}
-                    />
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography><SecurityIcon />   AC:</Typography>
-                    <TextField
-                    type="number"
-                    value={selectedTarget.ac}
-                    onChange={(e) => handleTargetStatChange('ac', e.target.value)}
-                    size="small"
-                    sx={{ width: 60 }}
-                    />
-                </Box>
-                <Box sx={sxProps.deathSaves}>
-                    <Box><DeathSaves /></Box>
-                </Box>
-            </Card>
-            <Box sx={sxProps.targetSection}>
-                <Card sx={sxProps.columnCard}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                        <Typography variant="subtitle2">Conditions</Typography>
-                        <IconButton size="small" onClick={handleTargetConditionsOpen}><AddIcon /></IconButton>
-                        <CharacterConditions 
-                            payload={targetConditions} 
-                            open={targetConditionsOpen} 
-                            onClose={handleTargetConditionsClose}
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                        <Typography><FavoriteBorderIcon />  Temp HP:</Typography>
+                        <TextField
+                            type="number"
+                            value={selectedTarget.tempHp || 0}
+                            onChange={(e) => handleTargetStatChange('tempHp', e.target.value)}
+                            size="small"
+                            sx={{ width: 60 }}
+                        />
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography><SecurityIcon />   AC:</Typography>
+                        <TextField
+                            type="number"
+                            value={selectedTarget.ac}
+                            onChange={(e) => handleTargetStatChange('ac', e.target.value)}
+                            size="small"
+                            sx={{ width: 60 }}
+                        />
+                    </Box>
+                    <Box sx={sxProps.deathSaves}>
+                        <Box><DeathSaves /></Box>
+                    </Box>
+                </Card>
+                <Box sx={sxProps.targetSection}>
+                    <Card sx={sxProps.columnCard}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                            <Typography variant="subtitle2">Conditions</Typography>
+                            <IconButton size="small" onClick={handleTargetConditionsOpen}><AddIcon /></IconButton>
+                            <CharacterConditions
+                                payload={targetConditions}
+                                open={targetConditionsOpen}
+                                onClose={handleTargetConditionsClose}
                             />
-                    </Box>
-                    {loadingConditions ? (
-                        <Box display="flex" justifyContent="center" alignItems="center" height={50}>
-                            <CircularProgress size={24} />
                         </Box>
-                    ) : (
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                            {targetConditions.map((condition, index) => (
-                                <Chip
-                                    key={index}
-                                    label={condition}
-                                    size="small"
-                                    color="primary"
-                                    onDelete={() => handleDeleteCondition(condition)}
-                                />
-                            ))}
-                            {targetConditions.length === 0 && <Typography>No conditions</Typography>}
+                        {loadingConditions ? (
+                            <Box display="flex" justifyContent="center" alignItems="center" height={50}>
+                                <CircularProgress size={24} />
+                            </Box>
+                        ) : (
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                {targetConditions.map((condition, index) => (
+                                    <Chip
+                                        key={index}
+                                        label={condition}
+                                        size="small"
+                                        color="primary"
+                                        onDelete={() => handleDeleteCondition(condition)}
+                                    />
+                                ))}
+                                {targetConditions.length === 0 && <Typography>No conditions</Typography>}
+                            </Box>
+                        )}
+                    </Card>
+                </Box>
+                <Box sx={sxProps.targetSection}>
+                    <Card sx={sxProps.columnCard}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                            <Typography variant="subtitle2">Defenses</Typography>
+                            <IconButton size="small" onClick={handleTargetDefensesOpen}><AddIcon /></IconButton>
                         </Box>
-                    )}
-                </Card>
+                        <EncounterDefenses
+                            open={targetDefensesOpen}
+                            onClose={handleTargetDefensesClose}
+                            payload={{
+                                immunities: targetImmunities,
+                                resistances: targetResistances,
+                                vulnerabilities: targetVulnerabilities
+                            }}
+                        />
+                        {loadingDefenses ? (
+                            <Box display="flex" justifyContent="center" alignItems="center" height={100}>
+                                <CircularProgress size={24} />
+                            </Box>
+                        ) : (
+                            <>
+                                <Box sx={{ mb: 1 }}>
+                                    <Typography variant="body2">Immunities</Typography>
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                                        {targetImmunities.map((immunity, index) => (
+                                            <Chip
+                                                key={index}
+                                                label={immunity}
+                                                size="small"
+                                                color="primary"
+                                                onDelete={() => handleDeleteImmunity(immunity, false)}
+                                            />
+                                        ))}
+                                        {targetImmunities.length === 0 && <Typography>No immunities</Typography>}
+                                    </Box>
+                                </Box>
+                                <Box sx={{ mb: 1 }}>
+                                    <Typography variant="body2">Resistances</Typography>
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                                        {targetResistances.map((resistance, index) => (
+                                            <Chip
+                                                key={index}
+                                                label={resistance}
+                                                size="small"
+                                                color="primary"
+                                                onDelete={() => handleDeleteResistance(resistance, false)}
+                                            />
+                                        ))}
+                                        {targetResistances.length === 0 && <Typography>No resistances</Typography>}
+                                    </Box>
+                                </Box>
+                                <Box>
+                                    <Typography variant="body2">Vulnerabilities</Typography>
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                                        {targetVulnerabilities.map((vulnerability, index) => (
+                                            <Chip
+                                                key={index}
+                                                label={vulnerability}
+                                                size="small"
+                                                color="primary"
+                                                onDelete={() => handleDeleteVulnerability(vulnerability, false)}
+                                            />
+                                        ))}
+                                        {targetVulnerabilities.length === 0 && <Typography>No vulnerabilities</Typography>}
+                                    </Box>
+                                </Box>
+                            </>
+                        )}
+                    </Card>
+                </Box>
             </Box>
-            <Box sx={sxProps.targetSection}>
-                <Card sx={sxProps.columnCard}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                        <Typography variant="subtitle2">Defenses</Typography>
-                        <IconButton size="small" onClick={handleTargetDefensesOpen}><AddIcon /></IconButton>
-                    </Box>
-                    <EncounterDefenses 
-                        open={targetDefensesOpen}
-                        onClose={handleTargetDefensesClose}
-                        payload={{
-                            immunities: targetImmunities,
-                            resistances: targetResistances,
-                            vulnerabilities: targetVulnerabilities
-                        }}
-                    />
-                    {loadingDefenses ? (
-                        <Box display="flex" justifyContent="center" alignItems="center" height={100}>
-                            <CircularProgress size={24} />
-                        </Box>
-                    ) : (
-                        <>
-                            <Box sx={{ mb: 1 }}>
-                                <Typography variant="body2">Immunities</Typography>
-                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                                    {targetImmunities.map((immunity, index) => (
-                                        <Chip
-                                            key={index}
-                                            label={immunity}
-                                            size="small"
-                                            color="primary"
-                                            onDelete={() => handleDeleteImmunity(immunity, false)}
-                                        />
-                                    ))}
-                                    {targetImmunities.length === 0 && <Typography>No immunities</Typography>}
-                                </Box>
-                            </Box>
-                            <Box sx={{ mb: 1 }}>
-                                <Typography variant="body2">Resistances</Typography>
-                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                                    {targetResistances.map((resistance, index) => (
-                                        <Chip
-                                            key={index}
-                                            label={resistance}
-                                            size="small"
-                                            color="primary"
-                                            onDelete={() => handleDeleteResistance(resistance, false)}
-                                        />
-                                    ))}
-                                    {targetResistances.length === 0 && <Typography>No resistances</Typography>}
-                                </Box>
-                            </Box>
-                            <Box>
-                                <Typography variant="body2">Vulnerabilities</Typography>
-                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                                    {targetVulnerabilities.map((vulnerability, index) => (
-                                        <Chip
-                                            key={index}
-                                            label={vulnerability}
-                                            size="small"
-                                            color="primary"
-                                            onDelete={() => handleDeleteVulnerability(vulnerability, false)}
-                                        />
-                                    ))}
-                                    {targetVulnerabilities.length === 0 && <Typography>No vulnerabilities</Typography>}
-                                </Box>
-                            </Box>
-                        </>
-                    )}
-                </Card>
-            </Box>
-          </Box>
         );
-      };
+    };
 
     return (
         <Box sx={sxProps.encounterScreen}>
@@ -813,30 +838,30 @@ const handleNextTurn = async () => {
                             ))}
                         </ToggleButtonGroup>
                         {showRemoveButtons && (
-                        <IconButton size="small" onClick={() => removePlayerFromQueue(player._id)}>
-                            <RemoveIcon />
-                        </IconButton>
+                            <IconButton size="small" onClick={() => removePlayerFromQueue(player._id)}>
+                                <RemoveIcon />
+                            </IconButton>
                         )}
                     </Card>
                 ))}
                 <Box sx={{ display: 'flex', gap: 1, marginBottom: 1 }}>
-                <Card sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 1, borderRadius: 0.5, flex: 1 }}>
-                    <IconButton size="small" onClick={handleAddInitiative}>
-                    <AddIcon />
-                    </IconButton>
-                </Card>
-                <Card sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 1, borderRadius: 0.5, flex: 1 }}>
-                    <IconButton 
-                    size="small" 
-                    onClick={() => setShowRemoveButtons(!showRemoveButtons)}
-                    color={showRemoveButtons ? "secondary" : "default"}
-                    >
-                    <RemoveIcon />
-                    </IconButton>
-                </Card>
+                    <Card sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 1, borderRadius: 0.5, flex: 1 }}>
+                        <IconButton size="small" onClick={handleAddInitiative}>
+                            <AddIcon />
+                        </IconButton>
+                    </Card>
+                    <Card sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 1, borderRadius: 0.5, flex: 1 }}>
+                        <IconButton
+                            size="small"
+                            onClick={() => setShowRemoveButtons(!showRemoveButtons)}
+                            color={showRemoveButtons ? "secondary" : "default"}
+                        >
+                            <RemoveIcon />
+                        </IconButton>
+                    </Card>
                 </Box>
 
-                
+
 
                 <Box ref={useRef(null)}>
                     {showAddButtons && (
@@ -853,7 +878,7 @@ const handleNextTurn = async () => {
                         </>
                     )}
                 </Box>
-                
+
 
                 {!initiativeStarted && (
                     <Button
@@ -931,10 +956,10 @@ const handleNextTurn = async () => {
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                         <Typography variant="subtitle2">Conditions</Typography>
                         <IconButton size="small" onClick={handleCurrentConditionsOpen}><AddIcon /></IconButton>
-                        <CharacterConditions 
-                        payload={currentConditions} 
-                        open={currentConditionsOpen} 
-                        onClose={handleCurrentConditionsClose}
+                        <CharacterConditions
+                            payload={currentConditions}
+                            open={currentConditionsOpen}
+                            onClose={handleCurrentConditionsClose}
                         />
                     </Box>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -956,7 +981,7 @@ const handleNextTurn = async () => {
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                         <Typography variant="subtitle2">Defenses</Typography>
                         <IconButton size="small" onClick={handleCurrentDefensesOpen}><AddIcon /></IconButton>
-                        <EncounterDefenses 
+                        <EncounterDefenses
                             open={currentDefensesOpen}
                             onClose={handleCurrentDefensesClose}
                             payload={{
@@ -1017,10 +1042,10 @@ const handleNextTurn = async () => {
                         <Box sx={sxProps.actionItem}>
                             <Typography>Type</Typography>
                             <TextField
-                            placeholder="Enter type"
-                            size="small"
-                            fullWidth
-                        />
+                                placeholder="Enter type"
+                                size="small"
+                                fullWidth
+                            />
                         </Box>
                         <Box sx={sxProps.actionItem}>
                             <Typography>Action</Typography>
@@ -1033,10 +1058,10 @@ const handleNextTurn = async () => {
                         {renderActionSpecificDropdown()}
                         <Box sx={sxProps.actionItem}>
                             <Typography>Target</Typography>
-                            <Select 
-                                value={selectedTarget ? selectedTarget._id : ""} 
-                                onChange={(e) => handleTargetSelection(e.target.value)} 
-                                size="small" 
+                            <Select
+                                value={selectedTarget ? selectedTarget._id : ""}
+                                onChange={(e) => handleTargetSelection(e.target.value)}
+                                size="small"
                                 fullWidth
                             >
                                 {characters.map((player) => (

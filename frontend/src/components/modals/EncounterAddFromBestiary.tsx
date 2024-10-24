@@ -3,7 +3,7 @@ import { CircularProgress, Radio, RadioGroup, Box, Typography, Button, List, Lis
 import { formatMonsterForMongo } from '../../utils';
 import { apiService } from "../../services/apiService.ts";
 
-function EncounterAddFromBestiary({ open, onClose }: { open: boolean, onClose: (monster?: unknown) => void }) {
+function EncounterAddFromBestiary({ open, onClose }: { open: boolean, onClose: (monster?: unknown, monsterId?: string) => void }) {
 
   const [monsters, setMonsters] = useState([]);
   const [selectedMonster, setSelectedMonster] = useState('');
@@ -57,7 +57,6 @@ function EncounterAddFromBestiary({ open, onClose }: { open: boolean, onClose: (
     const response = await fetch(`${apiUrl}/${monsterName}`);
     const data = await response.json();
     setMonsterDetails(data);
-    console.log(monsterDetails);
   };
 
   // Handle when the user selects a monster
@@ -81,11 +80,11 @@ function EncounterAddFromBestiary({ open, onClose }: { open: boolean, onClose: (
     try {
       // Add monster to database
       const mongoDbResponse = await apiService.post("/monsters", formattedMonsterForMongo);
-      console.log('Monster added to database:', mongoDbResponse);
+      const _id = mongoDbResponse._id;
+      onClose({ monsterDetails, _id });
     } catch (error) {
       console.error('Error adding monster to database:', error);
     }
-      onClose(monsterDetails);
   };
 
   return (

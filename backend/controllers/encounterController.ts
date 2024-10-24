@@ -11,7 +11,7 @@ const getEncounterInformation = async (req: Request, res: Response) => {
     try {
         const encounterId = req.params.id;
         const encounter = await Encounter.findById(encounterId)
-        .populate('encounters')
+        .populate('turns')
         .populate('players')
         .populate('monsters');
         if (encounter) {
@@ -247,6 +247,28 @@ const updateCurrentTurn = async (req: Request, res: Response) => {
     }
 };
 
+// @desc Update initiative order in an encounter
+// @route PUT /encounters/:id/initiative-order
+// @access Public
+const updateInitiativeOrder = async (req: Request, res: Response) => {
+    try {
+        const encounterId = req.params.id;
+        const { initiative_order } = req.body;
+        if (!initiative_order) {
+            return res.status(400).send({ message: 'initiative_order missing' });
+        }
+        const encounter = await Encounter.findById(encounterId);
+        if (!encounter) {
+            return res.status(404).send({ message: 'Encounter not found' });
+        }
+        encounter.initiative_order = initiative_order;
+        await encounter.save();
+        res.status(200).json(encounter);
+    } catch (error: any) {
+        res.status(500).send(error.message);
+    }
+};
+
 // @desc Delete an encounter
 // @route DELETE /encounters/:id
 // @access Public
@@ -265,4 +287,4 @@ const deleteEncounter = async (req: Request, res: Response) => {
     }
 };
 
-export {addToCombatLog, addCharacterToEncounter, getEncounterInformation, getCombatLog, getCurrentTurnInfo, createEncounter, resetTurnsInEncounter, updateEncounter, deleteEncounter, updateCurrentTurn };
+export {addToCombatLog, addCharacterToEncounter, getEncounterInformation, getCombatLog, getCurrentTurnInfo, createEncounter, resetTurnsInEncounter, updateEncounter, deleteEncounter, updateCurrentTurn, updateInitiativeOrder };
