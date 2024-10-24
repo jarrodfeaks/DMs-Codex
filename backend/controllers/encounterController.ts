@@ -13,7 +13,8 @@ const getEncounterInformation = async (req: Request, res: Response) => {
         const encounter = await Encounter.findById(encounterId)
         .populate('turns')
         .populate('players')
-        .populate('monsters');
+        .populate('monsters')
+        .populate('current_turn');
         if (encounter) {
             res.status(200).json(encounter);
         } else {

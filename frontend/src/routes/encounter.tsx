@@ -55,10 +55,12 @@ export default function Encounter() {
     const [initiativeStarted, setInitiativeStarted] = useState(false);
     const [currentTurn, setCurrentTurn] = useState(0);
 
-    const handleStartInitiative = () => {
+    const handleStartInitiative = async () => {
         if (characters.length > 0) {
             setInitiativeStarted(true);
             setCurrentTurn(0);
+            const response = await apiService.put(`/encounters/${encountersList[0]._id}/current-turn`, { currentTurnId: characters[0]._id });
+            setCurrentCharacterTurn(characters[0]._id);
         }
     };
 
@@ -123,11 +125,36 @@ export default function Encounter() {
                 }
                 const combatLog = encountersList[0].combat_log;
                 setCombatLog(combatLog);
-                const response = encountersList[0].current_turn;
-                // it should find the id in the initative list and set the current turn to that index
-                if (response) {
+                const encounterDb = await apiService.get(`/encounters/${encountersList[0]._id}`);
+                const characterList = encountersList[0].initiative_order.map(item => {
+                    const player = encounterDb.players.find(p => p._id == item.entity_id);
+                    if (player) {
+                        return player;
+                    }
+                    const monster = encounterDb.monsters.find(m => m._id == item.entity_id);
+                    if (monster) {
+                        return monster;
+                    }
+                }).filter(character => character !== undefined) as (Player | Monster)[];
+                setCharacters(characterList);
+                setInitiativeOrder(encountersList[0].initiative_order);
+                const characterTurnId = encountersList[0].current_turn;
+                if (characterTurnId) {
                     // set hp, max hp, temp hp, ac, death saving, def, con, def
-                    
+                    const characterStats = await apiService.get(`/encounters/${encountersList[0]._id}/current-turn`);
+                    const character = characterStats.character;
+                    const currentTurnIndex = encountersList[0].initiative_order.findIndex(item => {
+                        return item.entity_id == characterTurnId;
+                    });
+                    if (currentTurnIndex !== -1) {
+                        console.log("Current turn: " + currentTurnIndex);
+                        setCurrentTurn(currentTurnIndex);
+                        setInitiativeStarted(true);
+                    }
+                    setCurrentHP(character.currentHitpoints)
+                    setMaxHP(character.maxHitpoints);
+                    setArmorClass(character.armorClass);
+                    setTempHP(character.tempHitpoints);
                 }
                 else {
                     setCurrentTurn(0);
@@ -169,6 +196,7 @@ export default function Encounter() {
     const [showButtons, setShowButtons] = useState(false);
     const [formatsByCharacter, setFormatsByCharacter] = useState({});
     const [characters, setCharacters] = useState<PlayerOrMonster[]>([]);
+    const [initiativeOrder, setInitiativeOrder] = useState(encountersList[0].initiative_order);
 
     const [currentCharacterTurn, setCurrentCharacterTurn] = useState<string>('');
 
@@ -444,7 +472,7 @@ export default function Encounter() {
                 { entity_id: characterId, initiative_score: initiative }
             ];
             await apiService.put(`/encounters/${encountersList[0]._id}/initiative-order`, { initiative_order: updatedInitiativeOrder });
-            
+
         } catch (error) {
             console.error('Error adding character to initiative order:', error);
         }
