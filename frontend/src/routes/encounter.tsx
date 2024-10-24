@@ -283,9 +283,9 @@ export default function Encounter() {
         },
         encounterColumn: {
             display: "flex",
-            flex: 1,
             flexDirection: "column",
-            gap: 1
+            gap: 1,
+            width: 'fit-content'
         },
         columnTitle: {
             marginBottom: 0.5
@@ -593,79 +593,83 @@ export default function Encounter() {
         <Box sx={sxProps.encounterScreen}>
             <Box sx={sxProps.encounterColumn}>
                 <Typography variant="h6" sx={sxProps.columnTitle}>INITIATIVE</Typography>
-                {players.map((character, index) => (
-                    <Card
-                    key={character._id}
-                    sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        ...sxProps.columnCard,
-                        ...sxProps.initiativeItem,
-                        ...(isActive(character.name) && sxProps.initiativeItemActive),
-                    }}
-                >
-                    <Typography
-                        sx={{
-                            fontWeight: 'bold',
-                            fontSize: '24px',
-                            textAlign: 'center',
-                            p: 1,
-                            backgroundColor: 'primary.dark',
-                            color: 'white',
-                            height: '100%',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            width: '40px',
-                            borderRadius: '5px',
-                        }}
-                    >
-                        {index + 1}
-                    </Typography>
-                
-                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', ml: 2 }}>
-                        <Typography sx={{ fontWeight: 'bold', mb: 1 }}>{character.name}</Typography>
-                        <Typography sx={{ mb: 1 }}>
-                            Level {character.level} {character.class}
-                        </Typography>
-                        <ToggleButtonGroup
-                            value={formatsByCharacter[character.name] || []}
-                            onChange={(event, newFormats) => handleFormat(character.name, event, newFormats)}
-                            sx={{ maxHeight: '40px' }}
+                <Box sx={{ maxHeight: '70vh', overflowY: 'auto', pr: 1 }}>
+                    {players.map((character, index) => (
+                        <Card
+                            key={character._id}
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                ...sxProps.columnCard,
+                                ...sxProps.initiativeItem,
+                                ...(isActive(character.name) && sxProps.initiativeItemActive),
+                                mb: 1
+                            }}
                         >
-                            {['action', 'bonus', 'reaction'].map((type) => (
-                                <ToggleButton
-                                    key={type}
-                                    value={type}
-                                    sx={{
-                                        backgroundColor: (formatsByCharacter[character.name] || []).includes(type)
-                                            ? 'primary.dark' // when selected
-                                            : 'primary.main', // not selected
-                                        color: (formatsByCharacter[character.name] || []).includes(type)
-                                            ? 'black' // selected
-                                            : 'white', // not selected
-                                        '&:hover': {
-                                            backgroundColor: (formatsByCharacter[character.name] || []).includes(type)
-                                                ? 'primary.main' // hover selected
-                                                : 'primary.dark',
-                                            color: 'white', // hover text
-                                        },
-                                    }}
+                            <Typography
+                                sx={{
+                                    fontWeight: 'bold',
+                                    fontSize: '3em',
+                                    textAlign: 'center',
+                                    p: 1,
+                                    backgroundColor: 'primary.dark',
+                                    height: '11.5vh',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    width: '60px',
+                                    borderRadius: '5px',
+                                }}
+                            >
+                                {index + 1}
+                            </Typography>
+                            
+                            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', ml: 2 }}>
+                                <Typography sx={{ fontWeight: 'bold', mb: 1 }}>{character.name}</Typography>
+                                <Typography sx={{ mb: 1 }}>
+                                    Level {character.level} {character.class}
+                                </Typography>
+                                <ToggleButtonGroup
+                                    value={formatsByCharacter[character.name] || []}
+                                    onChange={(event, newFormats) => handleFormat(character.name, event, newFormats)}
+                                    sx={{ maxHeight: '40px' }}
                                 >
-                                    {type.charAt(0).toUpperCase() + type.slice(1)}
-                                </ToggleButton>
-                            ))}
-                        </ToggleButtonGroup>
-                    </Box>
-                </Card>
+                                    {['action', 'bonus', 'reaction'].map((type) => (
+                                        <ToggleButton
+                                            key={type}
+                                            value={type}
+                                            sx={{
+                                                backgroundColor: (formatsByCharacter[character.name] || []).includes(type)
+                                                    ? 'primary.dark' // when selected
+                                                    : 'primary.main', // not selected
+                                                color: (formatsByCharacter[character.name] || []).includes(type)
+                                                    ? 'black' // selected
+                                                    : 'white', // not selected
+                                                '&:hover': {
+                                                    backgroundColor: (formatsByCharacter[character.name] || []).includes(type)
+                                                        ? 'primary.main' // hover selected
+                                                        : 'primary.dark',
+                                                    color: 'white', // hover text
+                                                },
+                                            }}
+                                        >
+                                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                                        </ToggleButton>
+                                    ))}
+                                </ToggleButtonGroup>
+                            </Box>
+                        </Card>
+                    ))}
+                </Box>
                 
-                ))}
+                {/* Add Button */}
                 <Card sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 1, borderRadius: 0.5 }}>
-                    <IconButton size="small" >
-                        <AddIcon onClick={handleAddInitiative}/>
+                    <IconButton size="small">
+                        <AddIcon onClick={handleAddInitiative} />
                     </IconButton>
                 </Card>
-
+                
+                {/* Button Container */}
                 <Box ref={buttonContainerRef}>
                     <Collapse in={showButtons}>
                         <Button onClick={handleOpenPlayerList} variant="contained" color="primary" sx={{ width: '100%', marginTop: '5px', marginBottom: '5px' }}>
@@ -680,6 +684,7 @@ export default function Encounter() {
                     </Collapse>
                 </Box>
             </Box>
+
 
             {/* PLAYER SELECTED OR CURRENT TURN IN INITIATIVE ORDER IN QUEUE */}
             <Box sx={sxProps.encounterColumn}>
