@@ -284,8 +284,15 @@ export default function Encounter() {
         encounterColumn: {
             display: "flex",
             flexDirection: "column",
+            flex: 1,
             gap: 1,
-            width: 'fit-content'
+        },
+        initiativeQueueColumn: {
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
+            flex: 0,
+            width: "fit-content",
         },
         columnTitle: {
             marginBottom: 0.5
@@ -591,7 +598,7 @@ export default function Encounter() {
 
     return (
         <Box sx={sxProps.encounterScreen}>
-            <Box sx={sxProps.encounterColumn}>
+            <Box sx={sxProps.initiativeQueueColumn}>
                 <Typography variant="h6" sx={sxProps.columnTitle}>INITIATIVE</Typography>
                 <Box sx={{ maxHeight: '70vh', overflowY: 'auto', pr: 1 }}>
                     {players.map((character, index) => (
