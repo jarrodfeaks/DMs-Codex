@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Send } from '@mui/icons-material';
+import { Send, CheckBoxOutlineBlank, CheckBox, Cancel } from '@mui/icons-material';
 import { Action, Dice, Weapon, WeaponCategories } from '../../../shared/enums.ts';
 import AddIcon from "@mui/icons-material/Add";
 import {
@@ -30,6 +30,25 @@ import { Player } from "../types.ts";
 import AttackModal from "../components/modals/AttackModal";
 import {apiService} from "../services/apiService.ts";
 
+const DeathSaveBox = ({ state, onClick }) => {
+    const renderIcon = () => {
+        switch (state) {
+            case 1:
+                return <CheckBox />; // Ticked
+            case 2:
+                return <Cancel />; // Crossed
+            default:
+                return <CheckBoxOutlineBlank />; // Empty
+        }
+    };
+
+    return (
+        <IconButton onClick={onClick}>
+            {renderIcon()}
+        </IconButton>
+    );
+};
+
 export default function Encounter() {
     const [hitPoints, setHitPoints] = useState("30/50");
     const [originalHitPoints, setOriginalHitPoints] = useState(hitPoints);
@@ -55,6 +74,8 @@ export default function Encounter() {
     const [currentHP, setCurrentHP] = useState(30);
     const [maxHP, setMaxHP] = useState(50);
 
+    const [deathSaves, setDeathSaves] = useState([0, 0, 0, 0, 0]);
+
     const handleCurrentHPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseInt(e.target.value);
         setCurrentHP(isNaN(value) ? 0 : value);
@@ -73,6 +94,19 @@ export default function Encounter() {
     const handleArmorClassChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseInt(e.target.value);
         setArmorClass(isNaN(value) ? 0 : value);
+    };
+
+    const handleToggleDeathSave = (index) => {
+        const newDeathSaves = [...deathSaves];
+        newDeathSaves[index] = (newDeathSaves[index] + 1) % 3;
+        setDeathSaves(newDeathSaves);
+    };
+
+    const handleSendLog = () => {
+        if (logInput.trim()) {
+            addCombatLogEntry(`• ${logInput}`);
+            setLogInput(""); // Clear the input field
+        }
     };
 
     const [currentPlayer, setCurrentPlayer] = useState(null);
@@ -112,6 +146,8 @@ export default function Encounter() {
     const [selectedImmunities, setSelectedImmunities] = useState<string[]>([]);
     const [selectedResistances, setSelectedResistances] = useState<string[]>([]);
     const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>([]);
+
+    const [logInput, setLogInput] = useState<string>("");
 
     const handleConditionsOpen = async () => {
         const conditions = await dialogs.open(CharacterConditions, selectedConditions);
@@ -274,9 +310,16 @@ export default function Encounter() {
         },
         encounterColumn: {
             display: "flex",
-            flex: 1,
             flexDirection: "column",
-            gap: 1
+            flex: 1,
+            gap: 1,
+        },
+        initiativeQueueColumn: {
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
+            flex: 0,
+            width: "fit-content",
         },
         columnTitle: {
             marginBottom: 0.5
@@ -433,61 +476,89 @@ export default function Encounter() {
         return (
           <Box sx={sxProps.targetSection}>
             <Typography variant="h6">{selectedTarget.name}</Typography>
-            <Card sx={sxProps.columnCard}>
-              <Typography variant="subtitle2">Status</Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <Typography>Hit Points:</Typography>
-                <TextField
-                  type="number"
-                  value={selectedTarget.hp}
-                  onChange={(e) => handleTargetStatChange('hp', e.target.value)}
-                  size="small"
-                  sx={{ width: 60 }}
-                />
-                <Typography>/</Typography>
-                <TextField
-                  type="number"
-                  value={selectedTarget.maxHp}
-                  onChange={(e) => handleTargetStatChange('maxHp', e.target.value)}
-                  size="small"
-                  sx={{ width: 60 }}
-                />
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <Typography>Temp HP:</Typography>
-                <TextField
-                  type="number"
-                  value={selectedTarget.tempHp || 0}
-                  onChange={(e) => handleTargetStatChange('tempHp', e.target.value)}
-                  size="small"
-                  sx={{ width: 60 }}
-                />
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography>AC:</Typography>
-                <TextField
-                  type="number"
-                  value={selectedTarget.ac}
-                  onChange={(e) => handleTargetStatChange('ac', e.target.value)}
-                  size="small"
-                  sx={{ width: 60 }}
-                />
-              </Box>
-            <Box sx={sxProps.deathSaves}>
-                <Typography>☠</Typography>
-                <Box>□□□□□</Box>
-            </Box>
-            <Box sx={sxProps.targetSection}>
-                <Card sx={sxProps.columnCard}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                        <Typography variant="subtitle2">Conditions</Typography>
-                        <IconButton size="small" onClick={handleConditionsOpen}><AddIcon /></IconButton>
-                    </Box>
-                    {loadingConditions ? (
-                        <Box display="flex" justifyContent="center" alignItems="center" height={50}>
-                            <CircularProgress size={24} />
+            <Box sx={{ display: 'flex', gap: 1}}>
+                
+                    {/* Status */}
+                    <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
+                        <Typography variant="subtitle2">Status</Typography>
+
+                        {/* HP */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                            <Typography sx={{ flexGrow: 1 }}>HP</Typography>
+                            <TextField
+                                type="number"
+                                value={selectedTarget.hp}
+                                onChange={handleCurrentHPChange}
+                                size="small"
+                                sx={{ width: 60, ml: 'auto' }}
+                            />
+                            <Typography>/</Typography>
+                            <TextField
+                                type="number"
+                                value={selectedTarget.maxHp}
+                                onChange={handleMaxHPChange}
+                                size="small"
+                                sx={{ width: 60 }}
+                            />
                         </Box>
-                    ) : (
+
+                        {/* Temp HP */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                            <Typography sx={{ flexGrow: 1 }}>Temp HP</Typography>
+                            <TextField
+                                type="number"
+                                value={selectedTarget.tempHp}
+                                onChange={handleTempHPChange}
+                                size="small"
+                                sx={{ width: 100, ml: 'auto' }}
+                            />
+                        </Box>
+
+                        {/* AC */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography sx={{ flexGrow: 1 }}>AC</Typography>
+                            <TextField
+                                type="number"
+                                value={selectedTarget.ac}
+                                onChange={handleArmorClassChange}
+                                size="small"
+                                sx={{ width: 100, ml: 'auto' }}
+                            />
+                        </Box>
+
+                        {/* Death Saves */}
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <Typography>Death Saves</Typography>
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                {deathSaves.map((state, index) => (
+                                    <DeathSaveBox
+                                        key={index}
+                                        state={state}
+                                        onClick={() => handleToggleDeathSave(index)}
+                                    />
+                                ))}
+                            </Box>
+                        </Box>
+                    </Card>
+
+
+                    {/* Notes */}
+                    <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
+                        <Typography variant="subtitle2">Notes</Typography>
+                        <TextField fullWidth multiline rows={4} placeholder="Add notes here..." />
+                    </Card>
+                    
+                </Box>
+                
+
+                <Box sx={{ display: 'flex', gap: 1 }}>
+
+                    {/* Conditions */}
+                    <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                            <Typography variant="subtitle2">Conditions</Typography>
+                            <IconButton size="small" onClick={handleConditionsOpen}><AddIcon /></IconButton>
+                        </Box>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                             {selectedConditions.map((condition, index) => (
                                 <Chip
@@ -500,118 +571,147 @@ export default function Encounter() {
                             ))}
                             {selectedConditions.length === 0 && <Typography>No conditions</Typography>}
                         </Box>
-                    )}
-                </Card>
-                <Card sx={sxProps.columnCard}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                        <Typography variant="subtitle2">Defenses</Typography>
-                        <IconButton size="small" onClick={handleDefensesOpen}><AddIcon /></IconButton>
-                    </Box>
-                    {loadingDefenses ? (
-                        <Box display="flex" justifyContent="center" alignItems="center" height={100}>
-                            <CircularProgress size={24} />
+                    </Card>
+                        
+                    {/* Defenses */}
+                    <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                            <Typography variant="subtitle2">Defenses</Typography>
+                            <IconButton size="small" onClick={handleDefensesOpen}><AddIcon /></IconButton>
                         </Box>
-                    ) : (
-                        <>
-                            <Box sx={{ mb: 1 }}>
-                                <Typography variant="body2">Immunities</Typography>
-                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                                    {selectedImmunities.map((immunity, index) => (
-                                        <Chip
-                                            key={index}
-                                            label={immunity}
-                                            size="small"
-                                            color="primary"
-                                            onDelete={() => handleDeleteImmunity(immunity)}
-                                        />
-                                    ))}
-                                    {selectedImmunities.length === 0 && <Typography>No immunities</Typography>}
-                                </Box>
+                        <Box sx={{ mb: 1 }}>
+                            <Typography variant="body2">Immunities</Typography>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                                {selectedImmunities.map((immunity, index) => (
+                                    <Chip
+                                        key={index}
+                                        label={immunity}
+                                        size="small"
+                                        color="primary"
+                                        onDelete={() => handleDeleteImmunity(immunity)}
+                                    />
+                                ))}
+                                {selectedImmunities.length === 0 && <Typography>No immunities</Typography>}
                             </Box>
-                            <Box sx={{ mb: 1 }}>
-                                <Typography variant="body2">Resistances</Typography>
-                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                                    {selectedResistances.map((resistance, index) => (
-                                        <Chip
-                                            key={index}
-                                            label={resistance}
-                                            size="small"
-                                            color="primary"
-                                            onDelete={() => handleDeleteResistance(resistance)}
-                                        />
-                                    ))}
-                                    {selectedResistances.length === 0 && <Typography>No resistances</Typography>}
-                                </Box>
+                        </Box>
+                        <Box sx={{ mb: 1 }}>
+                            <Typography variant="body2">Resistances</Typography>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                                {selectedResistances.map((resistance, index) => (
+                                    <Chip
+                                        key={index}
+                                        label={resistance}
+                                        size="small"
+                                        color="primary"
+                                        onDelete={() => handleDeleteResistance(resistance)}
+                                    />
+                                ))}
+                                {selectedResistances.length === 0 && <Typography>No resistances</Typography>}
                             </Box>
-                            <Box>
-                                <Typography variant="body2">Vulnerabilities</Typography>
-                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                                    {selectedVulnerabilities.map((vulnerability, index) => (
-                                        <Chip
-                                            key={index}
-                                            label={vulnerability}
-                                            size="small"
-                                            color="primary"
-                                            onDelete={() => handleDeleteVulnerability(vulnerability)}
-                                        />
-                                    ))}
-                                    {selectedVulnerabilities.length === 0 && <Typography>No vulnerabilities</Typography>}
-                                </Box>
+                        </Box>
+                        <Box>
+                            <Typography variant="body2">Vulnerabilities</Typography>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                                {selectedVulnerabilities.map((vulnerability, index) => (
+                                    <Chip
+                                        key={index}
+                                        label={vulnerability}
+                                        size="small"
+                                        color="primary"
+                                        onDelete={() => handleDeleteVulnerability(vulnerability)}
+                                    />
+                                ))}
+                                {selectedVulnerabilities.length === 0 && <Typography>No vulnerabilities</Typography>}
                             </Box>
-                        </>
-                    )}
-                </Card>
-            </Box>
-            </Card>
+                        </Box>
+                    </Card>
+
+                </Box>
           </Box>
         );
       };
 
     return (
         <Box sx={sxProps.encounterScreen}>
-            <Box sx={sxProps.encounterColumn}>
+            <Box sx={sxProps.initiativeQueueColumn}>
                 <Typography variant="h6" sx={sxProps.columnTitle}>INITIATIVE</Typography>
-                {players.map((character, index) => (
-                    <Card
-                        key={character._id}
-                        sx={{ ...sxProps.columnCard, ...sxProps.initiativeItem, ...(isActive(character.name) && sxProps.initiativeItemActive) }}
-                    >
-                        <Typography>{index + 1}. {character.name}</Typography>
-                        <Typography>Level {character.level} {character.class}</Typography>
-                        <ToggleButtonGroup
-                            value={formatsByCharacter[character.name] || []}
-                            onChange={(event, newFormats) => handleFormat(character.name, event, newFormats)}
-                            sx={{ maxHeight: '40px' }}>
-                            {['action', 'bonus', 'reaction'].map(type => (
-                                <ToggleButton
-                                    key={type}
-                                    value={type}
-                                    sx={{
-                                        backgroundColor: (formatsByCharacter[character.name] || []).includes(type)
-                                            ? 'primary.dark' //when selected
-                                            : 'primary.main', //not selcted
-                                        color: (formatsByCharacter[character.name] || []).includes(type)
-                                            ? 'black' //selected
-                                            : 'white', //notselected
-                                        '&:hover': {
-                                            backgroundColor: (formatsByCharacter[character.name] || []).includes(type)
-                                                ? 'primary.main' //hoverselected
-                                                : 'primary.dark',
-                                            color: 'white' //hovertext
-                                        }
-                                    }}>
-                                    {type.charAt(0).toUpperCase() + type.slice(1)}
-                                </ToggleButton>
-                            ))}
-                        </ToggleButtonGroup>
-                    </Card>
-                ))}
-                <Card sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 1, borderRadius: 0.5 }}>
-                    <IconButton size="small" >
-                        <AddIcon onClick={handleAddInitiative}/>
+                <Box sx={{ maxHeight: '70vh', overflowY: 'auto', pr: 1 }}>
+                    {players.map((character, index) => (
+                        <Card
+                            key={character._id}
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                ...sxProps.columnCard,
+                                ...sxProps.initiativeItem,
+                                ...(isActive(character.name) && sxProps.initiativeItemActive),
+                                mb: 1
+                            }}
+                        >
+                            <Typography
+                                sx={{
+                                    fontWeight: 'bold',
+                                    fontSize: '3em',
+                                    textAlign: 'center',
+                                    p: 1,
+                                    backgroundColor: 'primary.dark',
+                                    height: '11.5vh',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    width: '60px',
+                                    borderRadius: '5px',
+                                }}
+                            >
+                                {index + 1}
+                            </Typography>
+                            
+                            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', ml: 2 }}>
+                                <Typography sx={{ fontWeight: 'bold', mb: 1 }}>{character.name}</Typography>
+                                <Typography sx={{ mb: 1 }}>
+                                    Level {character.level} {character.class}
+                                </Typography>
+                                <ToggleButtonGroup
+                                    value={formatsByCharacter[character.name] || []}
+                                    onChange={(event, newFormats) => handleFormat(character.name, event, newFormats)}
+                                    sx={{ maxHeight: '40px' }}
+                                >
+                                    {['action', 'bonus', 'reaction'].map((type) => (
+                                        <ToggleButton
+                                            key={type}
+                                            value={type}
+                                            sx={{
+                                                backgroundColor: (formatsByCharacter[character.name] || []).includes(type)
+                                                    ? 'primary.dark' // when selected
+                                                    : 'primary.main', // not selected
+                                                color: (formatsByCharacter[character.name] || []).includes(type)
+                                                    ? 'black' // selected
+                                                    : 'white', // not selected
+                                                '&:hover': {
+                                                    backgroundColor: (formatsByCharacter[character.name] || []).includes(type)
+                                                        ? 'primary.main' // hover selected
+                                                        : 'primary.dark',
+                                                    color: 'white', // hover text
+                                                },
+                                            }}
+                                        >
+                                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                                        </ToggleButton>
+                                    ))}
+                                </ToggleButtonGroup>
+                            </Box>
+                        </Card>
+                    ))}
+                </Box>
+                
+                {/* Add Button */}
+                <Card sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 1, borderRadius: 0.5, width: '18vw' }}>
+                    <IconButton size="small">
+                        <AddIcon onClick={handleAddInitiative} />
                     </IconButton>
                 </Card>
-
+                
+                {/* Button Container */}
                 <Box ref={buttonContainerRef}>
                     <Collapse in={showButtons}>
                         <Button onClick={handleOpenPlayerList} variant="contained" color="primary" sx={{ width: '100%', marginTop: '5px', marginBottom: '5px' }}>
@@ -627,132 +727,164 @@ export default function Encounter() {
                 </Box>
             </Box>
 
+
             {/* PLAYER SELECTED OR CURRENT TURN IN INITIATIVE ORDER IN QUEUE */}
             <Box sx={sxProps.encounterColumn}>
-                <Card sx={sxProps.columnCard}>
-                    <Typography variant="subtitle2">Status</Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                        <Typography>Hit Points:</Typography>
-                        <TextField
-                            type="number"
-                            value={currentHP}
-                            onChange={handleCurrentHPChange}
-                            size="small"
-                            sx={{ width: 60 }}
-                        />
-                        <Typography>/</Typography>
-                        <TextField
-                            type="number"
-                            value={maxHP}
-                            onChange={handleMaxHPChange}
-                            size="small"
-                            sx={{ width: 60 }}
-                        />
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                        <Typography>Temp HP:</Typography>
-                        <TextField
-                            type="number"
-                            value={tempHP}
-                            onChange={handleTempHPChange}
-                            size="small"
-                            sx={{ width: 100 }}
-                        />
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography>AC:</Typography>
-                        <TextField
-                            type="number"
-                            value={armorClass}
-                            onChange={handleArmorClassChange}
-                            size="small"
-                            sx={{ width: 100 }}
-                        />
-                    </Box>
-                </Card>
+                <Typography variant="h6" sx={sxProps.columnTitle}>CURRENT TURN</Typography> {/* Should this display character name instead? */} 
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                
+                    {/* Status */}
+                    <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
+                        <Typography variant="subtitle2">Status</Typography>
 
-                {/* Conditions Box */}
-                <Card sx={sxProps.columnCard}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                        <Typography variant="subtitle2">Conditions</Typography>
-                        <IconButton size="small" onClick={handleConditionsOpen}><AddIcon /></IconButton>
-                    </Box>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                        {selectedConditions.map((condition, index) => (
-                            <Chip
-                                key={index}
-                                label={condition}
+                        {/* HP */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                            <Typography sx={{ flexGrow: 1 }}>HP</Typography>
+                            <TextField
+                                type="number"
+                                value={currentHP}
+                                onChange={handleCurrentHPChange}
                                 size="small"
-                                color="primary"
-                                onDelete={() => handleDeleteCondition(condition)}
+                                sx={{ width: 60, ml: 'auto' }}
                             />
-                        ))}
-                        {selectedConditions.length === 0 && <Typography>No conditions</Typography>}
-                    </Box>
-                </Card>
+                            <Typography>/</Typography>
+                            <TextField
+                                type="number"
+                                value={maxHP}
+                                onChange={handleMaxHPChange}
+                                size="small"
+                                sx={{ width: 60 }}
+                            />
+                        </Box>
 
-                {/* Defenses Box */}
-                <Card sx={sxProps.columnCard}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                        <Typography variant="subtitle2">Defenses</Typography>
-                        <IconButton size="small" onClick={handleDefensesOpen}><AddIcon /></IconButton>
-                    </Box>
-                    <Box sx={{ mb: 1 }}>
-                        <Typography variant="body2">Immunities</Typography>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                            {selectedImmunities.map((immunity, index) => (
+                        {/* Temp HP */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                            <Typography sx={{ flexGrow: 1 }}>Temp HP</Typography>
+                            <TextField
+                                type="number"
+                                value={tempHP}
+                                onChange={handleTempHPChange}
+                                size="small"
+                                sx={{ width: 100, ml: 'auto' }}
+                            />
+                        </Box>
+
+                        {/* AC */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography sx={{ flexGrow: 1 }}>AC</Typography>
+                            <TextField
+                                type="number"
+                                value={armorClass}
+                                onChange={handleArmorClassChange}
+                                size="small"
+                                sx={{ width: 100, ml: 'auto' }}
+                            />
+                        </Box>
+
+                        {/* Death Saves */}
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <Typography>Death Saves</Typography>
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                {deathSaves.map((state, index) => (
+                                    <DeathSaveBox
+                                        key={index}
+                                        state={state}
+                                        onClick={() => handleToggleDeathSave(index)}
+                                    />
+                                ))}
+                            </Box>
+                        </Box>
+                    </Card>
+
+
+                    {/* Notes */}
+                    <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
+                        <Typography variant="subtitle2">Notes</Typography>
+                        <TextField fullWidth multiline rows={4} placeholder="Add notes here..." />
+                    </Card>
+                    
+                </Box>
+                
+
+                <Box sx={{ display: 'flex', gap: 1 }}>
+
+                    {/* Conditions */}
+                    <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                            <Typography variant="subtitle2">Conditions</Typography>
+                            <IconButton size="small" onClick={handleConditionsOpen}><AddIcon /></IconButton>
+                        </Box>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                            {selectedConditions.map((condition, index) => (
                                 <Chip
                                     key={index}
-                                    label={immunity}
+                                    label={condition}
                                     size="small"
                                     color="primary"
-                                    onDelete={() => handleDeleteImmunity(immunity)}
+                                    onDelete={() => handleDeleteCondition(condition)}
                                 />
                             ))}
-                            {selectedImmunities.length === 0 && <Typography>No immunities</Typography>}
+                            {selectedConditions.length === 0 && <Typography>No conditions</Typography>}
                         </Box>
-                    </Box>
-                    <Box sx={{ mb: 1 }}>
-                        <Typography variant="body2">Resistances</Typography>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                            {selectedResistances.map((resistance, index) => (
-                                <Chip
-                                    key={index}
-                                    label={resistance}
-                                    size="small"
-                                    color="primary"
-                                    onDelete={() => handleDeleteResistance(resistance)}
-                                />
-                            ))}
-                            {selectedResistances.length === 0 && <Typography>No resistances</Typography>}
+                    </Card>
+                        
+                    {/* Defenses */}
+                    <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                            <Typography variant="subtitle2">Defenses</Typography>
+                            <IconButton size="small" onClick={handleDefensesOpen}><AddIcon /></IconButton>
                         </Box>
-                    </Box>
-                    <Box>
-                        <Typography variant="body2">Vulnerabilities</Typography>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                            {selectedVulnerabilities.map((vulnerability, index) => (
-                                <Chip
-                                    key={index}
-                                    label={vulnerability}
-                                    size="small"
-                                    color="primary"
-                                    onDelete={() => handleDeleteVulnerability(vulnerability)}
-                                />
-                            ))}
-                            {selectedVulnerabilities.length === 0 && <Typography>No vulnerabilities</Typography>}
+                        <Box sx={{ mb: 1 }}>
+                            <Typography variant="body2">Immunities</Typography>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                                {selectedImmunities.map((immunity, index) => (
+                                    <Chip
+                                        key={index}
+                                        label={immunity}
+                                        size="small"
+                                        color="primary"
+                                        onDelete={() => handleDeleteImmunity(immunity)}
+                                    />
+                                ))}
+                                {selectedImmunities.length === 0 && <Typography>No immunities</Typography>}
+                            </Box>
                         </Box>
-                    </Box>
-                </Card>
+                        <Box sx={{ mb: 1 }}>
+                            <Typography variant="body2">Resistances</Typography>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                                {selectedResistances.map((resistance, index) => (
+                                    <Chip
+                                        key={index}
+                                        label={resistance}
+                                        size="small"
+                                        color="primary"
+                                        onDelete={() => handleDeleteResistance(resistance)}
+                                    />
+                                ))}
+                                {selectedResistances.length === 0 && <Typography>No resistances</Typography>}
+                            </Box>
+                        </Box>
+                        <Box>
+                            <Typography variant="body2">Vulnerabilities</Typography>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                                {selectedVulnerabilities.map((vulnerability, index) => (
+                                    <Chip
+                                        key={index}
+                                        label={vulnerability}
+                                        size="small"
+                                        color="primary"
+                                        onDelete={() => handleDeleteVulnerability(vulnerability)}
+                                    />
+                                ))}
+                                {selectedVulnerabilities.length === 0 && <Typography>No vulnerabilities</Typography>}
+                            </Box>
+                        </Box>
+                    </Card>
+
+                </Box>
+
                 <Card sx={sxProps.columnCard}>
                     <Box sx={sxProps.actionGroup}>
-                        <Box sx={sxProps.actionItem}>
-                            <Typography>Type</Typography>
-                            <TextField
-                            placeholder="Type here..."
-                            size="small"
-                            fullWidth
-                        />
-                        </Box>
                         <Box sx={sxProps.actionItem}>
                             <Typography>Action</Typography>
                             <Select value={selectedAction} onChange={(e) => setSelectedAction(e.target.value as Action)} size="small" fullWidth>
@@ -773,10 +905,6 @@ export default function Encounter() {
                         <Button variant="contained" color="primary" onClick={handleExecute}>EXECUTE</Button>
                     </Box>
                 </Card>
-                <Card sx={sxProps.columnCard}>
-                    <Typography variant="subtitle2">Notes</Typography>
-                    <TextField fullWidth multiline rows={4} placeholder="Add notes here..." />
-                </Card>
             </Box>
 
             {/* COMBAT LOG COLUMN */}
@@ -795,10 +923,12 @@ export default function Encounter() {
                             placeholder="Type here..."
                             size="small"
                             fullWidth
+                            value={logInput}
+                            onChange={(e) => setLogInput(e.target.value)}
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="end">
-                                        <IconButton edge="end">
+                                        <IconButton edge="end" onClick={handleSendLog}>
                                             <Send />
                                         </IconButton>
                                     </InputAdornment>

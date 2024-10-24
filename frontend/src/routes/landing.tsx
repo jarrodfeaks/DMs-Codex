@@ -6,7 +6,7 @@ export default function Landing() {
     
     return (
         <Container sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, pt: 8 }}>
-            <Typography variant={"h3"}>Placeholder landing page</Typography>
+            <Typography variant={"h3"}>Welcome to Dungeon Master's Codex</Typography>
             <AuthButton loginStatus={LoginStatus.LoggedOut} />
         </Container>
     )
