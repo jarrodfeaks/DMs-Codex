@@ -30,7 +30,7 @@ import EncounterAddFromAI from "../components/modals/EncounterAddFromAI";
 import EncounterAddFromBestiary from "../components/modals/EncounterAddFromBestiary";
 import EncounterAddFromPlayers from "../components/modals/EncounterAddFromPlayers";
 import EncounterDefenses from "../components/modals/EncounterDefenses";
-import { missedCombatLogString, attackCombatLogString, customCombatLogString } from "../utils";
+import { missedCombatLogString, attackCombatLogString, customCombatLogString, calculateCharacterHealthAfterDamage } from "../utils";
 import { Monster, Player } from "../types.ts";
 import AttackModal from "../components/modals/AttackModal";
 import { apiService } from "../services/apiService.ts";
@@ -190,7 +190,7 @@ export default function Encounter() {
     const [showButtons, setShowButtons] = useState(false);
     const [formatsByCharacter, setFormatsByCharacter] = useState({});
     const [characters, setCharacters] = useState<PlayerOrMonster[]>([]);
-    const [initiativeOrder, setInitiativeOrder] = useState(encountersList[0].initiative_order);
+    const [initiativeOrder, setInitiativeOrder] = useState();
 
     const [currentCharacterTurn, setCurrentCharacterTurn] = useState<string>('');
 
@@ -321,6 +321,27 @@ export default function Encounter() {
         const result = await dialogs.open<undefined, { combatLog: string; totalDamageDealt: number }>(AttackModal, weaponInformation);
         if (result) {
             const successfulAttackLog = attackCombatLogString(currentCharacterTurn, selectedWeapon, selectedTarget, result.totalDamageDealt);
+            const [newCurrentHp, newTempHp] = calculateCharacterHealthAfterDamage(result.totalDamageDealt, selectedTarget.currentHitpoints, selectedTarget.tempHitpoints);
+            selectedTarget.currentHitpoints = newCurrentHp;
+            selectedTarget.tempHitpoints = newTempHp;
+
+            let isPlayer = false;
+
+            encountersList[0].players.forEach(playerId => {
+                if (playerId === selectedTarget._id) {
+                    isPlayer = true;
+                }
+            });
+
+            if (isPlayer) {
+                let log = await apiService.put(`/players/${selectedTarget._id}`, { currentHitpoints: newCurrentHp, tempHitpoints: newTempHp });
+                console.log("Player Update:" + log);
+            }
+            else {
+                let log = await apiService.put(`/monsters/${selectedTarget._id}`, { currentHitpoints: newCurrentHp, tempHitpoints: newTempHp });
+                console.log("Monster Update:" + log);
+            };
+
             addCombatLogEntry(successfulAttackLog);
         }
     };
@@ -353,12 +374,14 @@ export default function Encounter() {
     const handleExecute = () => {
         if (Action.Attack === selectedAction) {
             const accuracyDiceValue = accuracyDice ?? 0;
-            // 10 is temporary, should be replaced with the actual AC of the target
-            if (accuracyDiceValue + bonusModifier >= 0 && selectedWeapon) {
+            // update to armour class
+            // if (accuracyDiceValue + bonusModifier >= selectedTarget.armorClass && selectedWeapon && selectedTarget) {
+            if (selectedWeapon && selectedTarget) {
                 handleAttackOpen();
             }
             else {
-                addCombatLogEntry(missedCombatLogString(currentCharacterTurn, selectedWeapon, selectedTarget));
+                addCombatLogEntry(missedCombatLogString(currentCharacterTurn, selectedWeapon, selectedTarget.name));
+                handleNextTurn();
             }
         }
         else {
@@ -681,16 +704,16 @@ export default function Encounter() {
                         <Typography><FavoriteIcon />  Hit Points:</Typography>
                         <TextField
                             type="number"
-                            value={selectedTarget.hp}
-                            onChange={(e) => handleTargetStatChange('hp', e.target.value)}
+                            value={selectedTarget.currentHitpoints}
+                            onChange={(e) => handleTargetStatChange('currentHitpoints', e.target.value)}
                             size="small"
                             sx={{ width: 60 }}
                         />
                         <Typography>/</Typography>
                         <TextField
                             type="number"
-                            value={selectedTarget.maxHp}
-                            onChange={(e) => handleTargetStatChange('maxHp', e.target.value)}
+                            value={selectedTarget.maxHitpoints}
+                            onChange={(e) => handleTargetStatChange('maxHitpoints', e.target.value)}
                             size="small"
                             sx={{ width: 60 }}
                         />
@@ -699,8 +722,8 @@ export default function Encounter() {
                         <Typography><FavoriteBorderIcon />  Temp HP:</Typography>
                         <TextField
                             type="number"
-                            value={selectedTarget.tempHp || 0}
-                            onChange={(e) => handleTargetStatChange('tempHp', e.target.value)}
+                            value={selectedTarget.tempHitpoints || 0}
+                            onChange={(e) => handleTargetStatChange('tempHitpoints', e.target.value)}
                             size="small"
                             sx={{ width: 60 }}
                         />
@@ -709,8 +732,8 @@ export default function Encounter() {
                         <Typography><SecurityIcon />   AC:</Typography>
                         <TextField
                             type="number"
-                            value={selectedTarget.ac}
-                            onChange={(e) => handleTargetStatChange('ac', e.target.value)}
+                            value={selectedTarget.armorClass}
+                            onChange={(e) => handleTargetStatChange('armorClass', e.target.value)}
                             size="small"
                             sx={{ width: 60 }}
                         />

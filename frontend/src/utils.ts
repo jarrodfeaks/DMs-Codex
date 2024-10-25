@@ -59,6 +59,27 @@ export function calculateCharacterDamage(rolls: number, weaponModifier: number):
 }
 
 /**
+    Calculate character health after taking damage.
+    @param totalDamage - The total damage dealt.
+    @param currentHealth - The current health of the character.
+    @param tempHitpoints - The temporary hitpoints of the character (optional).
+    @returns A tuple containing the updated current health and temporary hitpoints.
+*/
+export function calculateCharacterHealthAfterDamage(totalDamage: number, currentHealth: number, tempHitpoints?: number): [number, number] {
+    if (tempHitpoints !== null && tempHitpoints !== undefined) {
+        tempHitpoints -= totalDamage;
+        if (tempHitpoints < 0) {
+            currentHealth += tempHitpoints;
+            tempHitpoints = 0;
+        }
+    } else {
+        currentHealth -= totalDamage;
+        tempHitpoints = 0;
+    }
+    return [currentHealth, tempHitpoints];
+}
+
+/**
     Calculates the proficiency bonus based on character level.
     @param characterLevel - The level of the character.
     @returns The proficiency bonus for the given level.
