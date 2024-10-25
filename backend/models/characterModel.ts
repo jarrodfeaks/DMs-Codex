@@ -44,6 +44,7 @@ const characterSchema = new Schema<ICharacter>({
     resistances: { type: [String], enum: Object.values(DamageType), required: false, default: [] },
     vulnerabilities: { type: [String], enum: Object.values(DamageType), required: true, default: [] },
     weapons: [{ type: Schema.Types.ObjectId, ref: 'Weapon', required: false, default: [] }],
+    proficiencies: [{ type: [Schema.Types.Mixed], required: false, default: [] }],
     customModifiers: { type: Map, of: Number, required: false, default: {} },
     notes: { type: String, required: false },
 },

@@ -100,6 +100,7 @@ enum MovementType {
     Walk = "Walk",
     Climb = "Climb",
     Fly = "Fly",
+    Hover = "Hover",
     Swim = "Swim",
 }
 

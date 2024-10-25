@@ -16,7 +16,7 @@ import {
 import { formatMonsterForMongo } from '../../utils';
 import { apiService } from "../../services/apiService.ts";
 
-function EncounterAddFromBestiary({ open, onClose }: { open: boolean, onClose: (monster?: unknown) => void }) {
+function EncounterAddFromBestiary({ open, onClose }: { open: boolean, onClose: (monster?: unknown, monsterId?: string) => void }) {
 
   const [monsters, setMonsters] = useState([]);
   const [selectedMonster, setSelectedMonster] = useState('');
@@ -53,7 +53,7 @@ function EncounterAddFromBestiary({ open, onClose }: { open: boolean, onClose: (
             index: details.index,
             hit_points: details.hit_points || 'N/A',  // Fallback to 'N/A' if not available
             challenge_rating: details.challenge_rating || 'N/A',
-            armor_class: Array.isArray(details.armor_class) 
+            armor_class: Array.isArray(details.armor_class)
               ? details.armor_class[0]?.value || 'N/A'  // Handle array with fallback
               : details.armor_class || 'N/A',  // Fallback to 'N/A' if no armor class
           };
@@ -88,14 +88,18 @@ function EncounterAddFromBestiary({ open, onClose }: { open: boolean, onClose: (
   };
 
   const handleAddMonsterToQueue = async () => {
-    const formattedMonsterForMongo = formatMonsterForMongo(monsterDetails);
+    const formattedMonster = selectedMonster.toLowerCase().replace(/\s+/g, '-');
+    // Fetch specific monster details
+    const apiResponse = await fetch(`${apiUrl}/${formattedMonster}`);
+    const formattedMonsterForMongo = formatMonsterForMongo(await apiResponse.json());
     try {
+      // Add monster to database
       const mongoDbResponse = await apiService.post("/monsters", formattedMonsterForMongo);
-      console.log('Monster added to database:', mongoDbResponse);
+      const _id = mongoDbResponse._id;
+      onClose({ monsterDetails, _id });
     } catch (error) {
       console.error('Error adding monster to database:', error);
     }
-    onClose(monsterDetails);
   };
 
   return (

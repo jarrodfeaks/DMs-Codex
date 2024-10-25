@@ -1,3 +1,5 @@
+import { Attribute, DamageType, Initative, Skill, Status } from "../../shared/enums";
+
 interface User {
     sid: string; // session ID
     nickname: string;
@@ -21,8 +23,8 @@ interface Campaign {
     dmId: string;
     name: string;
     players: Player[];
-    encounters: unknown[]; // TODO: define these types
-    monsters: unknown[];
+    encounters: Encounter[];
+    monsters: Monster[];
 }
 
 interface Player {
@@ -30,6 +32,79 @@ interface Player {
     name: string;
     level: number;
     class: string;
+    maxHitpoints: number;
+    currentHitpoints: number;
+    tempHitpoints: number;
+    strength: number;
+    dexterity: number;
+    constitution: number;
+    intelligence: number;
+    wisdom: number;
+    charisma: number;
+    armorClass: number;
+    customModifiers: Map<Skill | Initative, number>;
+    status: Status[];
+    temperaroaryModifiers: [Attribute | Skill, number][];
+    damageImmunities: DamageType[];
+    statusImmunities: Status[];
+    resistances: DamageType[];
+    vulnerabilities: DamageType[];
+    proficiencies: [Attribute | Skill];
+}
+
+interface Monster {
+    _id: string;
+    name: string;
+    level: number;
+    maxHitpoints: number;
+    currentHitpoints: number;
+    tempHitpoints: number;
+    strength: number;
+    dexterity: number;
+    constitution: number;
+    intelligence: number;
+    wisdom: number;
+    charisma: number;
+    armorClass: number;
+    customModifiers: Map<Skill | Initative, number>;
+    status: Status[];
+    temperaroaryModifiers: [Attribute | Skill, number][];
+    damageImmunities: DamageType[];
+    statusImmunities: Status[];
+    resistances: DamageType[];
+    vulnerabilities: DamageType[];
+}
+
+interface Encounter {
+    _id: string;
+    name: string;
+    turns: Turn; //
+    players: Player[];
+    monsters: Monster[];
+    initiative_order: Player|Monster[];
+    current_turn: string;
+    combat_log: string[];
+}
+
+interface Turn {
+    _id: string;
+    unitTurn: Player|Monster;
+    action: string;
+    weapon: string;
+    custom: string;
+    targetUnits: [Monster|Player, boolean][];
+    hitDiceRoll: number;
+    damageRoll: number;
+    bonusAction: boolean;
+    reaction: boolean;
+}
+
+interface Weapon {
+    name: string;
+    damage: string;
+    type: string;
+    range: string;
+    properties: string;
 }
 
 enum AssistantMode {
@@ -45,5 +120,5 @@ interface Message {
 }
 
 export { LoginStatus, AssistantMode };
-export type { User, Campaign, Player, Message };
+export type { User, Campaign, Player, Message, Monster, Encounter, Turn, Weapon };
 
