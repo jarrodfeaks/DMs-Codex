@@ -59,8 +59,15 @@ const createVectorStoreWithAssistant = async (stream: ReadStream, rulebookName: 
 }
 
 const deleteVectorStoreAndAssistant = async (assistantId: string, rulebookId: string) => {
-  await client.beta.assistants.del(assistantId);
-  await client.beta.vectorStores.del(rulebookId);
+  try {
+    await client.beta.assistants.del(assistantId);
+    await client.beta.vectorStores.del(rulebookId);
+  } catch (err) {
+    if (!(err instanceof OpenAI.NotFoundError)) {
+      throw err;
+    }
+    console.error(err);
+  }
 };
 
 const getRulebookName = async (assistantId: string) => {
