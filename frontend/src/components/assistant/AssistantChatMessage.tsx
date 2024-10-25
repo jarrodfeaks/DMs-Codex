@@ -1,8 +1,9 @@
 import { Paper, Typography, Box } from "@mui/material";
 import { Message } from "../../types";
 import { useTheme } from "@mui/material/styles";
+import './loadingDotAnimation.css';
 
-export default function AssistantChatMessage({ message }: { message: Message }) {
+export default function AssistantChatMessage({ message, loading }: { message: Message, loading: boolean }) {
     const theme = useTheme();
 
     const sxProps = {
@@ -13,6 +14,7 @@ export default function AssistantChatMessage({ message }: { message: Message }) 
         messagePaper: {
             p: 2,
             borderRadius: 2,
+            minWidth: 80,
             maxWidth: '80%',
             backgroundColor: message.role === 'user' 
                 ? 'background.paper' 
@@ -41,9 +43,15 @@ export default function AssistantChatMessage({ message }: { message: Message }) 
                 <Typography variant="subtitle2" sx={sxProps.roleTypography}>
                     {message.role === 'user' ? 'You' : 'Assistant'}
                 </Typography>
-                <Typography variant="body1" sx={sxProps.contentTypography}>
-                    {message.content}
-                </Typography>
+                {loading ? (
+                    <Box sx={{ pl: 2, pt: 1 }}>
+                        <div className="dot-typing"></div>
+                    </Box>
+                ) : (
+                    <Typography variant="body1" sx={sxProps.contentTypography}>
+                        {message.content}
+                    </Typography>
+                )}
             </Paper>
         </Box>
     );
