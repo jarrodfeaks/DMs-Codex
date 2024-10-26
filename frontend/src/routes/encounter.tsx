@@ -11,7 +11,7 @@ import {
     Button,
     Card,
     Chip,
-    CircularProgress,
+    CircularProgress, ClickAwayListener,
     Collapse,
     IconButton,
     InputAdornment,
@@ -61,13 +61,16 @@ const DeathSaveBox = ({ state, onClick }) => {
 export default function Encounter() {
     const campaignId = useCurrentCampaign()?._id;
     const [encountersList, setEncountersList] = useState(useCurrentCampaign()?.encounters);
-    const [showRemoveButtons, setShowRemoveButtons] = useState(false);
+
+    const [initiativeEditMode, setInitiativeEditMode] = useState<"none" | "add" | "remove">("none");
+    const isAddMode = initiativeEditMode === "add";
+    const isRemoveMode = initiativeEditMode === "remove";
+
     const removePlayerFromQueue = (characterId: string) => {
         const newCharacters = characters.filter((character) => character._id !== characterId);
         setCharacters(newCharacters);
         if (newCharacters.length === 0) {
-            setShowAddButtons(true);
-            setShowRemoveButtons(false);
+            setInitiativeEditMode("add");
         }
     };
 
@@ -95,7 +98,6 @@ export default function Encounter() {
         }
     };
 
-    const [showAddButtons, setShowAddButtons] = useState(true);
     const [hitPoints, setHitPoints] = useState("0/0");
     const [originalHitPoints, setOriginalHitPoints] = useState(hitPoints);
     const [tempHP, setTempHP] = useState(0);
@@ -146,8 +148,6 @@ export default function Encounter() {
             setLogInput(""); // Clear the input field
         }
     };
-
-    const [currentPlayer, setCurrentPlayer] = useState(null);
 
     const [error, setError] = useState<string | null>(null);
 
@@ -221,22 +221,18 @@ export default function Encounter() {
     const actionOptions = Object.values(Action);
 
     const [suggestion, setSuggestion] = useState('5 goblins with spears');
-    const [showButtons, setShowButtons] = useState(false);
     const [formatsByCharacter, setFormatsByCharacter] = useState({});
     const [characters, setCharacters] = useState<PlayerOrMonster[]>([]);
     const [initiativeOrder, setInitiativeOrder] = useState();
 
     const [currentCharacterTurn, setCurrentCharacterTurn] = useState<string>('');
 
-    const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
-    const [selectedImmunities, setSelectedImmunities] = useState<string[]>([]);
-    const [selectedResistances, setSelectedResistances] = useState<string[]>([]);
-    const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>([]);
-
     const [logInput, setLogInput] = useState<string>("");
 
     const handleConditionsOpen = async (type: 'current' | 'target') => {
         const conditions = await dialogs.open(CharacterConditions, type === 'current' ? currentConditions : targetConditions);
+        if (!conditions) return;
+
         if (type === 'current') {
             setCurrentConditions(conditions);
         } else {
@@ -250,6 +246,7 @@ export default function Encounter() {
             resistances: type === 'current' ? currentResistances : targetResistances,
             vulnerabilities: type === 'current' ? currentVulnerabilities : targetVulnerabilities
         });
+        if (!defenses) return;
 
         if (type === 'current') {
             setCurrentImmunities(defenses.immunities || []);
@@ -260,96 +257,6 @@ export default function Encounter() {
             setTargetResistances(defenses.resistances || []);
             setTargetVulnerabilities(defenses.vulnerabilities || []);
         }
-    };
-
-    // For current player
-    const [currentConditionsOpen, setCurrentConditionsOpen] = useState(false);
-    const [currentImmunitiesOpen, setCurrentImmunitiesOpen] = useState(false);
-    const [currentResistancesOpen, setCurrentResistancesOpen] = useState(false);
-    const [currentVulnerabilitiesOpen, setCurrentVulnerabilitiesOpen] = useState(false);
-
-    // For target player
-    const [targetConditionsOpen, setTargetConditionsOpen] = useState(false);
-    const [targetImmunitiesOpen, setTargetImmunitiesOpen] = useState(false);
-    const [targetResistancesOpen, setTargetResistancesOpen] = useState(false);
-    const [targetVulnerabilitiesOpen, setTargetVulnerabilitiesOpen] = useState(false);
-
-    // Handler functions for current player
-    const handleCurrentConditionsOpen = () => setCurrentConditionsOpen(true);
-    const handleCurrentConditionsClose = async (result) => {
-        setCurrentConditions(result);
-        setCurrentConditionsOpen(false);
-    };
-
-    // Similar handlers for immunities, resistances, and vulnerabilities
-    const handleCurrentImmunitiesOpen = () => setCurrentImmunitiesOpen(true);
-    const handleCurrentImmunitiesClose = async (result) => {
-        setCurrentImmunities(result);
-        setCurrentImmunitiesOpen(false);
-    }
-
-    const handleCurrentResistancesOpen = () => setCurrentResistancesOpen(true);
-    const handleCurrentResistancesClose = async (result) => {
-        setCurrentResistances(result);
-        setCurrentResistancesOpen(false);
-    }
-
-    const handleCurrentVulnerabilitiesOpen = () => setCurrentVulnerabilitiesOpen(true);
-    const handleCurrentVulnerabilitiesClose = async (result) => {
-        setCurrentVulnerabilities(result);
-        setCurrentVulnerabilitiesOpen(false);
-    }
-
-    // Handler functions for target player
-    const handleTargetConditionsOpen = () => setTargetConditionsOpen(true);
-    const handleTargetConditionsClose = async (result) => {
-        setTargetConditions(result);
-        setTargetConditionsOpen(false);
-    };
-
-    // Similar handlers for immunities, resistances, and vulnerabilities
-    const handleTargetImmunitiesOpen = () => setTargetImmunitiesOpen(true);
-    const handleTargetImmunitiesClose = async (result) => {
-        setTargetImmunities(result);
-        setTargetImmunitiesOpen(false);
-    }
-
-    const handleTargetResistancesOpen = () => setTargetResistancesOpen(true);
-    const handleTargetResistancesClose = async (result) => {
-        setTargetResistances(result);
-        setTargetResistancesOpen(false);
-    }
-
-    const handleTargetVulnerabilitiesOpen = () => setTargetVulnerabilitiesOpen(true);
-    const handleTargetVulnerabilitiesClose = async (result) => {
-        setTargetVulnerabilities(result);
-        setTargetVulnerabilitiesOpen(false);
-    }
-
-    // Separate state for current player and target defenses
-    const [currentDefensesOpen, setCurrentDefensesOpen] = useState(false);
-    const [targetDefensesOpen, setTargetDefensesOpen] = useState(false);
-
-    // Handlers for current player defenses
-    const handleCurrentDefensesOpen = () => setCurrentDefensesOpen(true);
-    const handleCurrentDefensesClose = async (result) => {
-        if (result) {
-            setCurrentImmunities(result.immunities || []);
-            setCurrentResistances(result.resistances || []);
-            setCurrentVulnerabilities(result.vulnerabilities || []);
-        }
-        setCurrentDefensesOpen(false);
-    };
-
-    // Handlers for target player defenses
-    const handleTargetDefensesOpen = () => setTargetDefensesOpen(true);
-    const handleTargetDefensesClose = async (result) => {
-        if (result) {
-            setTargetImmunities(result.immunities || []);
-            setTargetResistances(result.resistances || []);
-            setTargetVulnerabilities(result.vulnerabilities || []);
-        }
-        setTargetDefensesOpen(false);
     };
 
     const handleAttackOpen = async () => {
@@ -441,10 +348,12 @@ export default function Encounter() {
         }
     };
 
-    const handleDeleteCondition = (conditionToDelete) => {
-        setCurrentConditions(prevConditions =>
-            prevConditions.filter(condition => condition !== conditionToDelete)
-        );
+    const handleDeleteCondition = (conditionToDelete: string, isCurrentPlayer: boolean) => {
+        if (isCurrentPlayer) {
+            setCurrentConditions(prev => prev.filter(c => c !== conditionToDelete));
+        } else {
+            setTargetConditions(prev => prev.filter(c => c !== conditionToDelete));
+        }
     };
 
     const handleDeleteImmunity = (immunity: string, isCurrentPlayer: boolean) => {
@@ -503,12 +412,6 @@ export default function Encounter() {
         }));
     };
 
-    const buttonContainerRef = useRef<HTMLElement>(null);
-
-    const handleAddInitiative = () => {
-        setShowAddButtons(true);
-    };
-
     const handleGenerateSuggestion = () => {
         // In a real application, this would call an AI service
         setSuggestion('5 goblins with spears');
@@ -518,7 +421,7 @@ export default function Encounter() {
         setCharacters([...characters, character]);
         addCharacterToEncounter(id);
         addCharactersToInitiative(id, 0);
-        setShowAddButtons(false);
+        setInitiativeEditMode("none");
     };
 
     const addCharacterToEncounter = async (characterId: string) => {
@@ -542,20 +445,6 @@ export default function Encounter() {
             console.error('Error adding character to initiative order:', error);
         }
     };
-
-    useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
-            if (buttonContainerRef.current && !buttonContainerRef.current.contains(event.target as Node)) {
-                setShowButtons(false); // Collapse buttons
-            }
-        }
-
-        document.addEventListener("mousedown", handleClickOutside);
-
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
 
     const sxProps = {
         encounterScreen: {
@@ -584,7 +473,15 @@ export default function Encounter() {
             padding: 1,
             borderRadius: 0.5
         },
+        initiativeItemGroup: {
+            display: "flex",
+            alignItems: "center",
+            gap: 1
+        },
         initiativeItem: {
+            border: 1,
+            borderColor: "transparent",
+            transition: "border 0.2s ease",
             display: "flex",
             alignItems: "center",
         },
@@ -592,10 +489,19 @@ export default function Encounter() {
             border: 1,
             borderColor: "secondary.main"
         },
-        addCharacter: {
+        initiativeControls: {
             display: "flex",
-            justifyContent: "center",
+            width: "100%",
+            gap: 1,
             alignItems: "center",
+        },
+        initiativeControlItem: {
+            display: "flex",
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            p: 1,
+            borderRadius: 0.5
         },
         deathSaves: {
             display: "flex",
@@ -626,62 +532,28 @@ export default function Encounter() {
         }
     };
 
-    const isActive = (name: string): boolean => {
-        return name === 'Justin Tran';
+    const isActive = (index: number): boolean => {
+        return initiativeStarted && index === currentTurn;
     };
 
     const [notes, setNotes] = useState("");
 
-    const handleTargetSelection = (targetId) => {
+    const handleTargetSelection = (targetId: string) => {
         const target = characters.find(character => character._id === targetId);
         setSelectedTarget(target);
     };
 
     // For current character
-    const [currentConditions, setCurrentConditions] = useState([]);
-    const [currentImmunities, setCurrentImmunities] = useState([]);
-    const [currentResistances, setCurrentResistances] = useState([]);
-    const [currentVulnerabilities, setCurrentVulnerabilities] = useState([]);
+    const [currentConditions, setCurrentConditions] = useState<string[]>([]);
+    const [currentImmunities, setCurrentImmunities] = useState<string[]>([]);
+    const [currentResistances, setCurrentResistances] = useState<string[]>([]);
+    const [currentVulnerabilities, setCurrentVulnerabilities] = useState<string[]>([]);
 
     // For target
-    const [targetConditions, setTargetConditions] = useState([]);
-    const [targetImmunities, setTargetImmunities] = useState([]);
-    const [targetResistances, setTargetResistances] = useState([]);
-    const [targetVulnerabilities, setTargetVulnerabilities] = useState([]);
-
-    // For current character
-    const handleCurrentConditionsChange = (conditions) => {
-        setCurrentConditions(conditions);
-    };
-
-    const handleCurrentImmunitiesChange = (immunities) => {
-        setCurrentImmunities(immunities);
-    };
-
-    const handleCurrentResistancesChange = (resistances) => {
-        setCurrentResistances(resistances);
-    };
-
-    const handleCurrentVulnerabilitiesChange = (vulnerabilities) => {
-        setCurrentVulnerabilities(vulnerabilities);
-    };
-
-    // For target
-    const handleTargetConditionsChange = (conditions) => {
-        setTargetConditions(conditions);
-    };
-
-    const handleTargetImmunitiesChange = (immunities) => {
-        setTargetImmunities(immunities);
-    };
-
-    const handleTargetResistancesChange = (resistances) => {
-        setTargetResistances(resistances);
-    };
-
-    const handleTargetVulnerabilitiesChange = (vulnerabilities) => {
-        setTargetVulnerabilities(vulnerabilities);
-    };
+    const [targetConditions, setTargetConditions] = useState<string[]>([]);
+    const [targetImmunities, setTargetImmunities] = useState<string[]>([]);
+    const [targetResistances, setTargetResistances] = useState<string[]>([]);
+    const [targetVulnerabilities, setTargetVulnerabilities] = useState<string[]>([]);
 
     const renderActionSpecificDropdown = () => {
         switch (selectedAction) {
@@ -798,7 +670,7 @@ export default function Encounter() {
                     <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                             <Typography variant="subtitle2">Conditions</Typography>
-                            <IconButton size="small" onClick={handleConditionsOpen}><AddIcon /></IconButton>
+                            <IconButton size="small" onClick={() => handleConditionsOpen('target')}><AddIcon /></IconButton>
                         </Box>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                             {targetConditions.map((condition, index) => (
@@ -807,7 +679,7 @@ export default function Encounter() {
                                     label={condition}
                                     size="small"
                                     color="primary"
-                                    onDelete={() => handleDeleteCondition(condition)}
+                                    onDelete={() => handleDeleteCondition(condition, false)}
                                 />
                             ))}
                             {targetConditions.length === 0 && <Typography>No conditions</Typography>}
@@ -818,7 +690,7 @@ export default function Encounter() {
                     <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                             <Typography variant="subtitle2">Defenses</Typography>
-                            <IconButton size="small" onClick={handleDefensesOpen}><AddIcon /></IconButton>
+                            <IconButton size="small" onClick={() => handleDefensesOpen('target')}><AddIcon /></IconButton>
                         </Box>
                         <Box sx={{ mb: 1 }}>
                             <Typography variant="body2">Immunities</Typography>
@@ -876,85 +748,127 @@ export default function Encounter() {
         <Box sx={sxProps.encounterScreen}>
             <Box sx={sxProps.initiativeQueueColumn}>
                 <Typography variant="h6" sx={sxProps.columnTitle}>INITIATIVE</Typography>
-                <Box sx={{ maxHeight: '70vh', overflowY: 'auto', pr: 1 }}>
+                <Box sx={{ maxHeight: '70vh', overflowY: 'auto' }}>
                     {characters.map((player, index) => (
-                        <Card
-                            key={player._id}
+                        <Box
                             sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                ...sxProps.columnCard,
-                                ...sxProps.initiativeItem,
-                                ...(isActive(player.name) && sxProps.initiativeItemActive),
-                                mb: 1
+                                position: 'relative',
+                                mb: 1,
+                                width: '100%'
                             }}
                         >
-                            <Typography
+                            <Card
+                                key={player._id}
                                 sx={{
-                                    fontWeight: 'bold',
-                                    fontSize: '3em',
-                                    textAlign: 'center',
-                                    p: 1,
-                                    backgroundColor: 'primary.dark',
-                                    height: '11.5vh',
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    width: '60px',
-                                    borderRadius: '5px',
+                                    ...sxProps.columnCard,
+                                    ...sxProps.initiativeItem,
+                                    ...(isActive(index) && sxProps.initiativeItemActive),
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    width: '100%',
+                                    px: 3
                                 }}
                             >
-                                {index + 1}
-                            </Typography>
-
-                            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', ml: 2 }}>
-                                <Typography sx={{ fontWeight: 'bold', mb: 1 }}>{player.name}</Typography>
-                                <Typography sx={{ mb: 1 }}>
-                                    Level {player.level} {player.class}
-                                </Typography>
-                                <ToggleButtonGroup
-                                    value={formatsByCharacter[player.name] || []}
-                                    onChange={(event, newFormats) => handleFormat(player.name, event, newFormats)}
-                                    sx={{ maxHeight: '40px' }}
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        transition: 'transform 0.3s ease',
+                                        transform: isRemoveMode ? 'translateX(-16px)' : 'translateX(0)',
+                                    }}
                                 >
-                                    {['action', 'bonus', 'reaction'].map((type) => (
-                                        <ToggleButton
-                                            key={type}
-                                            value={type}
-                                            sx={{
-                                                backgroundColor: (formatsByCharacter[player.name] || []).includes(type)
-                                                    ? 'primary.dark' // when selected
-                                                    : 'primary.main', // not selected
-                                                color: (formatsByCharacter[player.name] || []).includes(type)
-                                                    ? 'black' // selected
-                                                    : 'white', // not selected
-                                                '&:hover': {
-                                                    backgroundColor: (formatsByCharacter[player.name] || []).includes(type)
-                                                        ? 'primary.main' // hover selected
-                                                        : 'primary.dark',
-                                                    color: 'white', // hover text
-                                                },
-                                            }}
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            fontSize: '3em',
+                                            textAlign: 'center',
+                                            p: 1,
+                                            backgroundColor: 'primary.dark',
+                                            height: '11.5vh',
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            width: '60px',
+                                            borderRadius: '5px',
+                                        }}
+                                    >
+                                        {index + 1}
+                                    </Typography>
+
+                                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', ml: 2 }}>
+                                        <Typography sx={{ fontWeight: 'bold', mb: 1 }}>{player.name}</Typography>
+                                        <Typography sx={{ mb: 1 }}>
+                                            Level {player.level} {player.class}
+                                        </Typography>
+                                        <ToggleButtonGroup
+                                            value={formatsByCharacter[player.name] || []}
+                                            onChange={(event, newFormats) => handleFormat(player.name, event, newFormats)}
+                                            sx={{ maxHeight: '40px' }}
+                                            size="small"
                                         >
-                                            {type.charAt(0).toUpperCase() + type.slice(1)}
-                                        </ToggleButton>
-                                    ))}
-                                </ToggleButtonGroup>
-                            </Box>
-                        </Card>
+                                            {['action', 'bonus', 'reaction'].map((type) => (
+                                                <ToggleButton
+                                                    key={type}
+                                                    value={type}
+                                                    sx={{
+                                                        backgroundColor: (formatsByCharacter[player.name] || []).includes(type)
+                                                            ? 'primary.dark' // when selected
+                                                            : 'primary.main', // not selected
+                                                        color: (formatsByCharacter[player.name] || []).includes(type)
+                                                            ? 'black' // selected
+                                                            : 'white', // not selected
+                                                        '&:hover': {
+                                                            backgroundColor: (formatsByCharacter[player.name] || []).includes(type)
+                                                                ? 'primary.main' // hover selected
+                                                                : 'primary.dark',
+                                                            color: 'white', // hover text
+                                                        },
+                                                    }}
+                                                >
+                                                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                                                </ToggleButton>
+                                            ))}
+                                        </ToggleButtonGroup>
+                                    </Box>
+                                </Box>
+                            </Card>
+                            <IconButton
+                                size="small"
+                                onClick={() => removePlayerFromQueue(player._id)}
+                                sx={{
+                                    position: 'absolute',
+                                    right: 4,
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    opacity: isRemoveMode ? 1 : 0,
+                                    transition: 'opacity 0.3s ease',
+                                    pointerEvents: isRemoveMode ? 'auto' : 'none',
+                                }}
+                            >
+                                <RemoveIcon />
+                            </IconButton>
+                        </Box>
                     ))}
                 </Box>
 
-                {/* Add Button */}
-                <Card sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 1, borderRadius: 0.5, width: '18vw' }}>
-                    <IconButton size="small">
-                        <AddIcon onClick={handleAddInitiative} />
-                    </IconButton>
-                </Card>
+                {/* Add/remove buttons */}
+                <Box sx={sxProps.initiativeControls}>
+                    <Card sx={sxProps.initiativeControlItem}>
+                        <ClickAwayListener onClickAway={() => isAddMode && setInitiativeEditMode("none")}>
+                            <IconButton size="small" color={isAddMode ? "primary" : "default"} onClick={() => setInitiativeEditMode(isAddMode ? "none" : "add")}>
+                                <AddIcon />
+                            </IconButton>
+                        </ClickAwayListener>
+                    </Card>
+                    <Card sx={sxProps.initiativeControlItem}>
+                        <IconButton size="small" color={isRemoveMode ? "primary" : "default"} onClick={() => setInitiativeEditMode(isRemoveMode ? "none" : "remove")}>
+                            <RemoveIcon />
+                        </IconButton>
+                    </Card>
+                </Box>
 
                 {/* Button Container */}
-                <Box ref={buttonContainerRef}>
-                    <Collapse in={showButtons}>
+                <Box>
+                    <Collapse in={isAddMode}>
                         <Button onClick={handleOpenPlayerList} variant="contained" color="primary" sx={{ width: '100%', marginTop: '5px', marginBottom: '5px' }}>
                             Add from player list
                         </Button>
@@ -1077,7 +991,7 @@ export default function Encounter() {
                     <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                             <Typography variant="subtitle2">Conditions</Typography>
-                            <IconButton size="small" onClick={handleConditionsOpen}><AddIcon /></IconButton>
+                            <IconButton size="small" onClick={() => handleConditionsOpen("current")}><AddIcon /></IconButton>
                         </Box>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                             {currentConditions.map((condition, index) => (
@@ -1086,7 +1000,7 @@ export default function Encounter() {
                                     label={condition}
                                     size="small"
                                     color="primary"
-                                    onDelete={() => handleDeleteCondition(condition)}
+                                    onDelete={() => handleDeleteCondition(condition, true)}
                                 />
                             ))}
                             {currentConditions.length === 0 && <Typography>No conditions</Typography>}
@@ -1097,7 +1011,7 @@ export default function Encounter() {
                     <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                             <Typography variant="subtitle2">Defenses</Typography>
-                            <IconButton size="small" onClick={handleDefensesOpen}><AddIcon /></IconButton>
+                            <IconButton size="small" onClick={() => handleDefensesOpen("current")}><AddIcon /></IconButton>
                         </Box>
                         <Box sx={{ mb: 1 }}>
                             <Typography variant="body2">Immunities</Typography>
@@ -1172,7 +1086,7 @@ export default function Encounter() {
                                 ))}
                             </Select>
                         </Box>
-                        <Button variant="contained" color="primary" onClick={handleExecute}>EXECUTE</Button>
+                        <Button variant="contained" color="primary" onClick={handleExecute} disabled={!selectedTarget || (selectedAction === Action.Attack && !selectedWeapon)}>EXECUTE</Button>
                     </Box>
                 </Card>
             </Box>
