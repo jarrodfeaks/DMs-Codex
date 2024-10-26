@@ -92,6 +92,7 @@ const updatePlayer = async (req: Request, res: Response) => {
         }
     } catch (error: any) {
         res.status(500).send(error.message);
+        console.log(error);
     }
 };
 

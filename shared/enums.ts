@@ -100,6 +100,7 @@ enum MovementType {
     Walk = "Walk",
     Climb = "Climb",
     Fly = "Fly",
+    Hover = "Hover",
     Swim = "Swim",
 }
 
@@ -242,4 +243,10 @@ const WeaponCategories = {
     ]
 }
 
-export { Action, Activity, Attribute, Class, DamageType, Dice, Initative, MonsterType, MovementType, Race, Skill, Status, Weapon, WeaponCategories };
+enum AssistantMode {
+    Rules,
+    Encounter,
+    Chat
+}
+
+export { Action, Activity, Attribute, Class, DamageType, Dice, Initative, MonsterType, MovementType, Race, Skill, Status, Weapon, WeaponCategories, AssistantMode };

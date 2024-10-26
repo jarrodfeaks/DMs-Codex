@@ -1,4 +1,4 @@
-import { Dice } from "../../shared/enums";
+import { DamageType, Dice, Status } from "../../shared/enums";
 
 /**
     Get the max value for a dice
@@ -59,6 +59,27 @@ export function calculateCharacterDamage(rolls: number, weaponModifier: number):
 }
 
 /**
+    Calculate character health after taking damage.
+    @param totalDamage - The total damage dealt.
+    @param currentHealth - The current health of the character.
+    @param tempHitpoints - The temporary hitpoints of the character (optional).
+    @returns A tuple containing the updated current health and temporary hitpoints.
+*/
+export function calculateCharacterHealthAfterDamage(totalDamage: number, currentHealth: number, tempHitpoints?: number): [number, number] {
+    if (tempHitpoints !== null && tempHitpoints !== undefined) {
+        tempHitpoints -= totalDamage;
+        if (tempHitpoints < 0) {
+            currentHealth += tempHitpoints;
+            tempHitpoints = 0;
+        }
+    } else {
+        currentHealth -= totalDamage;
+        tempHitpoints = 0;
+    }
+    return [currentHealth, tempHitpoints];
+}
+
+/**
     Calculates the proficiency bonus based on character level.
     @param characterLevel - The level of the character.
     @returns The proficiency bonus for the given level.
@@ -86,6 +107,15 @@ export function calculateProficiencyBonus(characterLevel: number): number {
 */
 export function sortQueueByInitiative(queue: Array<{ name: string, initiative: number }>): Array<{ name: string, initiative: number }> {
     return queue.sort((a, b) => b.initiative - a.initiative);
+}
+
+/**
+    Returns hit attack string for the combat log.
+    @param customMessage - Message.
+    @returns The default combat log string.
+*/
+export function customCombatLogString(customMessage: string): string {
+    return `• ${customMessage}`;
 }
 
 /**
@@ -135,8 +165,37 @@ export function formatNumber(number: number): string {
  * @param str - The string to capitalize.
  * @returns The string with the first letter capitalized.
  */
-function capitalizeFirstLetter(str: string): string {
+export function capitalizeFirstLetter(str: string): string {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+/**
+ * Formats a string to remove spaces, special characters, and conjunctions, and capitalizes the first letter.
+ * @param str - The string to format.
+ * @returns The formatted string.
+ */
+function formatStringForEnum(str: string): string[] {
+    if (typeof str !== 'string') return [];
+    return str.split(/[\s,]+/)
+              .filter(word => word.toLowerCase() !== 'and')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
+}
+
+/**
+ * Filters and formats an array based on valid enum values.
+ * @param arr - The array to filter and format.
+ * @param validValues - The array of valid enum values.
+ * @returns The filtered and formatted array.
+ */
+function filterAndFormatArray<T extends object>(arr: string[], validValues: T): string[] {
+    return arr.flatMap(type => formatStringForEnum(type))
+              .filter(type => {
+                  if (!Object.values(validValues).includes(type as unknown as T[keyof T])) {
+                      console.log(`Invalid value: ${type}`);
+                      return false;
+                  }
+                  return true;
+              });
 }
 
 /**
@@ -162,9 +221,9 @@ export function formatMonsterForMongo(apiData: any): any {
         charisma: apiData.charisma,
         constitution: apiData.constitution,
         wisdom: apiData.wisdom,
-        vulnerabilities: [apiData.damage_vulnerabilities],
-        resistances: [apiData.damage_resistances],
-        damageImmunities: [apiData.damage_immunities],
-        statusImmunities: [apiData.condition_immunities],
+        damageImmunities: filterAndFormatArray(apiData.damage_immunities, DamageType),
+        vulnerabilities: filterAndFormatArray(apiData.damage_vulnerabilities, DamageType),
+        resistances: filterAndFormatArray(apiData.damage_resistances, DamageType),
+        statusImmunities: filterAndFormatArray(apiData.condition_immunities, Status),
     };
 }

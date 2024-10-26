@@ -1,5 +1,5 @@
 import express from 'express';
-import { addMonsterToCampaign, addPlayerToCampaign,deleteCampaign, getAllCampaigns, getCampaignInformation, getCampaignWithPlayersBrief, getDMCampaigns, createCampaign, updateCampaign } from '../controllers/campaignController';
+import { addMonsterToCampaign, addPlayerToCampaign, addEncounterToCampaign, deleteCampaign, getAllCampaigns, getCampaignInformation, getCampaignWithPlayersBrief, getDMCampaigns, createCampaign, updateCampaign } from '../controllers/campaignController';
 
 const router = express.Router();
 
@@ -10,6 +10,8 @@ router.route('/:id/monsters')
     .post(addMonsterToCampaign);
 router.route('/:id/players')
     .post(addPlayerToCampaign);
+router.route('/:id/encounters')
+    .post(addEncounterToCampaign);
 router.route('/:id/players/brief')
     .get(getCampaignWithPlayersBrief);
 router.route('/dm/:dmId')
