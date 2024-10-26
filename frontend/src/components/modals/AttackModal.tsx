@@ -1,5 +1,6 @@
-import { Box, Button, Dialog, Grid, TextField, Typography } from "@mui/material";
+import { Box, Button, Dialog, Grid, TextField, Typography, IconButton } from "@mui/material";
 import { useState, useEffect } from "react";
+import { Casino } from "@mui/icons-material";
 import { Dice } from "../../../../shared/enums";
 import { GetMaxValueForDice } from "../../utils";
 
@@ -10,9 +11,15 @@ interface AttackModalProps {
 }
 
 export default function AttackModal({ open, onClose, payload }: AttackModalProps) {
-    const { damageDice = [] } = payload || { };
-    const initialDamageValues = damageDice.map(([_, num]) => Array(num).fill(0));
+    const { damageDice = [] } = payload || {};
+    const initialDamageValues = damageDice.map(([_, num]) => Array(num).fill(''));
     const [damageValues, setDamageValues] = useState<number[][]>(initialDamageValues);
+    const [totalDamage, setTotalDamage] = useState<number>(0);
+
+    useEffect(() => {
+        const sum = damageValues.flat().reduce((acc, value) => acc + (parseInt(value, 10) || 0), 0);
+        setTotalDamage(sum);
+    }, [damageValues]);
 
     const handleInputChange = (diceIndex: number, rollIndex: number, value: string) => {
         const intValue = parseInt(value, 10);
@@ -21,17 +28,24 @@ export default function AttackModal({ open, onClose, payload }: AttackModalProps
             const newValues = [...damageValues];
             newValues[diceIndex][rollIndex] = intValue;
             setDamageValues(newValues);
-        } else if (value === '') { 
+        } else if (value === '') {
             const newValues = [...damageValues];
             newValues[diceIndex][rollIndex] = 0;
             setDamageValues(newValues);
         }
     };
 
+    const randomizeValues = () => {
+        const randomizedValues = damageDice.map(([dice, num]) =>
+            Array(num).fill(null).map(() => Math.floor(Math.random() * GetMaxValueForDice(dice)) + 1)
+        );
+        setDamageValues(randomizedValues);
+    };
+
     const onAttack = () => {
         let totalDamageDealt = 0;
         let isValid = true;
-    
+
         damageValues.forEach((diceValues, diceIndex) => {
             const maxValue = GetMaxValueForDice(damageDice[diceIndex][0]);
             diceValues.forEach((value) => {
@@ -43,7 +57,7 @@ export default function AttackModal({ open, onClose, payload }: AttackModalProps
                 }
             });
         });
-    
+
         if (isValid) {
             onClose({ totalDamageDealt });
         } else {
@@ -88,8 +102,16 @@ export default function AttackModal({ open, onClose, payload }: AttackModalProps
                     </Box>
                 ))}
 
-                {/* Attack Button */}
+                {/* Total Damage */}
+                <Typography variant="h6" sx={{ mt: 2, textAlign: 'center' }}>
+                    Total Damage: {totalDamage}
+                </Typography>
+
+                {/* Buttons */}
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
+                    <IconButton onClick={randomizeValues} color="primary">
+                        <Casino />
+                    </IconButton>
                     <Button onClick={onCancel} color="error">
                         Cancel
                     </Button>
