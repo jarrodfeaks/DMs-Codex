@@ -30,7 +30,7 @@ import EncounterAddFromAI from "../components/modals/EncounterAddFromAI";
 import EncounterAddFromBestiary from "../components/modals/EncounterAddFromBestiary";
 import EncounterAddFromPlayers from "../components/modals/EncounterAddFromPlayers";
 import EncounterDefenses from "../components/modals/EncounterDefenses";
-import { missedCombatLogString, attackCombatLogString, customCombatLogString, calculateCharacterHealthAfterDamage } from "../utils";
+import { missedCombatLogString, attackCombatLogString, customCombatLogString, calculateCharacterHealthAfterDamage, nextRoundCombatLogString } from "../utils";
 import { Monster, Player } from "../types.ts";
 import AttackModal from "../components/modals/AttackModal";
 import { apiService } from "../services/apiService.ts";
@@ -90,6 +90,9 @@ export default function Encounter() {
         const nextTurn = (currentTurn + 1) % characters.length;
         setCurrentTurn(nextTurn);
         const characterId = characters[nextTurn]._id;
+        if (nextTurn === 0) {
+            addCombatLogEntry(nextRoundCombatLogString());
+        }
         try {
             const response = await apiService.put(`/encounters/${encountersList[0]._id}/current-turn`, { currentTurnId: characterId });
             updateCurrentPlayerStats(nextTurn);

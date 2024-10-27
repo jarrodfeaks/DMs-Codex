@@ -143,11 +143,10 @@ export function missedCombatLogString(characterName: string, weapon: string, tar
 
 /**
     Returns hit attack string for the combat log.
-    @param turnNumber - Prints the turn number.
-    @returns The default combat log string.
+    @returns The default combat log string for next round.
 */
-export function nextTurnCombatLogString(turnNumber: string): string {
-    return `• TURN ${turnNumber}`;
+export function nextRoundCombatLogString(): string {
+    return `• ROUND RESET!`;
 }
 
 /**
