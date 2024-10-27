@@ -82,7 +82,7 @@ export default function Encounter() {
             setInitiativeStarted(true);
             setCurrentTurn(0);
             const response = await apiService.put(`/encounters/${encountersList[0]._id}/current-turn`, { currentTurnId: characters[0]._id });
-            setCurrentCharacterTurn(characters[0]._id);
+            setCurrentCharacterId(characters[0]._id);
         }
     };
 
@@ -223,9 +223,10 @@ export default function Encounter() {
     const [suggestion, setSuggestion] = useState('5 goblins with spears');
     const [formatsByCharacter, setFormatsByCharacter] = useState({});
     const [characters, setCharacters] = useState<PlayerOrMonster[]>([]);
+    const [currentCharacter, setCurrentCharacter] = useState<PlayerOrMonster | null>(null);
     const [initiativeOrder, setInitiativeOrder] = useState();
 
-    const [currentCharacterTurn, setCurrentCharacterTurn] = useState<string>('');
+    const [currentCharacterId, setCurrentCharacterId] = useState<string>('');
 
     const [logInput, setLogInput] = useState<string>("");
 
@@ -263,15 +264,26 @@ export default function Encounter() {
         const weaponInformation = await apiService.get(`/weapons/${selectedWeapon}`);
         const result = await dialogs.open<undefined, { combatLog: string; totalDamageDealt: number }>(AttackModal, weaponInformation);
         if (result) {
-            const successfulAttackLog = attackCombatLogString(currentCharacterTurn, selectedWeapon, selectedTarget, result.totalDamageDealt);
+            if (!encountersList) {
+                console.error("Encounter List is null");
+                return;
+            }
+            else if (selectedTarget === null) { 
+                console.error("Selected Target is null");
+                return;
+            }
+            else if (!currentCharacter) {
+                console.error("Current Character is null");
+                return;
+            }
+            const successfulAttackLog = attackCombatLogString(currentCharacter.name, selectedWeapon, selectedTarget.name, result.totalDamageDealt);
             const [newCurrentHp, newTempHp] = calculateCharacterHealthAfterDamage(result.totalDamageDealt, selectedTarget.currentHitpoints, selectedTarget.tempHitpoints);
             selectedTarget.currentHitpoints = newCurrentHp;
             selectedTarget.tempHitpoints = newTempHp;
 
             let isPlayer = false;
-
-            encountersList[0].players.forEach(playerId => {
-                if (playerId === selectedTarget._id) {
+            encountersList[0].players.forEach(player => {
+                if (player._id === selectedTarget._id) {
                     isPlayer = true;
                 }
             });
@@ -309,13 +321,20 @@ export default function Encounter() {
         setMaxHP(character.maxHitpoints);
         setArmorClass(character.armorClass);
         setTempHP(character.tempHitpoints);
+        setCurrentCharacter(character);
+        setCurrentCharacterId(character._id);
         if (updatedTurnNumber !== undefined) {
             setCurrentTurn(updatedTurnNumber);
         }
     }
 
     const handleExecute = () => {
+        if (!currentCharacter) {
+            console.error("Current Character is null in 'HandleExecute'");
+            return;
+        }
         if (Action.Attack === selectedAction) {
+            console.log("Current Character: " + currentCharacter.name);
             const accuracyDiceValue = accuracyDice ?? 0;
             // update to armour class
             // if (accuracyDiceValue + bonusModifier >= selectedTarget.armorClass && selectedWeapon && selectedTarget) {
@@ -323,13 +342,30 @@ export default function Encounter() {
                 handleAttackOpen();
             }
             else {
-                addCombatLogEntry(missedCombatLogString(currentCharacterTurn, selectedWeapon, selectedTarget.name));
-                handleNextTurn();
+                handleMissedAttack();
             }
         }
         else {
-            addCombatLogEntry(customCombatLogString(currentCharacterTurn + " " + selectedAction));
+            addCombatLogEntry(customCombatLogString(currentCharacter.name + " " + selectedAction));
         }
+    };
+
+    const handleMissedAttack = () => {
+        if (!selectedTarget) {
+            console.error("Selected target is null in 'HandleMissedAttack'");
+            return;
+        }
+        else if (!encountersList) {
+            console.error("Encounter List is null in 'HandleMissedAttack'");
+            return;
+        }
+        else if (!currentCharacter) {
+            console.error("Current Character is null in 'HandleMissedAttack'");
+            return;
+        }
+    
+        addCombatLogEntry(missedCombatLogString(currentCharacter.name, selectedWeapon, selectedTarget.name));
+        handleNextTurn();
     };
 
     const handleHitPointsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
