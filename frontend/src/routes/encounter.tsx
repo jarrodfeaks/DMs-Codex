@@ -60,6 +60,7 @@ const DeathSaveBox = ({ state, onClick }) => {
 
 export default function Encounter() {
     const campaignId = useCurrentCampaign()?._id;
+    localStorage.setItem('campaignDetails', useCurrentCampaign()._id);
     const [encountersList, setEncountersList] = useState(useCurrentCampaign()?.encounters);
 
     const [initiativeEditMode, setInitiativeEditMode] = useState<"none" | "add" | "remove">("none");

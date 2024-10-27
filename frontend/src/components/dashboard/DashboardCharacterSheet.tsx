@@ -166,10 +166,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
   useEffect(() => {
     setProficiency(getProficiencyBonus(characterLevel));
     setInitiative(abilityModDexterity);
-    console.log(characterLevel);
-    console.log(proficiency);
-    console.log((characterLevel/4) + 1);
-  }, [characterLevel]);
+  }, [characterLevel, abilityModDexterity]);
 
   // Update saving throws whenever modifiers or proficiency changes
   useEffect(() => {
