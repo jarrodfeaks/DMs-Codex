@@ -9,6 +9,7 @@ import CharacterImmunities from '../modals/CharacterImmunities.tsx';
 import CharacterResistances from '../modals/CharacterResistances.tsx';
 import CharacterVulnerabilities from '../modals/CharacterVulnerabilities.tsx';
 import { apiService } from "../../services/apiService.ts";
+import { useCurrentCampaign } from "../../routes/app.context.ts";
 
 interface Weapon {
   name: string;
@@ -28,9 +29,11 @@ interface DashboardCharacterSheetProps {
 }
 
 const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, editData, editId, toggleCharacterSheet}) => {
+  const currentCampaign = useCurrentCampaign();
+  //console.log("character sheet current campaign", currentCampaign);
   let preData = null;
   if (importData){
-    console.log('original Import data is ', importData);
+    //console.log('original Import data is ', importData);
     // const allSkills = [
     //   "Acrobatics (DEX)", "Animal Handling (WIS)", "Arcana (INT)", "Athletics (STR)",
     //   "Deception (CHA)", "History (INT)", "Insight (WIS)", "Intimidation (CHA)",
@@ -99,13 +102,13 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       temperaroaryModifiers: importData.proficiencies.skills,
     };
 
-    console.log('importData is :', preData);
+    //console.log('importData is :', preData);
   }else if (editData){
     preData = editData;
   }
 
-  if (preData)
-    console.log(preData);
+  // if (preData)
+  //   console.log(preData);
 
   const isFieldEmpty = (value: number | '') => preData && value === '' || preData && value === undefined;
   // console.log(editData);
@@ -167,6 +170,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
   // Update proficiency bonus if character level changes
   useEffect(() => {
     setProficiency(getProficiencyBonus(characterLevel));
+    setInitiative(abilityModDexterity);
     console.log(characterLevel);
     console.log(proficiency);
     console.log((characterLevel/4) + 1);
@@ -476,18 +480,26 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       weapons: weaponIds,
     };
     console.log('Character Data:', characterData);
-    
+
     if (editData){
       try {
         const response = await apiService.put(`/players/${editId}`, characterData);
         console.log('Player added to database:', response);
+        toggleCharacterSheet();
       } catch (error) {
         console.error('Error adding player to database:', error);
       }
     } else {
       try {
         const response = await apiService.post(`/players`, characterData);
-        console.log('Player added to database:', response);
+        console.log('Player added to database:', response, 'now adding to campaign');
+        console.log('this is the id', currentCampaign?._id)
+        const playerData = {
+          playerId: response,
+        } 
+        const campaignResponse = await apiService.post(`/campaigns/${currentCampaign?._id}/players`, playerData);
+        console.log('player added to campaign: ', campaignResponse);
+        toggleCharacterSheet();
       } catch (error) {
         console.error('Error adding player to database:', error);
       }
