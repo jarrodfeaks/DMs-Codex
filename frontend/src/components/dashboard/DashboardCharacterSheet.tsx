@@ -107,12 +107,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
     preData = editData;
   }
 
-  // if (preData)
-  //   console.log(preData);
-
   const isFieldEmpty = (value: number | '') => preData && value === '' || preData && value === undefined;
-  // console.log(editData);
-  // console.log(editId);
 
   const [characterName, setCharacterName] = useState(preData ? preData.name : '');
   const [characterLevel, setCharacterLevel] = useState(preData ? preData.level : 1);
@@ -312,7 +307,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
   const [notes, setNotes] = useState(preData ? preData.notes : '');
 
   const races = Object.values(Race);
-  const [selectedRace, setSelectedRace] = useState(preData ? preData.race : '');
+  const [selectedRace, setSelectedRace] = useState(preData ? (races.includes(preData.race) ? preData.race : '') : '');
 
   const handleRaceChange = (event: SelectChangeEvent<{ value: unknown }>) => {
     setSelectedRace(event.target.value as Race);
