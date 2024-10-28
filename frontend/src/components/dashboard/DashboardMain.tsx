@@ -1,5 +1,5 @@
 import { Button, Typography, TextField, Box, List, ListItem, ListItemButton, ListItemText, Paper } from "@mui/material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ImportCharacterModal from "../modals/DashboardImportCharacter.tsx";
 import { useDialogs } from "@toolpad/core/useDialogs";
 import { apiService } from "../../services/apiService.ts";
@@ -15,6 +15,15 @@ export default function DashboardMain(
     const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
 
     const [ players, setPlayers ] = useState<Player[]>(currentCampaign?.players ?? []);
+
+    const [ notes, setNotes ] = useState<string>(currentCampaign?.notes ?? '');
+
+    useEffect(() => {
+        if (currentCampaign) {
+            setPlayers(currentCampaign.players ?? []);
+            setNotes(currentCampaign.notes ?? '');
+        }
+    }, [currentCampaign]);
 
     const onImportCharacter = async () => {
         const result = await dialogs.open(ImportCharacterModal);
@@ -38,6 +47,7 @@ export default function DashboardMain(
     const onDeleteCharacter = async () => {
         if (selectedPlayerId !== null) {
             await apiService.delete(`/players/${selectedPlayerId}`);
+            setPlayers(players.filter(player => player._id !== selectedPlayerId));
         }
     };
 
@@ -48,6 +58,23 @@ export default function DashboardMain(
     const doubleClickPlayer = (playerId: string) => {
         // Go to Character Sheet and load data for the selected player
         setSelectedPlayerId(playerId);
+    };
+
+    const handleNotesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (currentCampaign) {
+            setNotes(event.target.value);
+        }
+    };
+
+    const handleNotesBlur = async () => {
+        if (currentCampaign) {
+            try {
+                await apiService.put(`/campaigns/${currentCampaign._id}`, { notes: notes });
+                console.log('Notes updated successfully');
+            } catch (error) {
+                console.error('Failed to update notes:', error);
+            }
+        }
     };
 
     return (
@@ -66,6 +93,9 @@ export default function DashboardMain(
             </Typography>
             <TextField
                 placeholder="Type here..."
+                value={notes ?? ''}
+                onChange={handleNotesChange}
+                onBlur={handleNotesBlur}
                 multiline
                 maxRows={5}
                 sx={{ width: '50%', mt: 2 }}

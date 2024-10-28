@@ -36,7 +36,7 @@ const DashboardCharacterSheetSkill: FC<SkillProps> = ({
   };
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
       <FormControlLabel
         control={
           <Switch
@@ -45,13 +45,19 @@ const DashboardCharacterSheetSkill: FC<SkillProps> = ({
             color="primary"
           />
         }
-        label={skillName}
+        // label={skillName}
       />
       <TextField
+        label={skillName}
         type="number"
         value={tempValue}
         onChange={handleModifierChange}
-        sx={{ width: 80, marginLeft: 2 }}
+        sx={{
+            marginBottom: 2,
+            marginTop: 2,
+            borderRadius: '10px',
+            width: '200px'
+        }}
       />
     </Box>
   );

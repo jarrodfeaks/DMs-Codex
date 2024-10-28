@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Send, CheckBoxOutlineBlank, CheckBox, Cancel } from '@mui/icons-material';
+import { Send, CheckBoxOutlineBlank, CheckBox, Cancel, Casino } from '@mui/icons-material';
 import { Action, Dice, Weapon, WeaponCategories } from '../../../shared/enums.ts';
 import AddIcon from "@mui/icons-material/Add";
 import FavoriteIcon from '@mui/icons-material/Favorite';
@@ -30,7 +30,7 @@ import EncounterAddFromAI from "../components/modals/EncounterAddFromAI";
 import EncounterAddFromBestiary from "../components/modals/EncounterAddFromBestiary";
 import EncounterAddFromPlayers from "../components/modals/EncounterAddFromPlayers";
 import EncounterDefenses from "../components/modals/EncounterDefenses";
-import { missedCombatLogString, attackCombatLogString, customCombatLogString, calculateCharacterHealthAfterDamage } from "../utils";
+import { missedCombatLogString, attackCombatLogString, customCombatLogString, calculateCharacterHealthAfterDamage, nextRoundCombatLogString } from "../utils";
 import { Monster, Player } from "../types.ts";
 import AttackModal from "../components/modals/AttackModal";
 import { apiService } from "../services/apiService.ts";
@@ -83,7 +83,7 @@ export default function Encounter() {
             setInitiativeStarted(true);
             setCurrentTurn(0);
             const response = await apiService.put(`/encounters/${encountersList[0]._id}/current-turn`, { currentTurnId: characters[0]._id });
-            setCurrentCharacterTurn(characters[0]._id);
+            setCurrentCharacterId(characters[0]._id);
         }
     };
 
@@ -91,6 +91,9 @@ export default function Encounter() {
         const nextTurn = (currentTurn + 1) % characters.length;
         setCurrentTurn(nextTurn);
         const characterId = characters[nextTurn]._id;
+        if (nextTurn === 0) {
+            addCombatLogEntry(nextRoundCombatLogString());
+        }
         try {
             const response = await apiService.put(`/encounters/${encountersList[0]._id}/current-turn`, { currentTurnId: characterId });
             updateCurrentPlayerStats(nextTurn);
@@ -224,9 +227,10 @@ export default function Encounter() {
     const [suggestion, setSuggestion] = useState('5 goblins with spears');
     const [formatsByCharacter, setFormatsByCharacter] = useState({});
     const [characters, setCharacters] = useState<PlayerOrMonster[]>([]);
+    const [currentCharacter, setCurrentCharacter] = useState<PlayerOrMonster | null>(null);
     const [initiativeOrder, setInitiativeOrder] = useState();
 
-    const [currentCharacterTurn, setCurrentCharacterTurn] = useState<string>('');
+    const [currentCharacterId, setCurrentCharacterId] = useState<string>('');
 
     const [logInput, setLogInput] = useState<string>("");
 
@@ -264,15 +268,26 @@ export default function Encounter() {
         const weaponInformation = await apiService.get(`/weapons/${selectedWeapon}`);
         const result = await dialogs.open<undefined, { combatLog: string; totalDamageDealt: number }>(AttackModal, weaponInformation);
         if (result) {
-            const successfulAttackLog = attackCombatLogString(currentCharacterTurn, selectedWeapon, selectedTarget, result.totalDamageDealt);
+            if (!encountersList) {
+                console.error("Encounter List is null");
+                return;
+            }
+            else if (selectedTarget === null) { 
+                console.error("Selected Target is null");
+                return;
+            }
+            else if (!currentCharacter) {
+                console.error("Current Character is null");
+                return;
+            }
+            const successfulAttackLog = attackCombatLogString(currentCharacter.name, selectedWeapon, selectedTarget.name, result.totalDamageDealt);
             const [newCurrentHp, newTempHp] = calculateCharacterHealthAfterDamage(result.totalDamageDealt, selectedTarget.currentHitpoints, selectedTarget.tempHitpoints);
             selectedTarget.currentHitpoints = newCurrentHp;
             selectedTarget.tempHitpoints = newTempHp;
 
             let isPlayer = false;
-
-            encountersList[0].players.forEach(playerId => {
-                if (playerId === selectedTarget._id) {
+            encountersList[0].players.forEach(player => {
+                if (player._id === selectedTarget._id) {
                     isPlayer = true;
                 }
             });
@@ -310,27 +325,51 @@ export default function Encounter() {
         setMaxHP(character.maxHitpoints);
         setArmorClass(character.armorClass);
         setTempHP(character.tempHitpoints);
+        setCurrentCharacter(character);
+        setCurrentCharacterId(character._id);
         if (updatedTurnNumber !== undefined) {
             setCurrentTurn(updatedTurnNumber);
         }
     }
 
     const handleExecute = () => {
+        if (!currentCharacter) {
+            console.error("Current Character is null in 'HandleExecute'");
+            return;
+        }
         if (Action.Attack === selectedAction) {
+            console.log("Current Character: " + currentCharacter.name);
             const accuracyDiceValue = accuracyDice ?? 0;
             // update to armour class
             // if (accuracyDiceValue + bonusModifier >= selectedTarget.armorClass && selectedWeapon && selectedTarget) {
-            if (selectedWeapon && selectedTarget) {
+            if (Number(attackRoll) + attackModifier >= selectedTarget.armorClass) {
                 handleAttackOpen();
             }
             else {
-                addCombatLogEntry(missedCombatLogString(currentCharacterTurn, selectedWeapon, selectedTarget.name));
-                handleNextTurn();
+                handleMissedAttack();
             }
         }
         else {
-            addCombatLogEntry(customCombatLogString(currentCharacterTurn + " " + selectedAction));
+            addCombatLogEntry(customCombatLogString(currentCharacter.name + " " + selectedAction));
         }
+    };
+
+    const handleMissedAttack = () => {
+        if (!selectedTarget) {
+            console.error("Selected target is null in 'HandleMissedAttack'");
+            return;
+        }
+        else if (!encountersList) {
+            console.error("Encounter List is null in 'HandleMissedAttack'");
+            return;
+        }
+        else if (!currentCharacter) {
+            console.error("Current Character is null in 'HandleMissedAttack'");
+            return;
+        }
+    
+        addCombatLogEntry(missedCombatLogString(currentCharacter.name, selectedWeapon, selectedTarget.name));
+        handleNextTurn();
     };
 
     const handleHitPointsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -583,6 +622,53 @@ export default function Encounter() {
                 return null;
         }
     };
+
+    const [attackRoll, setAttackRoll] = useState<number | "">("");
+    const [attackModifier, setAttackModifier] = useState<number>(0);
+
+    const handleRandomizeRoll = () => {
+        setAttackRoll(Math.floor(Math.random() * 20) + 1);
+    };
+
+    const handleAttackRollChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseInt(event.target.value, 10);
+        if (!isNaN(value)) setAttackRoll(value);
+    };
+
+    const handleAttackModifierChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseInt(event.target.value, 10);
+        if (!isNaN(value)) setAttackModifier(value);
+    };
+
+    const renderRollToHit = () => {
+        if (selectedAction != Action.Attack)
+            return null;
+
+        return (
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Typography>Attack Roll</Typography>
+            <TextField
+                type="number"
+                value={attackRoll}
+                onChange={handleAttackRollChange}
+                size="small"
+                inputProps={{ min: 1, max: 20 }}
+                sx={{ width: 80 }}
+            />
+            <Typography>+</Typography>
+            <TextField
+                type="number"
+                value={attackModifier}
+                onChange={handleAttackModifierChange}
+                size="small"
+                sx={{ width: 80 }}
+            />
+            <IconButton onClick={handleRandomizeRoll} color="primary">
+                <Casino />
+            </IconButton>
+        </Box>
+    );
+    }
 
     const renderTargetStats = () => {
         if (!selectedTarget) return null;
@@ -1087,6 +1173,7 @@ export default function Encounter() {
                                 ))}
                             </Select>
                         </Box>
+                        {renderRollToHit()}
                         <Button variant="contained" color="primary" onClick={handleExecute} disabled={!selectedTarget || (selectedAction === Action.Attack && !selectedWeapon)}>EXECUTE</Button>
                     </Box>
                 </Card>
