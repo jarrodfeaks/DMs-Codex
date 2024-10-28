@@ -29,7 +29,7 @@ const remarkCitations: Plugin = () => {
 
             while ((match = regex.exec(originalText)) !== null) {
                 const beforeText = originalText.slice(lastIndex, match.index);
-                const citationText = match[1];
+                const citationText = match[0];
 
                 if (beforeText) newNodes.push({ type: 'text', value: beforeText });
 

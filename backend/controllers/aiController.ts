@@ -116,10 +116,10 @@ const deleteRulebook = async (req: Request, res: Response) => {
 
 const createChat = async (req: CreateChatRequest, res: Response) => {
     try {
-        const { assistantId, threadId, message } = req.body;
-        const newThreadId = await aiService.createThread(assistantId, threadId, message);
+        const { assistantId, threadId: existingThreadId, message } = req.body;
+        const newThreadId = await aiService.createThread(assistantId, existingThreadId, message);
         const messages = await aiService.runThread(newThreadId, assistantId);
-        res.json({ newThreadId, messages });
+        res.json({ threadId: newThreadId, messages });
     } catch (error) {
         console.error(error);
         res.status(500).send('Error creating chat');
@@ -139,7 +139,8 @@ const getChat = async (req: Request, res: Response) => {
 
 const sendMessage = async (req: SendMessageRequest, res: Response) => {
     try {
-        const { threadId, assistantId, message } = req.body;
+        const { assistantId, message } = req.body;
+        const threadId = req.params.threadId;
         await aiService.appendMessage(threadId, message);
         const messages = await aiService.runThread(threadId, assistantId);
         res.json({ threadId, messages });

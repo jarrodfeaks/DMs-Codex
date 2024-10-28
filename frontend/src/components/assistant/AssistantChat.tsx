@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Box, Divider, Grow, IconButton, InputAdornment, TextField, Typography } from "@mui/material";
 import SendIcon from '@mui/icons-material/Send';
 import { AssistantMode, Message, UserInfo } from "../../types"
@@ -59,21 +59,21 @@ export default function AssistantChat({ mode, assistant }: { mode: AssistantMode
     const user = useUser();
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
-    useEffect(() => {
-        const getUserInfo = async () => {
-            try {
-                const userInfo: UserInfo = await apiService.put(`/users/${user.sub}`, {});
-                setUserInfo(userInfo);
-            } catch (err) {
-                console.log('Error fetching user info');
-                console.error(err);
-            }
+    const getUserInfo = useCallback(async () => {
+        try {
+            const userInfo: UserInfo = await apiService.put(`/users/${user.sub}`, {});
+            setUserInfo(userInfo);
+        } catch (err) {
+            console.log('Error fetching user info');
+            console.error(err);
         }
+    }, [user.sub]);
 
+    useEffect(() => {
         if (assistant.mode === AssistantMode.Rules) {
             getUserInfo();
         }
-    }, [])
+    }, [assistant.mode, getUserInfo]);
 
     const [messages, setMessages] = [assistant.messages, assistant.setMessages];
 
@@ -115,14 +115,24 @@ export default function AssistantChat({ mode, assistant }: { mode: AssistantMode
             setTimeout(() => {
                 addMessage(responseMessage);
             }, 300);
+
+            let res;
             if (isNewChat) {
-                const res = await apiService.post('/ai/chat/new', { assistantId: userInfo?.assistantId, threadId: userInfo?.threadId, message: message.content });
-                const textContent = res.messages[0].content[0].text;
+                res = await apiService.post('/ai/chat/new', { assistantId: userInfo?.assistantId, threadId: userInfo?.threadId, message: message.content });
                 await apiService.put(`/users/${user.sub}`, { threadId: res.threadId }); // update with new threadId
-                setMessages(prevMessages => prevMessages.map(m => m.id === responseMessage.id ? { ...m, content: textContent.value, citations: textContent.annotations } : m));
+                await getUserInfo();
             } else {
-                console.log('continuing chat');
+                res = await apiService.post(`/ai/chat/${userInfo?.threadId}`, { assistantId: userInfo?.assistantId, message: message.content });
             }
+
+            const assistantMessage = res.messages[0];
+            const citations = assistantMessage.fileSearchResults?.find(
+                step => step.step_details?.type === 'tool_calls'
+            )?.step_details?.tool_calls?.find(
+                call => call.type === 'file_search'
+            )?.file_search?.results || [];
+
+            setMessages(prevMessages => prevMessages.map(m => m.id === responseMessage.id ? { ...m, content: assistantMessage.content[0].text.value, citations, fileName: assistantMessage.fileName } : m));
         } catch (err) {
             console.error(err);
         } finally {

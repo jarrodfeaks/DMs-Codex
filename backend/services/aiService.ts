@@ -84,15 +84,26 @@ const createThread = async (assistantId: string, existingThreadId: string | null
   return thread.id;
 }
 
-const getMessages = async (threadId: string) => {
+const getMessages = async (threadId: string, assistantId?: string) => {
   const messagesPage = await client.beta.threads.messages.list(threadId);
-  return messagesPage.data.map((message) => {
+  const fileName = assistantId && await getRulebookName(assistantId);
+  return Promise.all(messagesPage.data.map(async (message) => {
     return {
       id: message.id,
       role: message.role,
       content: message.content,
+      fileSearchResults: await getMessageFileSearchResults(message),
+      fileName
     }
-  })
+  }));
+}
+
+const getMessageFileSearchResults = async (message: OpenAI.Beta.Threads.Message) => {
+  if (message.run_id) {
+    const run = await client.beta.threads.runs.retrieve(message.thread_id, message.run_id);
+    const steps = (await client.beta.threads.runs.steps.list(message.thread_id, run.id, {}, { query: { "include[]": "step_details.tool_calls[*].file_search.results[*].content" } })).data;
+    return steps;
+  }
 }
 
 const appendMessage = async (threadId: string, message: string) => {
@@ -101,7 +112,7 @@ const appendMessage = async (threadId: string, message: string) => {
 
 const runThread = async (threadId: string, assistantId: string) => {
   await client.beta.threads.runs.createAndPoll(threadId, { assistant_id: assistantId });
-  return getMessages(threadId);
+  return getMessages(threadId, assistantId);
 }
 
 export default { extractCharacterData, createVectorStoreWithAssistant, deleteVectorStoreAndAssistant, getRulebookName, createThread, getMessages, runThread, appendMessage };
