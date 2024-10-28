@@ -155,10 +155,34 @@ export default function Encounter() {
         setArmorClass(isNaN(value) ? 0 : value);
     };
 
-    const handleToggleDeathSave = (index) => {
-        const newDeathSaves = [...deathSaves];
-        newDeathSaves[index] = (newDeathSaves[index] + 1) % 3;
-        setDeathSaves(newDeathSaves);
+    const handleToggleDeathSave = (characterId: string, index: number) => {
+        setDeathSavesMap(prevMap => {
+            const currentSaves = prevMap[characterId] || [0, 0, 0, 0, 0];
+            const newSaves = [...currentSaves];
+            newSaves[index] = (newSaves[index] + 1) % 3;
+            
+            return {
+                ...prevMap,
+                [characterId]: newSaves
+            };
+        });
+    };
+
+    // Modified DeathSaveBox renderer
+    const renderDeathSaves = (characterId: string) => {
+        const saves = deathSavesMap[characterId] || [0, 0, 0, 0, 0];
+        
+        return (
+        <Box sx={{ display: 'flex', gap: 1 }}>
+            {saves.map((state, index) => (
+            <DeathSaveBox
+                key={index}
+                state={state}
+                onClick={() => handleToggleDeathSave(characterId, index)}
+            />
+            ))}
+        </Box>
+        );
     };
 
     const handleSendLog = () => {
@@ -169,6 +193,22 @@ export default function Encounter() {
     };
 
     const [error, setError] = useState<string | null>(null);
+
+    const [deathSavesMap, setDeathSavesMap] = useState<{
+        [characterId: string]: number[];
+    }>({});
+
+    useEffect(() => {
+        const savedDeathSaves = localStorage.getItem('characterDeathSaves');
+        if (savedDeathSaves) {
+        setDeathSavesMap(JSON.parse(savedDeathSaves));
+        }
+    }, []);
+
+    // Save death saves whenever they change
+    useEffect(() => {
+        localStorage.setItem('characterDeathSaves', JSON.stringify(deathSavesMap));
+    }, [deathSavesMap]);
 
     // Load notes from localStorage when component mounts
     useEffect(() => {
@@ -773,23 +813,14 @@ export default function Encounter() {
                         {/* Death Saves */}
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                             <Typography>Death Saves</Typography>
-                            <Box sx={{ display: 'flex', gap: 1 }}>
-                                {deathSaves.map((state, index) => (
-                                    <DeathSaveBox
-                                        key={index}
-                                        state={state}
-                                        onClick={() => handleToggleDeathSave(index)}
-                                    />
-                                ))}
-                            </Box>
+                            {selectedTarget && renderDeathSaves(selectedTarget._id)}
                         </Box>
-                    </Card>
 
-
-                    {/* Notes */}
-                    <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
-                        <Typography variant="subtitle2">Notes</Typography>
-                        <TextField fullWidth multiline rows={4} placeholder="Add notes here..." />
+                        {/* Notes */}
+                        <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
+                            <Typography variant="subtitle2">Notes</Typography>
+                            <TextField fullWidth multiline rows={4} placeholder="Add notes here..." />
+                        </Card>
                     </Card>
 
                 </Box>
@@ -1098,15 +1129,7 @@ export default function Encounter() {
                         {/* Death Saves */}
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                             <Typography>Death Saves</Typography>
-                            <Box sx={{ display: 'flex', gap: 1 }}>
-                                {deathSaves.map((state, index) => (
-                                    <DeathSaveBox
-                                        key={index}
-                                        state={state}
-                                        onClick={() => handleToggleDeathSave(index)}
-                                    />
-                                ))}
-                            </Box>
+                            {currentCharacter && renderDeathSaves(currentCharacter._id)}
                         </Box>
                     </Card>
 
