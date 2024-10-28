@@ -1,5 +1,5 @@
 import React, {FC, useEffect, useState} from 'react';
-import {TextField, Box, Typography, Button, List, ListItem, ListItemText, Table, TableRow, TableHead, TableCell, TableBody, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent} from "@mui/material";
+import {TextField, Box, Typography, Button, List, ListItem, ListItemText, Table, TableRow, TableHead, TableCell, TableBody, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent, Snackbar, Alert} from "@mui/material";
 import DashboardCharacterSheetSkill from './DashboardCharacterSheetSkill.tsx';
 import { ConfirmDialog, useDialogs } from '@toolpad/core/useDialogs';
 import theme from '../../assets/theme.ts';
@@ -101,18 +101,14 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       resistances: capitalizedResistances,
       temperaroaryModifiers: importData.proficiencies.skills,
     };
-
-    //console.log('importData is :', preData);
   }else if (editData){
     preData = editData;
   }
 
-  // if (preData)
-  //   console.log(preData);
+  const [isSaving, setIsSaving] = useState(false);
+  const [ showSaveErrorAlert, setShowSaveErrorAlert ] = useState(false);
 
   const isFieldEmpty = (value: number | '') => preData && value === '' || preData && value === undefined;
-  // console.log(editData);
-  // console.log(editId);
 
   const [characterName, setCharacterName] = useState(preData ? preData.name : '');
   const [characterLevel, setCharacterLevel] = useState(preData ? preData.level : 1);
@@ -448,7 +444,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
   };
 
   const handleSave = async () => {
-    console.log("Saving...");
+    setIsSaving(true);
 
 
     const trueArray = Array(successfulDeathSaves).fill(true);
@@ -501,7 +497,11 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
         console.log('player added to campaign: ', campaignResponse);
         toggleCharacterSheet();
       } catch (error) {
+        setShowSaveErrorAlert(true);
         console.error('Error adding player to database:', error);
+      }
+      finally {
+        setIsSaving(false);
       }
     }
   }
@@ -560,7 +560,8 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       borderColor: theme.palette.primary.dark,
       borderRadius: "10px",
       width: "50%",
-      textAlign: "center"
+      textAlign: "center",
+      my: "10px"
     },
     skillsColumn: {
       display: "grid",
@@ -748,8 +749,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
         <Typography variant='h4' sx={{padding: '10px'}}>Weapons</Typography>
         <TextField label='Name' sx={{ width: '56%'}} onChange={(e) => setWeaponName(e.target.value)}/>
         <Box sx={sxProps.subContainer}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
-              <TextField label='Name' onChange={(e) => setWeaponName(e.target.value)}/>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
             <TextField label='Hit' type='number' onChange={(e) => setWeaponHit(Number(e.target.value))}/>
             <TextField label='Base Damage' type='number' onChange={(e) => setWeaponBaseDmg(Number(e.target.value))}/>
             <TextField label='Dice Amount' type='number' onChange={(e) => setWeaponDiceAmount(Number(e.target.value))}/>
@@ -810,11 +810,11 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
             </TableRow>
           </TableHead>
           <TableBody>
-            {weapons ? (
+            {weapons.length ? (
               weapons.map((weapon, index) => (
                 <TableRow key={index}>
                   <TableCell>{weapon.name}</TableCell>
-                  <TableCell>{weapons.length > 0 ? weapon.damageDice[1] : ''}{weapons.length > 0 ? weapon.damageDice[0] : ''} + {weapon.hitModifier}</TableCell>
+                  <TableCell>{weapon.damageDice[1]}{weapon.damageDice[0]} + {weapon.hitModifier}</TableCell>
                   {/* <TableCell>{weapon.diceType}</TableCell> */}
                   <TableCell>{weapon.modification}</TableCell>
                   <TableCell>{weapon.damageType}</TableCell>
@@ -831,36 +831,41 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
 
       {/* Equipment */}
       <Box sx={sxProps.titleContainer}>
-        <Typography sx={{pb: 1}} variant='h4' sx={{ paddingTop: '10px' }}>Equipment</Typography>
+        <Typography variant='h4' sx={{ padding: '10px' }}>Equipment</Typography>
         <Box sx={sxProps.subContainer}>
           <TextField onChange={(e) => setNewEquipmentName(e.target.value)} label="Add Name"/>
           <TextField onChange={(e) => setNewEquipmentQty(Number(e.target.value))} label="Add Quantity" type='Number'/>
           <Button onClick={handleAddEquipment}>Add Equipment</Button>
-          <List sx={sxProps.equipmentList}>
-            {Array.from(equipment.entries()).map(([name, qty], index) => (
+        </Box>
+        {!!equipment.size && (<List sx={sxProps.equipmentList}>
+          {Array.from(equipment.entries()).map(([name, qty], index) => (
               <ListItem key={index}>
                 <ListItemText primary={`${name} (Qty: ${qty})`} />
               </ListItem>
-            ))}
-          </List>
-        </Box>
+          ))}
+        </List>)}
       </Box>
 
       {/* Notes */}
       <Box sx={sxProps.titleContainer}>
-        <Typography variant='h4' sx={{ paddingTop: '10px' }}>Notes</Typography>
+        <Typography variant='h4' sx={{ padding: '10px' }}>Notes</Typography>
         <TextField sx={{width: '95%'}} value={notes} onChange={(e) => setNotes(e.target.value)}/>
       </Box>
 
       {/* Container for the save and cancel buttons */}
       <Box sx={sxProps.horizontalButtonsContainer}>
-        <Button variant='contained' onClick={handleSave} sx={{ width: "150px"}}>
-          Save
+        <Button variant='contained' onClick={handleSave} disabled={isSaving} sx={{ width: "150px"}}>
+          { isSaving ? 'Saving...' : 'Save' }
         </Button>
         <Button variant='contained' onClick={toggleCharacterSheet} sx={{ width: "150px"}}>
           Cancel
         </Button>
       </Box>
+      <Snackbar open={showSaveErrorAlert} anchorOrigin={{ vertical: "top", horizontal: "right" }} autoHideDuration={6000} onClose={() => setShowSaveErrorAlert(false)}>
+        <Alert severity="error" onClose={() => setShowSaveErrorAlert(false)}>
+          There was an error saving your character. Make sure you've filled out all required fields and try again.
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
