@@ -39,6 +39,10 @@ import { create } from "domain";
 
 type PlayerOrMonster = Player | Monster;
 
+type NotesMap = {
+    [characterId: string]: string;
+  };
+
 const DeathSaveBox = ({ state, onClick }) => {
     const renderIcon = () => {
         switch (state) {
@@ -61,6 +65,7 @@ const DeathSaveBox = ({ state, onClick }) => {
 export default function Encounter() {
     const campaignId = useCurrentCampaign()?._id;
     const [encountersList, setEncountersList] = useState(useCurrentCampaign()?.encounters);
+    const [playerNotes, setPlayerNotes] = useState<NotesMap>({});
 
     const [initiativeEditMode, setInitiativeEditMode] = useState<"none" | "add" | "remove">("none");
     const isAddMode = initiativeEditMode === "add";
@@ -164,6 +169,30 @@ export default function Encounter() {
     };
 
     const [error, setError] = useState<string | null>(null);
+
+    // Load notes from localStorage when component mounts
+    useEffect(() => {
+        const savedNotes = localStorage.getItem('playerNotes');
+        if (savedNotes) {
+        setPlayerNotes(JSON.parse(savedNotes));
+        }
+    }, []);
+
+    // Save notes whenever they change
+    useEffect(() => {
+        localStorage.setItem('playerNotes', JSON.stringify(playerNotes));
+    }, [playerNotes]);
+
+     // Function to update notes for current character
+    const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        if (currentCharacter) {
+        const newNotes = {
+            ...playerNotes,
+            [currentCharacter._id]: e.target.value
+        };
+        setPlayerNotes(newNotes);
+        }
+    };
 
     useEffect(() => {
         const fetchCurrentPlayer = async () => {
@@ -1085,9 +1114,16 @@ export default function Encounter() {
                     {/* Notes */}
                     <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
                         <Typography variant="subtitle2">Notes</Typography>
-                        <TextField fullWidth multiline rows={4} placeholder="Add notes here..." />
+                        <TextField 
+                            fullWidth 
+                            multiline 
+                            rows={4} 
+                            placeholder="Add notes here..."
+                            value={currentCharacter ? (playerNotes[currentCharacter._id] || '') : ''}
+                            onChange={handleNotesChange}
+                            disabled={!currentCharacter}
+                        />
                     </Card>
-
                 </Box>
 
 
