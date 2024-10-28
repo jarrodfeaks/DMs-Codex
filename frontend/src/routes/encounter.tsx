@@ -82,6 +82,15 @@ export default function Encounter() {
     const [initiativeStarted, setInitiativeStarted] = useState(false);
     const [currentTurn, setCurrentTurn] = useState(0);
 
+    const [conditionsMap, setConditionsMap] = useState<{
+        [characterId: string]: {
+            conditions: string[];
+            immunities: string[];
+            resistances: string[];
+            vulnerabilities: string[];
+        }
+    }>({});
+
     const handleStartInitiative = async () => {
         if (characters && characters.length > 0) { 
             const firstCharacter = characters[0]; // Get first character
@@ -322,33 +331,56 @@ export default function Encounter() {
     const [logInput, setLogInput] = useState<string>("");
 
     const handleConditionsOpen = async (type: 'current' | 'target') => {
-        const conditions = await dialogs.open(CharacterConditions, type === 'current' ? currentConditions : targetConditions);
+        const targetId = type === 'current' ? currentCharacter?._id : selectedTarget?._id;
+        if (!targetId) return;
+
+        const currentConditions = conditionsMap[targetId]?.conditions || [];
+        const conditions = await dialogs.open(CharacterConditions, currentConditions);
+        
         if (!conditions) return;
 
-        if (type === 'current') {
-            setCurrentConditions(conditions);
-        } else {
-            setTargetConditions(conditions);
-        }
+        setConditionsMap(prev => ({
+            ...prev,
+            [targetId]: {
+                ...prev[targetId],
+                conditions: conditions
+            }
+        }));
     };
 
     const handleDefensesOpen = async (type: 'current' | 'target') => {
+        const targetId = type === 'current' ? currentCharacter?._id : selectedTarget?._id;
+        if (!targetId) return;
+    
+        const currentDefenses = conditionsMap[targetId] || {
+            immunities: [],
+            resistances: [],
+            vulnerabilities: []
+        };
+    
         const defenses = await dialogs.open(EncounterDefenses, {
-            immunities: type === 'current' ? currentImmunities : targetImmunities,
-            resistances: type === 'current' ? currentResistances : targetResistances,
-            vulnerabilities: type === 'current' ? currentVulnerabilities : targetVulnerabilities
+            payload: {  // Wrap the defenses in a payload object
+                immunities: currentDefenses.immunities,
+                resistances: currentDefenses.resistances,
+                vulnerabilities: currentDefenses.vulnerabilities
+            },
+            open: true,
+            onClose: async (result) => {
+                // Handle the close event
+            }
         });
+    
         if (!defenses) return;
-
-        if (type === 'current') {
-            setCurrentImmunities(defenses.immunities || []);
-            setCurrentResistances(defenses.resistances || []);
-            setCurrentVulnerabilities(defenses.vulnerabilities || []);
-        } else {
-            setTargetImmunities(defenses.immunities || []);
-            setTargetResistances(defenses.resistances || []);
-            setTargetVulnerabilities(defenses.vulnerabilities || []);
-        }
+    
+        setConditionsMap(prev => ({
+            ...prev,
+            [targetId]: {
+                ...prev[targetId],
+                immunities: defenses.immunities || [],
+                resistances: defenses.resistances || [],
+                vulnerabilities: defenses.vulnerabilities || []
+            }
+        }));
     };
 
     const handleAttackOpen = async () => {
@@ -511,36 +543,67 @@ export default function Encounter() {
     };
 
     const handleDeleteCondition = (conditionToDelete: string, isCurrentPlayer: boolean) => {
-        if (isCurrentPlayer) {
-            setCurrentConditions(prev => prev.filter(c => c !== conditionToDelete));
-        } else {
-            setTargetConditions(prev => prev.filter(c => c !== conditionToDelete));
-        }
+        const targetId = isCurrentPlayer ? currentCharacter?._id : selectedTarget?._id;
+        if (!targetId) return;
+
+        setConditionsMap(prev => ({
+            ...prev,
+            [targetId]: {
+                ...prev[targetId],
+                conditions: prev[targetId]?.conditions.filter(c => c !== conditionToDelete) || []
+            }
+        }));
     };
 
     const handleDeleteImmunity = (immunity: string, isCurrentPlayer: boolean) => {
-        if (isCurrentPlayer) {
-            setCurrentImmunities(prev => prev.filter(i => i !== immunity));
-        } else {
-            setTargetImmunities(prev => prev.filter(i => i !== immunity));
-        }
+        const targetId = isCurrentPlayer ? currentCharacter?._id : selectedTarget?._id;
+        if (!targetId) return;
+
+        setConditionsMap(prev => ({
+            ...prev,
+            [targetId]: {
+                ...prev[targetId],
+                immunities: prev[targetId]?.immunities.filter(i => i !== immunity) || []
+            }
+        }));
     };
 
     const handleDeleteResistance = (resistance: string, isCurrentPlayer: boolean) => {
-        if (isCurrentPlayer) {
-            setCurrentResistances(prev => prev.filter(r => r !== resistance));
-        } else {
-            setTargetResistances(prev => prev.filter(r => r !== resistance));
-        }
+        const targetId = isCurrentPlayer ? currentCharacter?._id : selectedTarget?._id;
+        if (!targetId) return;
+
+        setConditionsMap(prev => ({
+            ...prev,
+            [targetId]: {
+                ...prev[targetId],
+                resistances: prev[targetId]?.resistances.filter(i => i !== resistance) || []
+            }
+        }));
     };
 
     const handleDeleteVulnerability = (vulnerability: string, isCurrentPlayer: boolean) => {
-        if (isCurrentPlayer) {
-            setCurrentVulnerabilities(prev => prev.filter(v => v !== vulnerability));
-        } else {
-            setTargetVulnerabilities(prev => prev.filter(v => v !== vulnerability));
-        }
+        const targetId = isCurrentPlayer ? currentCharacter?._id : selectedTarget?._id;
+        if (!targetId) return;
+
+        setConditionsMap(prev => ({
+            ...prev,
+            [targetId]: {
+                ...prev[targetId],
+                vulnerabilities: prev[targetId]?.vulnerabilities.filter(i => i !== vulnerability) || []
+            }
+        }));
     };
+
+    useEffect(() => {
+        const savedConditions = localStorage.getItem('characterConditions');
+        if (savedConditions) {
+            setConditionsMap(JSON.parse(savedConditions));
+        }
+    }, []);
+
+    useEffect(() => {
+        localStorage.setItem('characterConditions', JSON.stringify(conditionsMap));
+    }, [conditionsMap]);
 
     const handleTargetStatChange = (stat, value) => {
         setSelectedTarget(prevTarget => ({
@@ -703,6 +766,38 @@ export default function Encounter() {
         }
     };
 
+    const getCurrentConditions = () => {
+        return currentCharacter ? (conditionsMap[currentCharacter._id]?.conditions || []) : [];
+    };
+
+    const getTargetConditions = () => {
+        return selectedTarget ? (conditionsMap[selectedTarget._id]?.conditions || []) : [];
+    };
+
+    const getCurrentImmunities = () => {
+        return currentCharacter ? (conditionsMap[currentCharacter._id]?.immunities || []) : [];
+    };
+    
+    const getCurrentResistances = () => {
+        return currentCharacter ? (conditionsMap[currentCharacter._id]?.resistances || []) : [];
+    };
+    
+    const getCurrentVulnerabilities = () => {
+        return currentCharacter ? (conditionsMap[currentCharacter._id]?.vulnerabilities || []) : [];
+    };
+    
+    const getTargetImmunities = () => {
+        return selectedTarget ? (conditionsMap[selectedTarget._id]?.immunities || []) : [];
+    };
+    
+    const getTargetResistances = () => {
+        return selectedTarget ? (conditionsMap[selectedTarget._id]?.resistances || []) : [];
+    };
+    
+    const getTargetVulnerabilities = () => {
+        return selectedTarget ? (conditionsMap[selectedTarget._id]?.vulnerabilities || []) : [];
+    };
+
     const isActive = (index: number): boolean => {
         return initiativeStarted && index === currentTurn;
     };
@@ -713,18 +808,6 @@ export default function Encounter() {
         const target = characters.find(character => character._id === targetId);
         setSelectedTarget(target);
     };
-
-    // For current character
-    const [currentConditions, setCurrentConditions] = useState<string[]>([]);
-    const [currentImmunities, setCurrentImmunities] = useState<string[]>([]);
-    const [currentResistances, setCurrentResistances] = useState<string[]>([]);
-    const [currentVulnerabilities, setCurrentVulnerabilities] = useState<string[]>([]);
-
-    // For target
-    const [targetConditions, setTargetConditions] = useState<string[]>([]);
-    const [targetImmunities, setTargetImmunities] = useState<string[]>([]);
-    const [targetResistances, setTargetResistances] = useState<string[]>([]);
-    const [targetVulnerabilities, setTargetVulnerabilities] = useState<string[]>([]);
 
     const renderActionSpecificDropdown = () => {
         switch (selectedAction) {
@@ -855,9 +938,9 @@ export default function Encounter() {
                             <IconButton size="small" onClick={() => handleDefensesOpen('target')}><AddIcon /></IconButton>
                         </Box>
                         <Box sx={{ mb: 1 }}>
-                            <Typography variant="body2">Immunities</Typography>
+                        <Typography variant="body2">Immunities</Typography>
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                                {targetImmunities.map((immunity, index) => (
+                                {getTargetImmunities().map((immunity, index) => (
                                     <Chip
                                         key={index}
                                         label={immunity}
@@ -866,13 +949,13 @@ export default function Encounter() {
                                         onDelete={() => handleDeleteImmunity(immunity, false)}
                                     />
                                 ))}
-                                {targetImmunities.length === 0 && <Typography>No immunities</Typography>}
+                                {getTargetImmunities().length === 0 && <Typography>No immunities</Typography>}
                             </Box>
                         </Box>
                         <Box sx={{ mb: 1 }}>
                             <Typography variant="body2">Resistances</Typography>
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                                {targetResistances.map((resistance, index) => (
+                                {getTargetResistances().map((resistance, index) => (
                                     <Chip
                                         key={index}
                                         label={resistance}
@@ -881,13 +964,13 @@ export default function Encounter() {
                                         onDelete={() => handleDeleteResistance(resistance, false)}
                                     />
                                 ))}
-                                {targetResistances.length === 0 && <Typography>No resistances</Typography>}
+                                {getTargetResistances().length === 0 && <Typography>No resistances</Typography>}
                             </Box>
                         </Box>
                         <Box>
                             <Typography variant="body2">Vulnerabilities</Typography>
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                                {targetVulnerabilities.map((vulnerability, index) => (
+                                {getTargetVulnerabilities().map((vulnerability, index) => (
                                     <Chip
                                         key={index}
                                         label={vulnerability}
@@ -896,13 +979,13 @@ export default function Encounter() {
                                         onDelete={() => handleDeleteVulnerability(vulnerability, false)}
                                     />
                                 ))}
-                                {targetVulnerabilities.length === 0 && <Typography>No vulnerabilities</Typography>}
+                                {getTargetVulnerabilities().length === 0 && <Typography>No vulnerabilities</Typography>}
                             </Box>
                         </Box>
                     </Card>
 
                 </Box>
-          </Box>
+            </Box>
         );
     };
 
@@ -1159,16 +1242,16 @@ export default function Encounter() {
                             <IconButton size="small" onClick={() => handleConditionsOpen("current")}><AddIcon /></IconButton>
                         </Box>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                            {currentConditions.map((condition, index) => (
-                                <Chip
-                                    key={index}
-                                    label={condition}
-                                    size="small"
-                                    color="primary"
-                                    onDelete={() => handleDeleteCondition(condition, true)}
-                                />
-                            ))}
-                            {currentConditions.length === 0 && <Typography>No conditions</Typography>}
+                        {getCurrentConditions().map((condition, index) => (
+                            <Chip
+                                key={index}
+                                label={condition}
+                                size="small"
+                                color="primary"
+                                onDelete={() => handleDeleteCondition(condition, true)}
+                            />
+                        ))}
+                        {getCurrentConditions().length === 0 && <Typography>No conditions</Typography>}
                         </Box>
                     </Card>
 
@@ -1179,9 +1262,9 @@ export default function Encounter() {
                             <IconButton size="small" onClick={() => handleDefensesOpen("current")}><AddIcon /></IconButton>
                         </Box>
                         <Box sx={{ mb: 1 }}>
-                            <Typography variant="body2">Immunities</Typography>
+                        <Typography variant="body2">Immunities</Typography>
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                                {currentImmunities.map((immunity, index) => (
+                                {getCurrentImmunities().map((immunity, index) => (
                                     <Chip
                                         key={index}
                                         label={immunity}
@@ -1190,13 +1273,13 @@ export default function Encounter() {
                                         onDelete={() => handleDeleteImmunity(immunity, true)}
                                     />
                                 ))}
-                                {currentImmunities.length === 0 && <Typography>No immunities</Typography>}
+                                {getCurrentImmunities().length === 0 && <Typography>No immunities</Typography>}
                             </Box>
                         </Box>
                         <Box sx={{ mb: 1 }}>
-                            <Typography variant="body2">Resistances</Typography>
+                        <Typography variant="body2">Resistances</Typography>
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                                {currentResistances.map((resistance, index) => (
+                                {getCurrentResistances().map((resistance, index) => (
                                     <Chip
                                         key={index}
                                         label={resistance}
@@ -1205,23 +1288,23 @@ export default function Encounter() {
                                         onDelete={() => handleDeleteResistance(resistance, true)}
                                     />
                                 ))}
-                                {currentResistances.length === 0 && <Typography>No resistances</Typography>}
+                                {getCurrentResistances().length === 0 && <Typography>No resistances</Typography>}
                             </Box>
                         </Box>
                         <Box>
-                            <Typography variant="body2">Vulnerabilities</Typography>
-                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
-                                {currentVulnerabilities.map((vulnerability, index) => (
-                                    <Chip
-                                        key={index}
-                                        label={vulnerability}
-                                        size="small"
-                                        color="primary"
-                                        onDelete={() => handleDeleteVulnerability(vulnerability, true)}
-                                    />
-                                ))}
-                                {currentVulnerabilities.length === 0 && <Typography>No vulnerabilities</Typography>}
-                            </Box>
+                        <Typography variant="body2">Vulnerabilities</Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 0.5 }}>
+                            {getCurrentVulnerabilities().map((vulnerability, index) => (
+                                <Chip
+                                    key={index}
+                                    label={vulnerability}
+                                    size="small"
+                                    color="primary"
+                                    onDelete={() => handleDeleteVulnerability(vulnerability, true)}
+                                />
+                            ))}
+                            {getCurrentVulnerabilities().length === 0 && <Typography>No vulnerabilities</Typography>}
+                        </Box>
                         </Box>
                     </Card>
 
