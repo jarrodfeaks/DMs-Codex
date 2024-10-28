@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Typography, Box, Link, Divider } from "@mui/material";
 import { useCurrentCampaign } from "./app.context.ts";
 import DashboardCharacterSheet from "../components/dashboard/DashboardCharacterSheet.tsx";
@@ -12,12 +12,17 @@ export default function Campaign() {
     const [editId, setEditId] = useState<unknown | undefined>();
     const [showCharacterSheet, setShowCharacterSheet] = useState(false);
 
-    const toggleView = (importData?: unknown, editData?: unknown, editId?: unknown) => {
+    const toggleView = async (importData?: unknown, editData?: unknown, editId?: unknown) => {
+        if (showCharacterSheet) await currentCampaign?.refresh();
         setImportData(importData);
         setEditData(editData);
         setEditId(editId);
         setShowCharacterSheet(!showCharacterSheet);
     };
+
+    useEffect(() => {
+        setShowCharacterSheet(false);
+    }, [currentCampaign?._id]);
 
     return (
         <>

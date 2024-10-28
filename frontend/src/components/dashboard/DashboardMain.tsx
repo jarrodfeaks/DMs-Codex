@@ -20,6 +20,7 @@ export default function DashboardMain(
 
     useEffect(() => {
         if (currentCampaign) {
+            setPlayers(currentCampaign.players ?? []);
             setNotes(currentCampaign.notes ?? '');
         }
     }, [currentCampaign]);
@@ -46,6 +47,7 @@ export default function DashboardMain(
     const onDeleteCharacter = async () => {
         if (selectedPlayerId !== null) {
             await apiService.delete(`/players/${selectedPlayerId}`);
+            setPlayers(players.filter(player => player._id !== selectedPlayerId));
         }
     };
 
