@@ -48,7 +48,6 @@ import { Monster, Player } from "../types.ts";
 import AttackModal from "../components/modals/AttackModal";
 import { apiService } from "../services/apiService.ts";
 import { useCurrentCampaign } from "./app.context.ts";
-import { create } from "domain";
 
 type CharacterStats = {
   currentHP: number;
@@ -83,6 +82,33 @@ const DeathSaveBox = ({ state, onClick }) => {
 };
 
 export default function Encounter() {
+  const [characterStats, setCharacterStats] = useState<StatsMap>({});
+
+  useEffect(() => {
+    const savedStats = localStorage.getItem('characterStats');
+    if (savedStats) {
+      setCharacterStats(JSON.parse(savedStats));
+    }
+  }, []);
+
+  useEffect(() => {  // Save stats to localStorage whenever they change
+    localStorage.setItem('characterStats', JSON.stringify(characterStats));
+  }, [characterStats]);
+
+  const initializeCharacterStats = (character: PlayerOrMonster) => {
+    if (!characterStats[character._id]) {
+      setCharacterStats(prev => ({
+        ...prev,
+        [character._id]: {
+          currentHP: character.currentHitpoints,
+          maxHP: character.maxHitpoints,
+          tempHP: character.tempHitpoints,
+          armorClass: character.armorClass
+        }
+      }));
+    }
+  };
+
   const campaignId = useCurrentCampaign()?._id;
   const [encountersList, setEncountersList] = useState(
     useCurrentCampaign()?.encounters
@@ -119,14 +145,27 @@ export default function Encounter() {
 
   const handleStartInitiative = async () => {
     if (characters && characters.length > 0) {
-      const firstCharacter = characters[0]; // Get first character
+      const firstCharacter = characters[0];
       setInitiativeStarted(true);
       setCurrentTurn(0);
       setCurrentCharacter(firstCharacter);
-      setCurrentHP(firstCharacter.currentHitpoints);
-      setMaxHP(firstCharacter.maxHitpoints);
-      setArmorClass(firstCharacter.armorClass);
-      setTempHP(firstCharacter.tempHitpoints);
+      
+      // Initialize stats for first character if needed
+      initializeCharacterStats(firstCharacter);
+      
+      // Use local stats if available, otherwise use character defaults
+      const stats = characterStats[firstCharacter._id] || {
+        currentHP: firstCharacter.currentHitpoints,
+        maxHP: firstCharacter.maxHitpoints,
+        tempHP: firstCharacter.tempHitpoints,
+        armorClass: firstCharacter.armorClass
+      };
+      
+      setCurrentHP(stats.currentHP);
+      setMaxHP(stats.maxHP);
+      setTempHP(stats.tempHP);
+      setArmorClass(stats.armorClass);
+      
       const response = await apiService.put(
         `/encounters/${encountersList[0]._id}/current-turn`,
         { currentTurnId: firstCharacter._id }
@@ -136,23 +175,48 @@ export default function Encounter() {
   };
 
   const handleNextTurn = async () => {
+    // Save current character's stats before switching
+    if (currentCharacter) {
+      setCharacterStats(prev => ({
+        ...prev,
+        [currentCharacter._id]: {
+          currentHP,
+          maxHP,
+          tempHP,
+          armorClass
+        }
+      }));
+    }
+
     const nextTurn = (currentTurn + 1) % characters.length;
     const nextCharacter = characters[nextTurn];
+    
+    initializeCharacterStats(nextCharacter);
+    
     setCurrentTurn(nextTurn);
     setCurrentCharacter(nextCharacter);
-    setCurrentHP(nextCharacter.currentHitpoints);
-    setMaxHP(nextCharacter.maxHitpoints);
-    setArmorClass(nextCharacter.armorClass);
-    setTempHP(nextCharacter.tempHitpoints);
+    
+    const stats = characterStats[nextCharacter._id] || {
+      currentHP: nextCharacter.currentHitpoints,
+      maxHP: nextCharacter.maxHitpoints,
+      tempHP: nextCharacter.tempHitpoints,
+      armorClass: nextCharacter.armorClass
+    };
+    
+    setCurrentHP(stats.currentHP);
+    setMaxHP(stats.maxHP);
+    setTempHP(stats.tempHP);
+    setArmorClass(stats.armorClass);
+
     if (nextTurn === 0) {
       addCombatLogEntry(nextRoundCombatLogString());
     }
+    
     try {
       const response = await apiService.put(
         `/encounters/${encountersList[0]._id}/current-turn`,
         { currentTurnId: nextCharacter._id }
       );
-      updateCurrentPlayerStats(nextTurn);
     } catch (err) {
       setError("Failed to fetch player information");
     }
@@ -179,22 +243,66 @@ export default function Encounter() {
 
   const handleCurrentHPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
-    setCurrentHP(isNaN(value) ? 0 : value);
+    const newHP = isNaN(value) ? 0 : value;
+    setCurrentHP(newHP);
+    
+    if (currentCharacter) {
+      setCharacterStats(prev => ({
+        ...prev,
+        [currentCharacter._id]: {
+          ...prev[currentCharacter._id],
+          currentHP: newHP
+        }
+      }));
+    }
   };
 
   const handleMaxHPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
-    setMaxHP(isNaN(value) ? 0 : value);
+    const newMaxHP = isNaN(value) ? 0 : value;
+    setMaxHP(newMaxHP);
+    
+    if (currentCharacter) {
+      setCharacterStats(prev => ({
+        ...prev,
+        [currentCharacter._id]: {
+          ...prev[currentCharacter._id],
+          maxHP: newMaxHP
+        }
+      }));
+    }
   };
 
   const handleTempHPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
-    setTempHP(isNaN(value) ? 0 : value);
+    const newTempHP = isNaN(value) ? 0 : value;
+    setTempHP(newTempHP);
+    
+    if (currentCharacter) {
+      setCharacterStats(prev => ({
+        ...prev,
+        [currentCharacter._id]: {
+          ...prev[currentCharacter._id],
+          tempHP: newTempHP
+        }
+      }));
+    }
   };
 
   const handleArmorClassChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
-    setArmorClass(isNaN(value) ? 0 : value);
+    const newAC = isNaN(value) ? 0 : value;
+    setArmorClass(newAC);
+    
+    if (currentCharacter) {
+      setCharacterStats(prev => ({
+        ...prev,
+        [currentCharacter._id]: {
+          ...prev[currentCharacter._id],
+          armorClass: newAC
+        }
+      }));
+    }
   };
 
   const handleToggleDeathSave = (characterId: string, index: number) => {
