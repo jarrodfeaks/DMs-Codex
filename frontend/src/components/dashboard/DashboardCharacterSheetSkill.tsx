@@ -1,61 +1,62 @@
 import React, { FC, useState, useEffect } from 'react';
-import { TextField, Box, FormControlLabel, Switch } from "@mui/material";
+import { TextField, Box, FormControlLabel, Switch } from '@mui/material';
 
-interface DashboardCharacterSheetSkillProps {
+interface SkillProps {
   skillName: string;
-  onSkillChange: (skillName: string, value: number, isActive: boolean) => void;
-  activeSkills: [[string, number]];
+  modifier: number;
+  isProficient: boolean;
+  onSkillChange: (skillName: string, newValue: number, newProficiency: boolean) => void;
 }
 
-const DashboardCharacterSheetSkill: FC<DashboardCharacterSheetSkillProps> = ({ skillName, onSkillChange, activeSkills }) => {
-  const activeSkill = activeSkills.find(([str]) => str === skillName);
+const DashboardCharacterSheetSkill: FC<SkillProps> = ({
+  skillName,
+  modifier,
+  isProficient,
+  onSkillChange
+}) => {
+  const [tempValue, setTempValue] = useState(modifier);
+  const [proficient, setProficient] = useState(isProficient);
 
-  const [isActive, setIsActive] = useState(!!activeSkill);
-  const [value, setValue] = useState(activeSkill ? activeSkill[1] : 0);
-  const [tempValue, setTempValue] = useState(value); // Live typing state
-
-  // Ensure tempValue syncs if the initial value changes (useEffect handles this).
+  // Sync state with parent updates (if any).
   useEffect(() => {
-    setTempValue(value);
-  }, [value]);
+    setTempValue(modifier);
+    setProficient(isProficient);
+  }, [modifier, isProficient]);
 
   const handleSwitchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newActiveState = event.target.checked;
-    setIsActive(newActiveState);
-    if (!newActiveState) setTempValue(0); // Reset value if switch is turned off
-    onSkillChange(skillName, value, newActiveState); // Notify parent of activation change
+    const newProficiency = event.target.checked;
+    setProficient(newProficiency);
+    onSkillChange(skillName, tempValue, newProficiency);
   };
 
-  const handleTempChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setTempValue(Number(event.target.value)); // Allow free typing
-  };
-
-  const handleBlur = () => {
-    setValue(tempValue); // Commit the change on blur
-    onSkillChange(skillName, tempValue, isActive); // Notify parent of the final value
+  const handleModifierChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = Number(event.target.value);
+    setTempValue(newValue);
+    onSkillChange(skillName, newValue, proficient);
   };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
       <FormControlLabel
         control={
-          <Switch checked={isActive} onChange={handleSwitchChange} color="primary" />
+          <Switch
+            checked={proficient}
+            onChange={handleSwitchChange}
+            color="primary"
+          />
         }
         // label={skillName}
       />
       <TextField
-        id="Value"
         label={skillName}
         type="number"
-        value={isActive ? tempValue : ''} // Use tempValue for live editing
-        onChange={handleTempChange}
-        onBlur={handleBlur} // Commit the value on blur
-        disabled={!isActive} // Disable input if not active
+        value={tempValue}
+        onChange={handleModifierChange}
         sx={{
-          marginBottom: 2,
-          marginTop: 2,
-          borderRadius: '10px',
-          width: '200px'
+            marginBottom: 2,
+            marginTop: 2,
+            borderRadius: '10px',
+            width: '200px'
         }}
       />
     </Box>

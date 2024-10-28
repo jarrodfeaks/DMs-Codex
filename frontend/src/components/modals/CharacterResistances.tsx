@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Box, Typography, FormControlLabel, Switch, Dialog, Paper } from '@mui/material';
+import { DamageType } from '../../../../shared/enums.ts';
 
 const CharacterResistances: React.FC<{ payload: string[], open: boolean, onClose: (result: string[]) => Promise<void> }> = ({ payload, open, onClose }) => {
   const [activeResistances, setActiveResistances] = useState<string[]>(payload);
 
-  const resistances = [
-    "Acid","Bludgeoning","Cold","Fire","Force","Lightning","Necrotic","Piercing","Poison","Psychic","Radiant","Ranged","Slashing","Spells","Thunder","Traps"
-  ];
+  const resistances = Object.values(DamageType);
+  console.log(resistances);
 
   const handleSwitchChange = (condition: string, checked: boolean) => {
     const updatedResistances = checked

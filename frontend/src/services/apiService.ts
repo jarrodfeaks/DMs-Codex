@@ -16,7 +16,7 @@ const handleResponse = async (response: Response, options: RequestOptions = {}) 
         throw new Error(`${response.status} ${response.body ? await response.text() : response.statusText}`);
     }
     
-    return returnRawResponse ? response : response.json();
+    return returnRawResponse ? response : response.status === 204 ? null : response.json();
 };
 
 // Adds correct prefix to endpoint if not already present

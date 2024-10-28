@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { Campaign } from '../models/campaignModel';
 import { Player } from '../models/playerModel';
 import { Monster } from '../models/monsterModel';
+import { Encounter } from '../models/encounterModel';
 
 // @desc Get all campaigns
 // @route GET /campaigns/
@@ -175,6 +176,35 @@ const addMonsterToCampaign = async (req: Request, res: Response) => {
     }
 };
 
+// @desc Add an encounter to a campaign
+// @route POST /campaigns/:id/encounters
+// @access Public
+const addEncounterToCampaign = async (req: Request, res: Response) => {
+    try {
+        const campaignId = req.params.id;
+        const { encounterId } = req.body;
+        if (!encounterId) {
+            return res.status(404).send({ message: 'encounterId missing' });
+        }
+        const encounter = await Encounter.findById(encounterId);
+        if (!encounter) {
+            return res.status(404).send({ message: 'Encounter not found' });
+        }
+        const campaign = await Campaign.findById(campaignId);
+        if (!campaign) {
+            return res.status(404).send({ message: 'Campaign not found' });
+        }
+        if (campaign.encounters.includes(encounterId)) {
+            return res.status(400).send({ message: 'Encounter already in campaign' });
+        }
+        campaign.encounters.push(encounterId);
+        await campaign.save();
+        res.status(200).json(campaign);
+    } catch (error: any) {
+        res.status(500).send(error.message); 
+    }
+};
+
 // @desc Delete a campaign
 // @route DELETE /campaigns/:id
 // @access Public
@@ -192,4 +222,4 @@ const deleteCampaign = async (req: Request, res: Response) => {
     }
 };
 
-export { getAllCampaigns, getCampaignInformation, getCampaignWithPlayersBrief, getDMCampaigns, createCampaign, updateCampaign, deleteCampaign, addMonsterToCampaign, addPlayerToCampaign };
+export { getAllCampaigns, getCampaignInformation, getCampaignWithPlayersBrief, getDMCampaigns, createCampaign, updateCampaign, deleteCampaign, addMonsterToCampaign, addPlayerToCampaign, addEncounterToCampaign };

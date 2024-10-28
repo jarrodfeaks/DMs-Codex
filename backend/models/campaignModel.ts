@@ -7,6 +7,7 @@ interface ICampaign {
     encounters: ObjectId[];
     players: ObjectId[];
     monsters: ObjectId[];
+    notes: string;
 }
 
 const campaignSchema = new Schema<ICampaign>({
@@ -16,6 +17,7 @@ const campaignSchema = new Schema<ICampaign>({
     encounters: [{ type: Schema.Types.ObjectId, ref: 'Encounter' }],
     players: [{ type: Schema.Types.ObjectId, ref: 'Player' }],
     monsters: [{ type: Schema.Types.ObjectId, ref: 'Monster' }],
+    notes: { type: String, default: '' }
 },
     {
         timestamps: true

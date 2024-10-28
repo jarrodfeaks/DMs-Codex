@@ -11,9 +11,10 @@ const getEncounterInformation = async (req: Request, res: Response) => {
     try {
         const encounterId = req.params.id;
         const encounter = await Encounter.findById(encounterId)
-        .populate('encounters')
+        .populate('turns')
         .populate('players')
-        .populate('monsters');
+        .populate('monsters')
+        .populate('current_turn');
         if (encounter) {
             res.status(200).json(encounter);
         } else {
@@ -30,12 +31,18 @@ const getEncounterInformation = async (req: Request, res: Response) => {
 // @access Public
 const createEncounter = async (req: Request, res: Response) => {
     try {
-        const encounter = new Encounter(req.body);
-        await encounter.save();
-        res.status(201).json(encounter);
+        const { name, campaign_id } = req.body;
+        const encounter = await Encounter.findOne({ name, campaign_id });
+        if (encounter) {
+            return res.status(200).json({ exists: true, message: 'Encounter already exists' });
+        } else {
+            const encounter = new Encounter(req.body);
+            await encounter.save();
+            res.status(201).json(encounter);
+        }
     } catch (error: any) {
-        console.error(error.stack);
-        res.status(500).send({ message: 'An unexpected error occurred. Please try again later.' });
+        console.error('Error checking encounter existence:', error);
+        res.status(500).send({ message: 'Error checking encounter existence', error: error.message });
     }
 };
 
@@ -55,6 +62,25 @@ const updateEncounter = async (req: Request, res: Response) => {
     } catch (error: any) {
         console.error(error.stack);
         res.status(500).send({ message: 'An unexpected error occurred. Please try again later.' });
+    }
+};
+
+// @desc Get the combat log of an encounter
+// @route GET /encounters/:id/combat-log
+// @access Public
+const getCombatLog = async (req: Request, res: Response) => {
+    try {
+        const encounterId = req.params.id;
+
+        const encounter = await Encounter.findById(encounterId).select('combat_log');
+        if (!encounter) {
+            return res.status(404).json({ message: 'Encounter not found' });
+        }
+
+        res.status(200).json(encounter.combat_log);
+    } catch (error: any) {
+        console.error('Error retrieving combat log:', error);
+        res.status(500).send({ message: 'Error retrieving combat log', error: error.message });
     }
 };
 
@@ -157,6 +183,42 @@ const resetTurnsInEncounter = async (req: Request, res: Response) => {
     }
 };
 
+// @desc Get the current turn info of an encounter
+// @route GET /encounters/:id/current-turn
+// @access Public
+const getCurrentTurnInfo = async (req: Request, res: Response) => {
+    try {
+        const encounterId = req.params.id;
+
+        const encounter = await Encounter.findById(encounterId).populate('current_turn');
+        if (!encounter) {
+            return res.status(404).json({ message: 'Encounter not found' });
+        }
+
+        const currentTurnId = encounter.current_turn;
+        if (!currentTurnId) {
+            return res.status(404).json({ message: 'Current turn not set' });
+        }
+
+        // Check if the current turn is a player
+        let character = await Player.findById(currentTurnId);
+        if (character) {
+            return res.status(200).json({ character });
+        }
+
+        // Check if the current turn is a monster
+        character = await Monster.findById(currentTurnId);
+        if (character) {
+            return res.status(200).json({ character });
+        }
+
+        return res.status(404).json({ message: 'Character not found in players or monsters' });
+    } catch (error: any) {
+        console.error('Error retrieving current turn info:', error);
+        res.status(500).send({ message: 'Error retrieving current turn info', error: error.message });
+    }
+};
+
 // @desc Update the current turn in an encounter
 // @route PUT /encounters/:id/current-turn
 // @access Public
@@ -186,6 +248,28 @@ const updateCurrentTurn = async (req: Request, res: Response) => {
     }
 };
 
+// @desc Update initiative order in an encounter
+// @route PUT /encounters/:id/initiative-order
+// @access Public
+const updateInitiativeOrder = async (req: Request, res: Response) => {
+    try {
+        const encounterId = req.params.id;
+        const { initiative_order } = req.body;
+        if (!initiative_order) {
+            return res.status(400).send({ message: 'initiative_order missing' });
+        }
+        const encounter = await Encounter.findById(encounterId);
+        if (!encounter) {
+            return res.status(404).send({ message: 'Encounter not found' });
+        }
+        encounter.initiative_order = initiative_order;
+        await encounter.save();
+        res.status(200).json(encounter);
+    } catch (error: any) {
+        res.status(500).send(error.message);
+    }
+};
+
 // @desc Delete an encounter
 // @route DELETE /encounters/:id
 // @access Public
@@ -204,4 +288,4 @@ const deleteEncounter = async (req: Request, res: Response) => {
     }
 };
 
-export {addToCombatLog, addCharacterToEncounter, getEncounterInformation, createEncounter, resetTurnsInEncounter, updateEncounter, deleteEncounter, updateCurrentTurn };
+export {addToCombatLog, addCharacterToEncounter, getEncounterInformation, getCombatLog, getCurrentTurnInfo, createEncounter, resetTurnsInEncounter, updateEncounter, deleteEncounter, updateCurrentTurn, updateInitiativeOrder };

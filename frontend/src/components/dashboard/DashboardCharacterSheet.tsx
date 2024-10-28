@@ -3,12 +3,13 @@ import {TextField, Box, Typography, Button, List, ListItem, ListItemText, Table,
 import DashboardCharacterSheetSkill from './DashboardCharacterSheetSkill.tsx';
 import { ConfirmDialog, useDialogs } from '@toolpad/core/useDialogs';
 import theme from '../../assets/theme.ts';
-import { Class, DamageType, Race, Attribute, Dice } from '../../../../shared/enums.ts';
+import { Class, DamageType, Race, Attribute, Dice, Status } from '../../../../shared/enums.ts';
 import CharacterConditions from '../modals/CharacterConditions.tsx';
 import CharacterImmunities from '../modals/CharacterImmunities.tsx';
 import CharacterResistances from '../modals/CharacterResistances.tsx';
 import CharacterVulnerabilities from '../modals/CharacterVulnerabilities.tsx';
 import { apiService } from "../../services/apiService.ts";
+import { useCurrentCampaign } from "../../routes/app.context.ts";
 
 interface Weapon {
   name: string;
@@ -27,12 +28,12 @@ interface DashboardCharacterSheetProps {
   toggleCharacterSheet: (importData?: unknown, editData?: unknown, editId?: unknown) => void;
 }
 
-//const damageTypes = ["None", "Bludgeoning", "Piercing", "Slashing", "Lightning", "Thunder", "Poison", "Cold", "Radiant", "Fire", "Necrotic", "Acid", "Psychic", "Force"];
-
 const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, editData, editId, toggleCharacterSheet}) => {
+  const currentCampaign = useCurrentCampaign();
+  //console.log("character sheet current campaign", currentCampaign);
   let preData = null;
   if (importData){
-    console.log('original Import data is ', importData);
+    //console.log('original Import data is ', importData);
     // const allSkills = [
     //   "Acrobatics (DEX)", "Animal Handling (WIS)", "Arcana (INT)", "Athletics (STR)",
     //   "Deception (CHA)", "History (INT)", "Insight (WIS)", "Intimidation (CHA)",
@@ -40,7 +41,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
     //   "Performance (CHA)", "Persuasion (CHA)", "Religion (INT)", "Sleight of Hand (DEX)",
     //   "Stealth (DEX)", "Survival (WIS)"
     // ];
-    
+
     // Mapping between skill keys from the database and the formatted skill names
     const skillMap = {
       acrobatics: "Acrobatics (DEX)",
@@ -62,9 +63,9 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       stealth: "Stealth (DEX)",
       survival: "Survival (WIS)"
     };
-    
+
     // preData = importData;
-    
+
     const proficientSkillsFormatted = importData.proficiencies.skills
       .filter(skill => skill.is_proficient)
       .map(skill => [skillMap[skill.skill], skill.modifier]);
@@ -86,6 +87,9 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       level: importData.level,
       class: importData.class,
       race: importData.race,
+      maxHitpoints: importData.hit_points.max,
+      tempHitpoints: importData.hit_points.temp,
+      currentHitpoints: importData.hit_points.current,
       strength: importData.ability_scores.strength,
       dexterity: importData.ability_scores.dexterity,
       constitution: importData.ability_scores.constitution,
@@ -95,26 +99,23 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       armorClass: importData.armor_class,
       equipment: formattedEquipment,
       resistances: capitalizedResistances,
-      temperaroaryModifiers: proficientSkillsFormatted,
+      temperaroaryModifiers: importData.proficiencies.skills,
     };
 
-    console.log('importData is :', preData);
+    //console.log('importData is :', preData);
   }else if (editData){
     preData = editData;
   }
 
+  // if (preData)
+  //   console.log(preData);
 
-  console.log(preData);
-
-  const isFieldEmpty = (value: number | '') => value === '' || value === undefined;
+  const isFieldEmpty = (value: number | '') => preData && value === '' || preData && value === undefined;
   // console.log(editData);
   // console.log(editId);
-  // preData = {
-  //   name: "mosaab",
-  //   level: 2,
-  // };
+
   const [characterName, setCharacterName] = useState(preData ? preData.name : '');
-  const [characterLevel, setCharacterLevel] = useState(preData ? preData.level : 0);
+  const [characterLevel, setCharacterLevel] = useState(preData ? preData.level : 1);
   const classes = Object.values(Class);
   const [selectedClass, setSelectedClass] = useState(preData ? preData.class : '');
 
@@ -125,78 +126,189 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
   const [abilityScoreWisdom, setAbilityScoreWisdom] = useState(preData ? preData.wisdom : 0);
   const [abilityScoreCharisma, setAbilityScoreCharisma] = useState(preData ? preData.charisma : 0);
 
-  const [abilityModStrength, setAbilityModStrength] = useState(preData ? preData.strength : 0);
-  const [abilityModDexterity, setAbilityModDexterity] = useState(preData ? preData.dexterity : 0);
-  const [abilityModConstitution, setAbilityModConstitution] = useState(preData ? preData.constitution : 0);
-  const [abilityModIntelligence, setAbilityModIntelligence] = useState(preData ? preData.intelligence : 0);
-  const [abilityModWisdom, setAbilityModWisdom] = useState(preData ? preData.wisdom : 0);
-  const [abilityModCharisma, setAbilityModCharisma] = useState(preData ? preData.charisma : 0);
-
-  const [savingThrowsStrength, setSavingThrowsStrength] = useState(preData ? preData.strength : 0);
-  const [savingThrowsDexterity, setSavingThrowsDexterity] = useState(preData ? preData.dexterity : 0);
-  const [savingThrowsConstitution, setSavingThrowsConstitution] = useState(preData ? preData.constitution : 0);
-  const [savingThrowsIntelligence, setSavingThrowsIntelligence] = useState(preData ? preData.intelligence : 0);
-  const [savingThrowsWisdom, setSavingThrowsWisdom] = useState(preData ? preData.wisdom : 0);
-  const [savingThrowsCharisma, setSavingThrowsCharisma] = useState(preData ? preData.charisma : 0);
-
-  const allSkills = ["Acrobatics (DEX)","Animal Handling (WIS)","Arcana (INT)","Athletics (STR)","Deception (CHA)","History (INT)","Insight (WIS)","Intimidation (CHA)","Investigation (INT)","Medicine (WIS)","Nature (INT)","Perception (WIS)","Performance (CHA)","Persuasion (CHA)","Religion (INT)","Sleight of Hand (DEX)","Stealth (DEX)","Survival (WIS)"];
-  const [skills, setSkills] = useState<{[key: string]: { value: number; isActive: boolean }}>({});
-  const [finalSkills, setFinalSkills] = useState(preData ? preData.temperaroaryModifiers : [['', 0]])
-
-  // useEffect(() => {
-  //   console.log("original skills before",skills);
-  //   // Initialize skills based on finalSkills
-  //   if (finalSkills.length > 0) {
-  //     finalSkills.forEach((skill) => {
-  //       console.log(skill);
-  //       handleSkillChange(skill[0], skill[1], true); // Set the skill as active
-  //     });
-  //   }
-  //   console.log("Final skills", finalSkills);
-  //   console.log("original skills after",skills);
-  // }, []);
-
-  const handleSkillChange = (skillName: string, value: number, isActive: boolean) => {
-    const index = finalSkills.findIndex(([name]) => name === skillName);
-  
-    if (isActive) {
-      if (index !== -1) {
-        // Update existing skill
-        finalSkills[index][1] = value;
-      } else {
-        // Add new skill if it doesn't exist
-        finalSkills.push([skillName, value]);
-      }
-    } else {
-      // Remove skill if inactive
-      if (index !== -1) {
-        finalSkills.splice(index, 1); // Remove the element at the found index
-      }
-    }
-  };
-  
-
-  
-
-  const prepareSkills = () => {
-    const activeSkills = Object.entries(skills)
-      //.filter(([, { isActive }]) => isActive) // Keep only active skills
-      .map(([skillName, { value }]) => [skillName, value] as [string, number]); // Format as [string, number]
-
-    setFinalSkills(activeSkills);
-    // console.log("original skills is", skills);
-    // console.log("final skills is", finalSkills);
-    
+  function calculateModifier(abilityScore) {
+    return Math.floor((abilityScore - 10) / 2);
   }
+
+  function getProficiencyBonus(level) {
+    return Math.ceil((level / 4) + 1);
+  }
+
+  const [proficiency, setProficiency] = useState(getProficiencyBonus(characterLevel));
+
+  const [abilityModStrength, setAbilityModStrength] = useState(calculateModifier(abilityScoreStrength));
+  const [abilityModDexterity, setAbilityModDexterity] = useState(calculateModifier(abilityScoreDexterity));
+  const [abilityModConstitution, setAbilityModConstitution] = useState(calculateModifier(abilityScoreConstitution));
+  const [abilityModIntelligence, setAbilityModIntelligence] = useState(calculateModifier(abilityScoreIntelligence));
+  const [abilityModWisdom, setAbilityModWisdom] = useState(calculateModifier(abilityScoreWisdom));
+  const [abilityModCharisma, setAbilityModCharisma] = useState(calculateModifier(abilityScoreCharisma));
+
+  const [savingThrowsStrength, setSavingThrowsStrength] = useState(0);
+  const [savingThrowsDexterity, setSavingThrowsDexterity] = useState(0);
+  const [savingThrowsConstitution, setSavingThrowsConstitution] = useState(0);
+  const [savingThrowsIntelligence, setSavingThrowsIntelligence] = useState(0);
+  const [savingThrowsWisdom, setSavingThrowsWisdom] = useState(0);
+  const [savingThrowsCharisma, setSavingThrowsCharisma] = useState(0);
+
+  // Update ability modifiers whenever ability scores change
+  useEffect(() => {
+    setAbilityModStrength(calculateModifier(abilityScoreStrength));
+    setAbilityModDexterity(calculateModifier(abilityScoreDexterity));
+    setAbilityModConstitution(calculateModifier(abilityScoreConstitution));
+    setAbilityModIntelligence(calculateModifier(abilityScoreIntelligence));
+    setAbilityModWisdom(calculateModifier(abilityScoreWisdom));
+    setAbilityModCharisma(calculateModifier(abilityScoreCharisma));
+  }, [
+    abilityScoreStrength,
+    abilityScoreDexterity,
+    abilityScoreConstitution,
+    abilityScoreIntelligence,
+    abilityScoreWisdom,
+    abilityScoreCharisma,
+  ]);
+
+  // Update proficiency bonus if character level changes
+  useEffect(() => {
+    setProficiency(getProficiencyBonus(characterLevel));
+    setInitiative(abilityModDexterity);
+    console.log(characterLevel);
+    console.log(proficiency);
+    console.log((characterLevel/4) + 1);
+  }, [characterLevel]);
+
+  // Update saving throws whenever modifiers or proficiency changes
+  useEffect(() => {
+    setSavingThrowsStrength(abilityModStrength + proficiency);
+    setSavingThrowsDexterity(abilityModDexterity + proficiency);
+    setSavingThrowsConstitution(abilityModConstitution + proficiency);
+    setSavingThrowsIntelligence(abilityModIntelligence + proficiency);
+    setSavingThrowsWisdom(abilityModWisdom + proficiency);
+    setSavingThrowsCharisma(abilityModCharisma + proficiency);
+  }, [
+    abilityModStrength,
+    abilityModDexterity,
+    abilityModConstitution,
+    abilityModIntelligence,
+    abilityModWisdom,
+    abilityModCharisma,
+    proficiency,
+  ]);
+
+  const [skills, setSkills] = useState(
+    preData?.temperaroaryModifiers || // If data exists, use it; otherwise initialize with empty skills
+    [
+      { skill: "Acrobatics (DEX)", is_proficient: false, modifier: 0 },
+      { skill: "Animal Handling (WIS)", is_proficient: false, modifier: 0 },
+      { skill: "Arcana (INT)", is_proficient: false, modifier: 0 },
+      { skill: "Athletics (STR)", is_proficient: false, modifier: 0 },
+      { skill: "Deception (CHA)", is_proficient: false, modifier: 0 },
+      { skill: "History (INT)", is_proficient: false, modifier: 0 },
+      { skill: "Insight (WIS)", is_proficient: false, modifier: 0 },
+      { skill: "Intimidation (CHA)", is_proficient: false, modifier: 0 },
+      { skill: "Investigation (INT)", is_proficient: false, modifier: 0 },
+      { skill: "Medicine (WIS)", is_proficient: false, modifier: 0 },
+      { skill: "Nature (INT)", is_proficient: false, modifier: 0 },
+      { skill: "Perception (WIS)", is_proficient: false, modifier: 0 },
+      { skill: "Performance (CHA)", is_proficient: false, modifier: 0 },
+      { skill: "Persuasion (CHA)", is_proficient: false, modifier: 0 },
+      { skill: "Religion (INT)", is_proficient: false, modifier: 0 },
+      { skill: "Sleight of Hand (DEX)", is_proficient: false, modifier: 0 },
+      { skill: "Stealth (DEX)", is_proficient: false, modifier: 0 },
+      { skill: "Survival (WIS)", is_proficient: false, modifier: 0 }
+    ]
+  );
+
+  const updateSkillModifiers = () => {
+    const updatedSkills = skills.map(skill => {
+      let abilityModifierValue = 0;
+
+      // Determine ability based on skill name
+      switch (skill.skill) {
+        case "Acrobatics (DEX)":
+        case "Sleight of Hand (DEX)":
+        case "Stealth (DEX)":
+          abilityModifierValue = abilityModDexterity; // DEX
+          break;
+        case "Animal Handling (WIS)":
+        case "Insight (WIS)":
+        case "Survival (WIS)":
+          abilityModifierValue = abilityModWisdom; // WIS
+          break;
+        case "Arcana (INT)":
+        case "History(INT)":
+        case "Investigation (INT)":
+        case "Nature (INT)":
+        case "Religion (INT)":
+          abilityModifierValue = abilityModIntelligence; // INT
+          break;
+        case "Athletics (STR)":
+          abilityModifierValue = abilityModStrength; // STR
+          break;
+        case "Deception (CHA)":
+        case "Intimidation (CHA)":
+        case "Performance (CHA)":
+        case "Persuasion (CHA)":
+          abilityModifierValue = abilityModCharisma; // CHA
+          break;
+        default:
+          break;
+      }
+
+      const baseModifier = abilityModifierValue || 0; // Get the corresponding ability modifier
+      const finalModifier = skill.is_proficient ? baseModifier + proficiency : baseModifier; // Add proficiency if applicable
+
+      return {
+        ...skill,
+        modifier: finalModifier // Update the modifier
+      };
+    });
+
+    setSkills(updatedSkills);
+  };
+
+  useEffect(() => {
+    updateSkillModifiers(); // Call this function whenever ability modifiers change
+  }, [abilityModCharisma, abilityModConstitution, abilityModDexterity, abilityModIntelligence, abilityModStrength, abilityModWisdom, skills]);
+
+  const handleSkillChange = (skillName: string, newValue: number, newProficiency: boolean) => {
+    setSkills(prevSkills =>
+      prevSkills.map(skill =>
+        skill.skill === skillName
+          ? { ...skill, modifier: newValue, is_proficient: newProficiency }
+          : skill
+      )
+    );
+  };
+
+
+  // const prepareSkills = () => {
+  //   const activeSkills = Object.entries(skills)
+  //     //.filter(([, { isActive }]) => isActive) // Keep only active skills
+  //     .map(([skillName, { value }]) => [skillName, value] as [string, number]); // Format as [string, number]
+
+  //   setFinalSkills(activeSkills);
+  // }
 
   const [initiative, setInitiative] = useState(preData ? preData.initiative : 0);
   const [armorClass, setArmorClass] = useState(preData ? preData.armorClass : 0);
-  const [proficiency, setProficiency] = useState(preData ? preData.proficiency : 0);
+
   const [maxHP, setMaxHP] = useState(preData ? preData.maxHitpoints : 0);
   const [currentHP, setCurrentHP] = useState(preData ? preData.currentHitpoints : 0);
   const [tempHP, setTempHP] = useState(preData ? preData.tempHitpoints : 0);
-  const [successfulDeathSaves, setSuccessfulDeathSaves] = useState(preData ? preData.deathSavingThrows : 0);
-  const [failedDeathSaves, setFailedDeathsaves] = useState(preData ? preData.deathSavingThrows : 0);
+
+  const [deathSavingThrows, setDeathSavingThrows] = useState<boolean[]>(preData ? preData.deathSavingThrows : []);
+
+  let successOrFailedSavingThrowsCount = null;
+  if (editData) {
+    successOrFailedSavingThrowsCount = deathSavingThrows.reduce((acc, value) => {
+      acc[value ? 'trueCount' : 'falseCount']++;
+      return acc;
+    }, { trueCount: 0, falseCount: 0 });
+  }
+
+  const [successfulDeathSaves, setSuccessfulDeathSaves] = useState(editData ? successOrFailedSavingThrowsCount.trueCount : 0);
+  const [failedDeathSaves, setFailedDeathsaves] = useState(editData ? successOrFailedSavingThrowsCount.falseCount : 0);
+
   const [notes, setNotes] = useState(preData ? preData.notes : '');
 
   const races = Object.values(Race);
@@ -210,17 +322,13 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
     setSelectedClass(event.target.value as Class);
   };
 
-  const initialEquipment = preData?.equipment 
-  ? new Map<string, number>(Object.entries(preData.equipment)) 
+  const initialEquipment = preData?.equipment
+  ? new Map<string, number>(Object.entries(preData.equipment))
   : new Map<string, number>();
 
   const [equipment, setEquipment] = useState<Map<string, number>>(initialEquipment);
   const [newEquipmentName, setNewEquipmentName] = useState('');
   const [newEquipmentQty, setNewEquipmentQty] = useState(1);
-  // const [newEquipment, setNewEquipment] = useState<Equipment>({
-  //   name: '',
-  //   qty: 1
-  // });
 
   const attributes = Object.values(Attribute);
   const damageTypes = Object.values(DamageType);
@@ -233,15 +341,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
   const [weaponDamageModifier, setWeaponDamageModifier] = useState('');
   const [weaponDamageType, setWeaponDamageType] = useState('');
   const [weapons, setWeapons] = useState<Weapon[]>(preData ? preData.weapons : []);
-  const [weaponIds, setWeaponIds] = useState<string[]>(preData ? preData.weapons : []);
-  // const [newWeapon, setNewWeapon] = useState<Weapon>({
-  //   name: '',
-  //   hit: 0,
-  //   diceAmount: 1,
-  //   diceType: 6,
-  //   damageModifier: 0,
-  //   damageType: 'None'
-  // });
+  const [weaponIds, setWeaponIds] = useState<string[]>(editData ? preData.weapons : []);
 
   const getWeaponData = async () => {
     if (editData && editData.weapons) {
@@ -253,7 +353,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
 
       // Wait for all weapon data to be fetched
       const weaponDataArray = await Promise.all(weaponDataPromises);
-      
+
       // Update state with the new weapon data array
       setWeapons(weaponDataArray);
       console.log('Fetched weapons:', weaponDataArray);
@@ -262,7 +362,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
 
   useEffect(() => {
     getWeaponData();
-  }, [editData]); 
+  }, [editData]);
 
   const handleAttributeChange = (event: SelectChangeEvent<{ value: unknown }>) => {
     setWeaponDamageModifier(event.target.value as Attribute);
@@ -277,14 +377,10 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
   };
 
   const dialogs = useDialogs();
-  // const [selectedConditions, setSelectedConditions] = useState<string[]>(/*preData ? preData.conditions : */[]);
-  // const [selectedImmunities, setSelectedImmunities] = useState<string[]>(/*preData ? preData.immunities : */[]);
-  // const [selectedResistances, setSelectedResistances] = useState<string[]>(/*preData ? preData.resistances : */[]);
-  // const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>(/*preData ? preData.vulnerabilities :*/ []);
-  const [selectedConditions, setSelectedConditions] = useState<string[]>(editData ? preData.status : []);
-  const [selectedImmunities, setSelectedImmunities] = useState<string[]>(editData ? preData.damageImmunities : []);
-  const [selectedResistances, setSelectedResistances] = useState<string[]>(preData ? preData.resistances : []);
-  const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<string[]>(editData ? preData.vulnerabilities : []);
+  const [selectedConditions, setSelectedConditions] = useState<Status[]>(editData ? preData.status : []);
+  const [selectedImmunities, setSelectedImmunities] = useState<DamageType[]>(editData ? preData.damageImmunities : []);
+  const [selectedResistances, setSelectedResistances] = useState<DamageType[]>(preData ? preData.resistances : []);
+  const [selectedVulnerabilities, setSelectedVulnerabilities] = useState<DamageType[]>(editData ? preData.vulnerabilities : []);
 
   const handleConditionsOpen = async () => {
     const result = await dialogs.open(CharacterConditions, selectedConditions);
@@ -312,7 +408,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
         const updatedEquipment = new Map(prevEquipment);
         updatedEquipment.set(newEquipmentName, newEquipmentQty);
         return updatedEquipment;
-      });  
+      });
       // setNewEquipmentQty(1);
       // setNewEquipmentName('');
     }
@@ -346,16 +442,18 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       modification: weaponDamageModifier,
       damageType: weaponDamageType
     };
-    
+
     setWeapons((prevWeapons) => [...(prevWeapons || []), newWeaponItem]);
-    
+
   };
 
   const handleSave = async () => {
     console.log("Saving...");
 
-    //prepareSkills();
-    console.log(equipment);
+
+    const trueArray = Array(successfulDeathSaves).fill(true);
+    const falseArray = Array(failedDeathSaves).fill(false);
+    setDeathSavingThrows(trueArray.concat(falseArray));
 
     const characterData = {
       name: characterName,
@@ -365,10 +463,10 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       abilityScores: { abilityScoreStrength, abilityScoreDexterity, abilityScoreConstitution, abilityScoreIntelligence, abilityScoreWisdom, abilityScoreCharisma },
       abilityModifiers: { abilityModStrength, abilityModDexterity, abilityModConstitution, abilityModIntelligence, abilityModWisdom, abilityModCharisma },
       savingThrows: { savingThrowsStrength, savingThrowsDexterity, savingThrowsConstitution, savingThrowsIntelligence, savingThrowsWisdom, savingThrowsCharisma },
-      temperaroaryModifiers: finalSkills,
+      temperaroaryModifiers: skills,
       initiative: initiative,
       armorClass: armorClass,
-      proficiency: proficiency,
+      proficienciy: abilityModDexterity,
       maxHP: maxHP,
       currentHP: currentHP,
       tempHitpoints: tempHP,
@@ -376,80 +474,32 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       damageImmunities: selectedImmunities,
       resistances: selectedResistances,
       vulnerabilities: selectedVulnerabilities,
-      successfulDeathSaves: successfulDeathSaves,
-      failedDeathSaves: failedDeathSaves,
+      deathSavingThrows: deathSavingThrows,
       notes: notes,
       equipment: Object.fromEntries(equipment),
       weapons: weaponIds,
     };
-    console.log('character equipment: ', equipment);
     console.log('Character Data:', characterData);
 
-    const testPlayerData = {
-      name: characterName,
-      level: characterLevel,
-      experience: 0,
-      armorClass: 16,
-      race: selectedRace,
-      class: selectedClass,
-      equipment: equipment,
-      deathSavingThrows: [true, false, false],
-    };
-
-    console.log(testPlayerData)
-
-    // if (editData) {
-    //   try {
-    //     const mongoDbResponse = await fetch(`http://localhost:5000/players/${editId}`, {
-    //       method: 'PUT',
-    //       headers: {
-    //         'Content-Type': 'application/json',
-    //       },
-    //       body: JSON.stringify(characterData),
-    //     });
-  
-    //     if (!mongoDbResponse.ok) {
-    //       const errorData = await mongoDbResponse.json();
-    //       console.error('Backend Error Response:', errorData); // Log full backend error
-    //       throw new Error(`Error adding player to database: ${mongoDbResponse.statusText}`);
-    //     }
-    //     console.log('Player added to database:', mongoDbResponse);
-    //   } catch (error) {
-    //     console.error('Error adding player to database:', error);
-    //   }
-    // } else {
-    //   try {
-    //     const mongoDbResponse = await fetch(`http://localhost:5000/players`, {
-    //       method: 'POST',
-    //       headers: {
-    //         'Content-Type': 'application/json',
-    //       },
-    //       body: JSON.stringify(characterData),
-    //     });
-  
-    //     if (!mongoDbResponse.ok) {
-    //       const errorData = await mongoDbResponse.json();
-    //       console.error('Backend Error Response:', errorData); // Log full backend error
-    //       throw new Error(`Error adding player to database: ${mongoDbResponse.statusText}`);
-    //     }
-    //     console.log('Player added to database:', mongoDbResponse);
-    //   } catch (error) {
-    //     console.error('Error adding player to database:', error);
-    //   }
-    // }
-
-    
     if (editData){
       try {
         const response = await apiService.put(`/players/${editId}`, characterData);
         console.log('Player added to database:', response);
+        toggleCharacterSheet();
       } catch (error) {
         console.error('Error adding player to database:', error);
       }
     } else {
       try {
         const response = await apiService.post(`/players`, characterData);
-        console.log('Player added to database:', response);
+        console.log('Player added to database:', response, 'now adding to campaign');
+        console.log('this is the id', currentCampaign?._id)
+        const playerData = {
+          playerId: response,
+        }
+        const campaignResponse = await apiService.post(`/campaigns/${currentCampaign?._id}/players`, playerData);
+        console.log('player added to campaign: ', campaignResponse);
+        toggleCharacterSheet();
       } catch (error) {
         console.error('Error adding player to database:', error);
       }
@@ -662,8 +712,8 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       <Box sx={sxProps.titleContainer}>
         <Typography variant='h4' sx={{padding: '10px'}}>Skills</Typography>
         <Box sx={sxProps.skillsColumn}>
-          {allSkills.map((skil) => (
-            <DashboardCharacterSheetSkill skillName={skil} onSkillChange={handleSkillChange} activeSkills={finalSkills}></DashboardCharacterSheetSkill>
+          {skills.map(({skill, modifier, is_proficient}) => (
+            <DashboardCharacterSheetSkill key={skill} skillName={skill} modifier={modifier} isProficient={is_proficient} onSkillChange={handleSkillChange} />
           ))}
         </Box>
       </Box>
@@ -698,7 +748,8 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
         <Typography variant='h4' sx={{padding: '10px'}}>Weapons</Typography>
         <TextField label='Name' sx={{ width: '56%'}} onChange={(e) => setWeaponName(e.target.value)}/>
         <Box sx={sxProps.subContainer}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
+              <TextField label='Name' onChange={(e) => setWeaponName(e.target.value)}/>
             <TextField label='Hit' type='number' onChange={(e) => setWeaponHit(Number(e.target.value))}/>
             <TextField label='Base Damage' type='number' onChange={(e) => setWeaponBaseDmg(Number(e.target.value))}/>
             <TextField label='Dice Amount' type='number' onChange={(e) => setWeaponDiceAmount(Number(e.target.value))}/>
@@ -723,7 +774,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
                 label="Select Attribute"
                 onChange={handleAttributeChange}
               >
-                {attributes.map((attribute) => ( 
+                {attributes.map((attribute) => (
                   <MenuItem key={attribute} value={attribute}>
                     {attribute}
                   </MenuItem>
@@ -798,7 +849,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
       {/* Notes */}
       <Box sx={sxProps.titleContainer}>
         <Typography variant='h4' sx={{ paddingTop: '10px' }}>Notes</Typography>
-        <TextField sx={{width: '95%'}} value={notes} error={isFieldEmpty(notes)} onChange={(e) => setNotes(e.target.value)}/>
+        <TextField sx={{width: '95%'}} value={notes} onChange={(e) => setNotes(e.target.value)}/>
       </Box>
 
       {/* Container for the save and cancel buttons */}
