@@ -2,6 +2,16 @@ import { Paper, Typography, Box } from "@mui/material";
 import { Message } from "../../types";
 import { useTheme } from "@mui/material/styles";
 import './loadingDotAnimation.css';
+import Markdown, {Components} from "react-markdown";
+import remarkCitations from "../../misc/remarkCitations.ts";
+
+function MessageCitation({ value }: { value: string}) {
+    const theme = useTheme();
+
+    return (
+        <sup style={{ color: theme.palette.info.main }}>{value}</sup>
+    )
+}
 
 export default function AssistantChatMessage({ message, loading }: { message: Message, loading: boolean }) {
     const theme = useTheme();
@@ -16,14 +26,14 @@ export default function AssistantChatMessage({ message, loading }: { message: Me
             borderRadius: 2,
             minWidth: 80,
             maxWidth: '80%',
-            backgroundColor: message.role === 'user' 
-                ? 'background.paper' 
+            backgroundColor: message.role === 'user'
+                ? 'background.paper'
                 : 'background.default',
-            borderLeft: message.role === 'assistant' 
-                ? `4px solid ${theme.palette.primary.main}` 
+            borderLeft: message.role === 'assistant'
+                ? `4px solid ${theme.palette.primary.main}`
                 : 'none',
-            borderRight: message.role === 'user' 
-                ? `4px solid ${theme.palette.secondary.main}` 
+            borderRight: message.role === 'user'
+                ? `4px solid ${theme.palette.secondary.main}`
                 : 'none',
         },
         roleTypography: {
@@ -48,9 +58,22 @@ export default function AssistantChatMessage({ message, loading }: { message: Me
                         <div className="dot-typing"></div>
                     </Box>
                 ) : (
-                    <Typography variant="body1" sx={sxProps.contentTypography}>
+                    // <Typography variant="body1" sx={sxProps.contentTypography}>
+                    //     {message.content}
+                    // </Typography>
+                    <Markdown remarkPlugins={[remarkCitations]} components={{
+                        citation({ node, ...rest }) {
+
+                            return (
+                                <MessageCitation value={node.children[0].value || ""} {...rest} />
+                            )
+                        },
+                        p({ node, ...rest }) {
+                            return <p style={{ margin: 0 }} { ...rest } />
+                        }
+                    } as Components}>
                         {message.content}
-                    </Typography>
+                    </Markdown>
                 )}
             </Paper>
         </Box>

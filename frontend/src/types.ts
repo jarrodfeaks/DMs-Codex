@@ -125,6 +125,7 @@ interface Message {
     id: string;
     role: 'user' | 'assistant';
     content: string | null;
+    citations?: unknown[];
 }
 
 export { LoginStatus, AssistantMode };

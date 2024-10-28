@@ -10,28 +10,28 @@ import { apiService } from '../../services/apiService';
 
 export default function AssistantChat({ mode, assistant }: { mode: AssistantMode, assistant: ReturnType<typeof useAssistant> }) {
     const sxProps = {
-        container: { 
-            display: 'flex', 
-            flexDirection: 'row', 
-            height: '100%' 
+        container: {
+            display: 'flex',
+            flexDirection: 'row',
+            height: '100%'
         },
         chatColumn: {
             flexGrow: 1,
-            display: 'flex', 
+            display: 'flex',
             flexDirection: 'column',
-            height: '100%' 
+            height: '100%'
         },
-        messageList: { 
-            flexGrow: 1, 
-            minHeight: 0, 
-            overflow: 'auto', 
+        messageList: {
+            flexGrow: 1,
+            minHeight: 0,
+            overflow: 'auto',
             py: 2,
             px: 3, // extra padding for scrollbar
-            display: 'flex', 
-            flexDirection: 'column', 
+            display: 'flex',
+            flexDirection: 'column',
             gap: 2.5
         },
-        inputArea: { 
+        inputArea: {
             p: 2,
             '& .MuiOutlinedInput-root': {
                             '&.Mui-focused fieldset': {
@@ -39,10 +39,10 @@ export default function AssistantChat({ mode, assistant }: { mode: AssistantMode
                             },
                         },
         },
-        settingsColumn: { 
-            width: 300, 
-            flexShrink: 0, 
-            p: 2, 
+        settingsColumn: {
+            width: 300,
+            flexShrink: 0,
+            p: 2,
             overflow: 'hidden auto',
             display: 'flex',
             gap: 2,
@@ -109,15 +109,17 @@ export default function AssistantChat({ mode, assistant }: { mode: AssistantMode
             const responseMessage: Message = {
                 id: 'assistant-' + messages.length + 1,
                 role: 'assistant',
-                content: null
+                content: null,
+                citations: []
             }
             setTimeout(() => {
                 addMessage(responseMessage);
             }, 300);
             if (isNewChat) {
                 const res = await apiService.post('/ai/chat/new', { assistantId: userInfo?.assistantId, threadId: userInfo?.threadId, message: message.content });
+                const textContent = res.messages[0].content[0].text;
                 await apiService.put(`/users/${user.sub}`, { threadId: res.threadId }); // update with new threadId
-                setMessages(prevMessages => prevMessages.map(m => m.id === responseMessage.id ? { ...m, content: res.messages[0].content[0].text.value } : m));
+                setMessages(prevMessages => prevMessages.map(m => m.id === responseMessage.id ? { ...m, content: textContent.value, citations: textContent.annotations } : m));
             } else {
                 console.log('continuing chat');
             }
