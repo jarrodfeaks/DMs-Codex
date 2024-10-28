@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Send, CheckBoxOutlineBlank, CheckBox, Cancel } from '@mui/icons-material';
+import { Send, CheckBoxOutlineBlank, CheckBox, Cancel, Casino } from '@mui/icons-material';
 import { Action, Dice, Weapon, WeaponCategories } from '../../../shared/enums.ts';
 import AddIcon from "@mui/icons-material/Add";
 import FavoriteIcon from '@mui/icons-material/Favorite';
@@ -341,7 +341,7 @@ export default function Encounter() {
             const accuracyDiceValue = accuracyDice ?? 0;
             // update to armour class
             // if (accuracyDiceValue + bonusModifier >= selectedTarget.armorClass && selectedWeapon && selectedTarget) {
-            if (selectedWeapon && selectedTarget) {
+            if (Number(attackRoll) + attackModifier >= selectedTarget.armorClass) {
                 handleAttackOpen();
             }
             else {
@@ -621,6 +621,53 @@ export default function Encounter() {
                 return null;
         }
     };
+
+    const [attackRoll, setAttackRoll] = useState<number | "">("");
+    const [attackModifier, setAttackModifier] = useState<number>(0);
+
+    const handleRandomizeRoll = () => {
+        setAttackRoll(Math.floor(Math.random() * 20) + 1);
+    };
+
+    const handleAttackRollChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseInt(event.target.value, 10);
+        if (!isNaN(value)) setAttackRoll(value);
+    };
+
+    const handleAttackModifierChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseInt(event.target.value, 10);
+        if (!isNaN(value)) setAttackModifier(value);
+    };
+
+    const renderRollToHit = () => {
+        if (selectedAction != Action.Attack)
+            return null;
+
+        return (
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Typography>Attack Roll</Typography>
+            <TextField
+                type="number"
+                value={attackRoll}
+                onChange={handleAttackRollChange}
+                size="small"
+                inputProps={{ min: 1, max: 20 }}
+                sx={{ width: 80 }}
+            />
+            <Typography>+</Typography>
+            <TextField
+                type="number"
+                value={attackModifier}
+                onChange={handleAttackModifierChange}
+                size="small"
+                sx={{ width: 80 }}
+            />
+            <IconButton onClick={handleRandomizeRoll} color="primary">
+                <Casino />
+            </IconButton>
+        </Box>
+    );
+    }
 
     const renderTargetStats = () => {
         if (!selectedTarget) return null;
@@ -1125,6 +1172,7 @@ export default function Encounter() {
                                 ))}
                             </Select>
                         </Box>
+                        {renderRollToHit()}
                         <Button variant="contained" color="primary" onClick={handleExecute} disabled={!selectedTarget || (selectedAction === Action.Attack && !selectedWeapon)}>EXECUTE</Button>
                     </Box>
                 </Card>
