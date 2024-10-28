@@ -78,23 +78,26 @@ export default function Encounter() {
     const [currentTurn, setCurrentTurn] = useState(0);
 
     const handleStartInitiative = async () => {
-        if (characters.length > 0) {
+        if (characters && characters.length > 0) { 
+            const firstCharacter = characters[0]; // Get first character
             setInitiativeStarted(true);
             setCurrentTurn(0);
-            const response = await apiService.put(`/encounters/${encountersList[0]._id}/current-turn`, { currentTurnId: characters[0]._id });
-            setCurrentCharacterId(characters[0]._id);
+            setCurrentCharacter(firstCharacter);
+            const response = await apiService.put(`/encounters/${encountersList[0]._id}/current-turn`, { currentTurnId: firstCharacter._id });
+            setCurrentCharacterId(firstCharacter._id);
         }
     };
 
     const handleNextTurn = async () => {
         const nextTurn = (currentTurn + 1) % characters.length;
+        const nextCharacter = characters[nextTurn];
         setCurrentTurn(nextTurn);
-        const characterId = characters[nextTurn]._id;
+        setCurrentCharacter(nextCharacter);
         if (nextTurn === 0) {
             addCombatLogEntry(nextRoundCombatLogString());
         }
         try {
-            const response = await apiService.put(`/encounters/${encountersList[0]._id}/current-turn`, { currentTurnId: characterId });
+            const response = await apiService.put(`/encounters/${encountersList[0]._id}/current-turn`, { currentTurnId: nextCharacter._id });
             updateCurrentPlayerStats(nextTurn);
         } catch (err) {
             setError('Failed to fetch player information');
@@ -178,6 +181,10 @@ export default function Encounter() {
                 const characterTurnId = encountersList[0].current_turn;
                 if (characterTurnId) {
                     // set hp, max hp, temp hp, ac, death saving, def, con, def
+                    const currentChar = characterList.find(c => c._id === characterTurnId);
+                    if (currentChar) {
+                        setCurrentCharacter(currentChar);
+                    }
                     const currentTurnIndex = encountersList[0].initiative_order.findIndex(item => {
                         return item.entity_id == characterTurnId;
                     });
@@ -317,19 +324,54 @@ export default function Encounter() {
         }
     };
 
+    // const updateCurrentPlayerStats = async (updatedTurnNumber?: number) => {
+    //     const characterStats = await apiService.get(`/encounters/${encountersList[0]._id}/current-turn`);
+    //     const character = characterStats.character;
+    //     setCurrentHP(character.currentHitpoints)
+    //     setMaxHP(character.maxHitpoints);
+    //     setArmorClass(character.armorClass);
+    //     setTempHP(character.tempHitpoints);
+    //     setCurrentCharacter(character);
+    //     setCurrentCharacterId(character._id);
+    //     if (updatedTurnNumber !== undefined) {
+    //         setCurrentTurn(updatedTurnNumber);
+    //     }
+    // }
     const updateCurrentPlayerStats = async (updatedTurnNumber?: number) => {
-        const characterStats = await apiService.get(`/encounters/${encountersList[0]._id}/current-turn`);
-        const character = characterStats.character;
-        setCurrentHP(character.currentHitpoints)
-        setMaxHP(character.maxHitpoints);
-        setArmorClass(character.armorClass);
-        setTempHP(character.tempHitpoints);
-        setCurrentCharacter(character);
-        setCurrentCharacterId(character._id);
-        if (updatedTurnNumber !== undefined) {
-            setCurrentTurn(updatedTurnNumber);
+        try {
+            const characterStats = await apiService.get(`/encounters/${encountersList[0]._id}/current-turn`);
+            console.log("Raw API Response:", characterStats); // Log entire response
+    
+            if (!characterStats || !characterStats.character) {
+                console.error("Invalid character stats received:", characterStats);
+                return;
+            }
+    
+            const character = characterStats.character;
+            
+            // Log before setting state
+            console.log("Current Turn Character Information:", {
+                name: character?.name || 'No name',
+                level: character?.level || 'No level',
+                class: character?.class || 'No class',
+                id: character?._id || 'No ID'
+            });
+    
+            // Set states with null checks
+            setCurrentCharacter(character);
+            setCurrentHP(character?.currentHitpoints ?? 0);
+            setMaxHP(character?.maxHitpoints ?? 0);
+            setArmorClass(character?.armorClass ?? 0);
+            setTempHP(character?.tempHitpoints ?? 0);
+            setCurrentCharacterId(character?._id ?? '');
+    
+            if (updatedTurnNumber !== undefined) {
+                setCurrentTurn(updatedTurnNumber);
+            }
+        } catch (error) {
+            console.error("Error in updateCurrentPlayerStats:", error);
         }
-    }
+    };
 
     const handleExecute = () => {
         if (!currentCharacter) {
@@ -463,27 +505,36 @@ export default function Encounter() {
         setInitiativeEditMode("none");
     };
 
-    const addCharacterToEncounter = async (characterId: string) => {
-        try {
-            await apiService.put(`/encounters/${encountersList[0]._id}/character`, { characterId: characterId });
+    const addCharacterToEncounter = async (characterId) => {
+        if (encountersList && encountersList.length > 0) {
+          try {
+            await apiService.put(`/encounters/${encountersList[0]._id}/character`, { characterId });
             console.log(`Character ${characterId} add to ${encountersList[0]._id}`);
-        } catch (error) {
-            console.error('Error adding character to queue:', error);
+          } catch (error2) {
+            console.error("Error adding character to queue:", error2);
+          }
+        } else {
+          console.error("Error: encountersList is empty or undefined.");
+          // Handle the case where there are no encounters (e.g., display a message to the user)
         }
-    };
+      };
 
-    const addCharactersToInitiative = async (characterId: string, initiative: number) => {
+    const addCharactersToInitiative = async (characterId, initiative) => {
         try {
+          if (encountersList && encountersList.length > 0) {
             const updatedInitiativeOrder = [
-                ...encountersList[0].initiative_order,
-                { entity_id: characterId, initiative_score: initiative }
+              ...encountersList[0].initiative_order,
+              { entity_id: characterId, initiative_score: initiative }
             ];
             await apiService.put(`/encounters/${encountersList[0]._id}/initiative-order`, { initiative_order: updatedInitiativeOrder });
-
-        } catch (error) {
-            console.error('Error adding character to initiative order:', error);
+          } else {
+            // Handle the case where encountersList is empty or undefined.
+            console.error("No encounters found in the list.");
+          }
+        } catch (error2) {
+          console.error("Error adding character to initiative order:", error2);
         }
-    };
+      };
 
     const sxProps = {
         encounterScreen: {
@@ -948,7 +999,11 @@ export default function Encounter() {
 
             {/* PLAYER SELECTED OR CURRENT TURN IN INITIATIVE ORDER IN QUEUE */}
             <Box sx={sxProps.encounterColumn}>
-                <Typography variant="h6" sx={sxProps.columnTitle}>CURRENT TURN</Typography> {/* Should this display character name instead? */}
+                {/* <Typography variant="h6" sx={sxProps.columnTitle}>CURRENT TURN</Typography> Should this display character name instead?
+                 */}
+                <Typography variant="h6" sx={sxProps.columnTitle}>
+                    {currentCharacter ? currentCharacter.name : 'SELECT CHARACTER'}
+                </Typography>
                 <Box sx={{ display: 'flex', gap: 1 }}>
 
                     {/* Status */}
