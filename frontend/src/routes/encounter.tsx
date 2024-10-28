@@ -83,6 +83,10 @@ export default function Encounter() {
             setInitiativeStarted(true);
             setCurrentTurn(0);
             setCurrentCharacter(firstCharacter);
+            setCurrentHP(firstCharacter.currentHitpoints);
+            setMaxHP(firstCharacter.maxHitpoints);
+            setArmorClass(firstCharacter.armorClass);
+            setTempHP(firstCharacter.tempHitpoints);
             const response = await apiService.put(`/encounters/${encountersList[0]._id}/current-turn`, { currentTurnId: firstCharacter._id });
             setCurrentCharacterId(firstCharacter._id);
         }
@@ -93,6 +97,10 @@ export default function Encounter() {
         const nextCharacter = characters[nextTurn];
         setCurrentTurn(nextTurn);
         setCurrentCharacter(nextCharacter);
+        setCurrentHP(nextCharacter.currentHitpoints);
+        setMaxHP(nextCharacter.maxHitpoints);
+        setArmorClass(nextCharacter.armorClass);
+        setTempHP(nextCharacter.tempHitpoints);
         if (nextTurn === 0) {
             addCombatLogEntry(nextRoundCombatLogString());
         }
@@ -184,6 +192,10 @@ export default function Encounter() {
                     const currentChar = characterList.find(c => c._id === characterTurnId);
                     if (currentChar) {
                         setCurrentCharacter(currentChar);
+                        setCurrentHP(currentChar.currentHitpoints);
+                        setMaxHP(currentChar.maxHitpoints);
+                        setArmorClass(currentChar.armorClass);
+                        setTempHP(currentChar.tempHitpoints);
                     }
                     const currentTurnIndex = encountersList[0].initiative_order.findIndex(item => {
                         return item.entity_id == characterTurnId;
