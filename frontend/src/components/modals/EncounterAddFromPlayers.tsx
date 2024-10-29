@@ -15,13 +15,15 @@ import { Player } from "../../types.ts";
 function EncounterAddFromPlayers({ open, onClose }: { open: boolean; onClose: (player?: Player) => void }) {
   const [playerList, setPlayerList] = useState<Player[]>([]);
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
+  const storedCampaign = localStorage.getItem('campaignDetails');
 
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
-        const response = await apiService.get("/players");
+        const response = await apiService.get(`/campaigns/${storedCampaign}`);
+        //const response = await apiService.get("/players");
         if (response) {
-          setPlayerList(response);
+          setPlayerList(response.players);
           console.log(response);
         } else {
           console.error("Players data is missing in response");

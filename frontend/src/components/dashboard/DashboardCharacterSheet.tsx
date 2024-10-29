@@ -107,7 +107,6 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
 
   const [isSaving, setIsSaving] = useState(false);
   const [ showSaveErrorAlert, setShowSaveErrorAlert ] = useState(false);
-
   const isFieldEmpty = (value: number | '') => preData && value === '' || preData && value === undefined;
 
   const [characterName, setCharacterName] = useState(preData ? preData.name : '');
@@ -167,10 +166,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
   useEffect(() => {
     setProficiency(getProficiencyBonus(characterLevel));
     setInitiative(abilityModDexterity);
-    console.log(characterLevel);
-    console.log(proficiency);
-    console.log((characterLevel/4) + 1);
-  }, [characterLevel]);
+  }, [characterLevel, abilityModDexterity]);
 
   // Update saving throws whenever modifiers or proficiency changes
   useEffect(() => {
@@ -308,7 +304,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
   const [notes, setNotes] = useState(preData ? preData.notes : '');
 
   const races = Object.values(Race);
-  const [selectedRace, setSelectedRace] = useState(preData ? preData.race : '');
+  const [selectedRace, setSelectedRace] = useState(preData ? (races.includes(preData.race) ? preData.race : '') : '');
 
   const handleRaceChange = (event: SelectChangeEvent<{ value: unknown }>) => {
     setSelectedRace(event.target.value as Race);
