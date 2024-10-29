@@ -899,18 +899,11 @@ export default function Encounter() {
     }
   };
 
-  const handleOpenAIGenerate = () => dialogs.open(EncounterAddFromAI);
-
   const handleFormat = (name, event, newFormats) => {
     setFormatsByCharacter((prev) => ({
       ...prev,
       [name]: newFormats || [],
     }));
-  };
-
-  const handleGenerateSuggestion = () => {
-    // In a real application, this would call an AI service
-    setSuggestion("5 goblins with spears");
   };
 
   const addCharacterToQueue = (character: Player | Monster, id: string) => {
@@ -1439,8 +1432,8 @@ export default function Encounter() {
                       {player.name}
                     </Typography>
                     <Typography sx={{ mb: 1 }}>
-                      {player.level ? `Level ${player.level} ${player.class}` : 
-                       player.challengeRating ? `CR ${player.challengeRating}` : 
+                      {player.level ? `Level ${player.level} ${player.class}` :
+                       player.challengeRating ? `CR ${player.challengeRating}` :
                        "No level"}
                     </Typography>
                     <ToggleButtonGroup
@@ -1550,14 +1543,6 @@ export default function Encounter() {
               sx={{ width: "100%", marginTop: "5px", marginBottom: "5px" }}
             >
               Add from bestiary
-            </Button>
-            <Button
-              onClick={handleOpenAIGenerate}
-              variant="contained"
-              color="primary"
-              sx={{ width: "100%", marginTop: "5px", marginBottom: "5px" }}
-            >
-              AI Generate Encounter!
             </Button>
           </Collapse>
         </Box>
