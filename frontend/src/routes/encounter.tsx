@@ -1439,7 +1439,9 @@ export default function Encounter() {
                       {player.name}
                     </Typography>
                     <Typography sx={{ mb: 1 }}>
-                      Level {player.level} {player.class}
+                      {player.level ? `Level ${player.level} ${player.class}` : 
+                       player.challengeRating ? `CR ${player.challengeRating}` : 
+                       "No level"}
                     </Typography>
                     <ToggleButtonGroup
                       value={formatsByCharacter[player.name] || []}

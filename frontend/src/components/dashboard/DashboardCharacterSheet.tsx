@@ -806,7 +806,7 @@ const DashboardCharacterSheet: FC<DashboardCharacterSheetProps> = ({importData, 
             </TableRow>
           </TableHead>
           <TableBody>
-            {weapons.length ? (
+            {weapons?.length ? (
               weapons.map((weapon, index) => (
                 <TableRow key={index}>
                   <TableCell>{weapon.name}</TableCell>

@@ -320,7 +320,8 @@ export default function AssistantChat({ mode, assistant }: { mode: AssistantMode
                             userInfo={userInfo} 
                             setUserInfo={setUserInfo} 
                             onAllowInputChange={handleAllowInputChange} 
-                            onEncounterParametersChange={handleEncounterParametersChange} 
+                            onEncounterParametersChange={handleEncounterParametersChange}
+                            hasPlayers={Boolean(currentCampaign?.players?.length)} 
                         />
                     </Box>
                 </>

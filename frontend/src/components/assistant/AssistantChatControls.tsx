@@ -165,7 +165,7 @@ function RulesControls({ userInfo, setUserInfo, onHasRulebookChange }: { userInf
     )
 }
 
-function EncounterControls({ onParametersChange }: { onParametersChange: (parameters: EncounterParameters) => void }) {
+function EncounterControls({ onParametersChange, hasPlayers }: { onParametersChange: (parameters: EncounterParameters) => void, hasPlayers: boolean }) {
     const [difficulty, setDifficulty] = useState<number>(1);
     const [numEnemies, setNumEnemies] = useState<string>('');
     const [environment, setEnvironment] = useState<string>('');
@@ -187,6 +187,11 @@ function EncounterControls({ onParametersChange }: { onParametersChange: (parame
 
     return (
         <>
+            {!hasPlayers && (
+                <Alert severity="warning" sx={{ mb: 2 }}>
+                    Add some players to your campaign first so the AI can balance encounters.
+                </Alert>
+            )}
             <Typography variant="body2" sx={{ mb: 2 }}>
                 Use these settings to help guide the AI in creating your encounter.
             </Typography>
@@ -244,7 +249,7 @@ function ChatControls() {
     )
 }
 
-export default function AssistantChatControls({ mode, userInfo, setUserInfo, onAllowInputChange, onEncounterParametersChange }: { mode: AssistantMode, userInfo: UserInfo | null, setUserInfo: (userInfo: UserInfo) => void, onAllowInputChange: (allow: boolean) => void, onEncounterParametersChange: (parameters: { difficulty: 'easy' | 'normal' | 'hard' | 'extreme', numEnemies?: number, environment?: string }) => void }) {
+export default function AssistantChatControls({ mode, userInfo, setUserInfo, onAllowInputChange, onEncounterParametersChange, hasPlayers }: { mode: AssistantMode, userInfo: UserInfo | null, setUserInfo: (userInfo: UserInfo) => void, onAllowInputChange: (allow: boolean) => void, onEncounterParametersChange: (parameters: { difficulty: 'easy' | 'normal' | 'hard' | 'extreme', numEnemies?: number, environment?: string }) => void, hasPlayers: boolean }) {
     useEffect(() => {
         if (mode === AssistantMode.Encounter || mode === AssistantMode.Chat) {
             onAllowInputChange(true);
@@ -254,7 +259,7 @@ export default function AssistantChatControls({ mode, userInfo, setUserInfo, onA
     return (
         <Stack>
             {mode === AssistantMode.Rules && <RulesControls userInfo={userInfo} setUserInfo={setUserInfo} onHasRulebookChange={onAllowInputChange} />}
-            {mode === AssistantMode.Encounter && <EncounterControls onParametersChange={onEncounterParametersChange} />}
+            {mode === AssistantMode.Encounter && <EncounterControls onParametersChange={onEncounterParametersChange} hasPlayers={hasPlayers} />}
             {mode === AssistantMode.Chat && <ChatControls />}
         </Stack>
     )

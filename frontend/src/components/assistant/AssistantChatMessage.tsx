@@ -9,14 +9,14 @@ import AssistantChatMonsters from "./AssistantChatMonsters.tsx";
 import { apiService } from "../../services/apiService.ts";
 import { useCurrentCampaign } from "../../routes/app.context.ts";
 
-function MessageCitation({ value, citations, fileName }: { 
-    value: string, 
-    citations: Message['citations'], 
-    fileName?: string 
+function MessageCitation({ value, citations, fileName }: {
+    value: string,
+    citations: Message['citations'],
+    fileName?: string
 }) {
     const theme = useTheme();
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    
+
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
     };
@@ -26,7 +26,7 @@ function MessageCitation({ value, citations, fileName }: {
     };
 
     const open = Boolean(anchorEl);
-    
+
     const getCitationIndex = (citation: string): number => {
         const match = citation.match(/【(\d+):(\d+)†/);
         return match ? parseInt(match[2]) : -1;
@@ -42,7 +42,7 @@ function MessageCitation({ value, citations, fileName }: {
             };
         }
         const source = citations[index];
-        
+
         // try cleaning up the text
         // - trim whitespace
         // - remove line breaks with a space before them (likely mid-sentence)
@@ -51,7 +51,7 @@ function MessageCitation({ value, citations, fileName }: {
             .trim()
             .replace(/(?<= )\n(?!\n)/g, '')
             .replace(/\n\n+/g, '\n\n');
-        
+
         return {
             text: `[...] ${text} [...]`,
             score: Math.round(source.score * 100),
@@ -63,10 +63,10 @@ function MessageCitation({ value, citations, fileName }: {
 
     return (
         <>
-            <Box 
-                component="sup" 
+            <Box
+                component="sup"
                 onClick={handleClick}
-                sx={{ 
+                sx={{
                     color: theme.palette.info.main,
                     cursor: 'pointer',
                     '&:hover': {
@@ -95,15 +95,15 @@ function MessageCitation({ value, citations, fileName }: {
                     }
                 }}
             >
-                <Box sx={{ 
+                <Box sx={{
                     p: 2,
                     borderLeft: (theme) => `4px solid ${theme.palette.primary.main}`,
                     backgroundColor: (theme) => theme.palette.background.default,
                 }}>
-                    <Typography 
-                        variant="caption" 
+                    <Typography
+                        variant="caption"
                         component="div"
-                        sx={{ 
+                        sx={{
                             mb: 1,
                             color: 'text.secondary',
                             display: 'flex',
@@ -114,17 +114,17 @@ function MessageCitation({ value, citations, fileName }: {
                         <span>Source: {fileName || 'Unknown source'}</span>
                         <span>Relevance: {citationDetails.score}%</span>
                     </Typography>
-                    
-                    <Box sx={{ 
+
+                    <Box sx={{
                         backgroundColor: (theme) => theme.palette.background.paper,
                         p: 1.5,
                         borderRadius: 1,
                         maxHeight: 200,
                         overflow: 'auto'
                     }}>
-                        <Typography 
-                            variant="body2" 
-                            sx={{ 
+                        <Typography
+                            variant="body2"
+                            sx={{
                                 whiteSpace: 'pre-wrap',
                                 fontFamily: 'monospace',
                                 fontSize: '0.875rem',
@@ -153,9 +153,11 @@ export default function AssistantChatMessage({ message, loading }: { message: Me
                 await apiService.put(`/encounters/${currentCampaign?.encounters[0]._id}/character`, {
                     characterId: _id
                 });
+                await apiService.put(`/encounters/${currentCampaign?.encounters[0]._id}/initiative-order/add`, { initiative_order: [{ entity_id: _id, initiative_score: 0 }] });
             }
-            const successMessage = monsters.length === 1 
-                ? `Monster "${monsters[0].name}" added successfully!` 
+            await currentCampaign?.refresh();
+            const successMessage = monsters.length === 1
+                ? `Monster "${monsters[0].name}" added successfully!`
                 : `${monsters.length} monsters added successfully!`;
             setSnackbar({ open: true, message: successMessage, severity: 'success' });
         } catch (error) {
@@ -214,11 +216,11 @@ export default function AssistantChatMessage({ message, loading }: { message: Me
                             <Markdown remarkPlugins={[remarkCitations]} components={{
                                 citation({ node, ...rest }) {
                                     return (
-                                        <MessageCitation 
-                                            value={node.children[0].value || ""} 
+                                        <MessageCitation
+                                            value={node.children[0].value || ""}
                                             citations={message.citations}
                                             fileName={message.fileName}
-                                            {...rest} 
+                                            {...rest}
                                         />
                                     )
                                 },
@@ -228,26 +230,26 @@ export default function AssistantChatMessage({ message, loading }: { message: Me
                                     const isLast = !node.next;
 
                                     return (
-                                        <p 
-                                            style={{ 
+                                        <p
+                                            style={{
                                                 marginTop: isFirst ? 0 : undefined,
                                                 marginBottom: isLast ? 0 : undefined,
-                                            }} 
-                                            {...rest} 
+                                            }}
+                                            {...rest}
                                         />
                                     )
                                 },
                                 strong({ node, ...rest }) {
-                                    return node?.children?.[0].tagName === "p" 
-                                        ? <span style={{ fontWeight: 500 }}>{node.children[0].children[0].value}</span> 
+                                    return node?.children?.[0].tagName === "p"
+                                        ? <span style={{ fontWeight: 500 }}>{node.children[0].children[0].value}</span>
                                         : <strong { ...rest } />
                                 }
                             } as Components}>
                                 {message.content}
                             </Markdown>
                             {message.monsters && message.monsters.length > 0 && (
-                                <AssistantChatMonsters 
-                                    monsters={message.monsters} 
+                                <AssistantChatMonsters
+                                    monsters={message.monsters}
                                     onAddMonsters={handleAddMonsters}
                                 />
                             )}
