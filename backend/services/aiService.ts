@@ -26,6 +26,53 @@ const extractCharacterData = async (json: string) => {
     return completion.choices[0].message.parsed;
 }
 
+const generateEncounter = async (
+  players: unknown[],
+  parameters: { difficulty: string, numEnemies?: number, environment?: string },
+  messages: { role: "user" | "assistant", content: string }[]
+) => {
+    const completion = await client.beta.chat.completions.parse({
+        model: "gpt-4o-2024-08-06",
+        messages: [
+            { role: "system", content: prompts.GENERATE_ENCOUNTER },
+            ...messages.map(msg => ({ role: msg.role, content: msg.content })),
+            { 
+                role: "user", 
+                content: JSON.stringify({
+                    players,
+                    parameters
+                })
+            }
+        ],
+        response_format: zodResponseFormat(schemas.EncounterResponse, "encounter")
+    });
+
+    if (completion.choices[0].message.refusal) {
+        throw new Error("AI refused to fulfill the request");
+    }
+    return completion.choices[0].message.parsed;
+};
+
+const generateChatResponse = async (messages: { role: "user" | "assistant", content: string }[]) => {
+  const completion = await client.chat.completions.create({
+      model: "gpt-4o-2024-08-06",
+      messages: [
+          { 
+              role: "system", 
+              content: prompts.GENERAL_CHAT 
+          },
+          ...messages.map(msg => ({ 
+              role: msg.role, 
+              content: msg.content 
+          }))
+      ]
+  });
+
+  return {
+      message: completion.choices[0].message.content
+  };
+};
+
 const createAssistant = async () => {
     const assistant = await client.beta.assistants.create({
       name: 'D&D Rulebook Assistant',
@@ -84,15 +131,26 @@ const createThread = async (assistantId: string, existingThreadId: string | null
   return thread.id;
 }
 
-const getMessages = async (threadId: string) => {
+const getMessages = async (threadId: string, assistantId?: string) => {
   const messagesPage = await client.beta.threads.messages.list(threadId);
-  return messagesPage.data.map((message) => {
+  const fileName = assistantId && await getRulebookName(assistantId);
+  return Promise.all(messagesPage.data.map(async (message) => {
     return {
       id: message.id,
       role: message.role,
       content: message.content,
+      fileSearchResults: await getMessageFileSearchResults(message),
+      fileName
     }
-  })
+  }));
+}
+
+const getMessageFileSearchResults = async (message: OpenAI.Beta.Threads.Message) => {
+  if (message.run_id) {
+    const run = await client.beta.threads.runs.retrieve(message.thread_id, message.run_id);
+    const steps = (await client.beta.threads.runs.steps.list(message.thread_id, run.id, {}, { query: { "include[]": "step_details.tool_calls[*].file_search.results[*].content" } })).data;
+    return steps;
+  }
 }
 
 const appendMessage = async (threadId: string, message: string) => {
@@ -101,7 +159,7 @@ const appendMessage = async (threadId: string, message: string) => {
 
 const runThread = async (threadId: string, assistantId: string) => {
   await client.beta.threads.runs.createAndPoll(threadId, { assistant_id: assistantId });
-  return getMessages(threadId);
+  return getMessages(threadId, assistantId);
 }
 
-export default { extractCharacterData, createVectorStoreWithAssistant, deleteVectorStoreAndAssistant, getRulebookName, createThread, getMessages, runThread, appendMessage };
+export default { extractCharacterData, generateEncounter, generateChatResponse, createVectorStoreWithAssistant, deleteVectorStoreAndAssistant, getRulebookName, createThread, getMessages, runThread, appendMessage };

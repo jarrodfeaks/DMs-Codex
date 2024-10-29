@@ -125,8 +125,16 @@ interface Message {
     id: string;
     role: 'user' | 'assistant';
     content: string | null;
+    citations?: unknown[];
+    monsters?: Monster[];
+}
+
+interface EncounterParameters {
+    difficulty: 'easy' | 'normal' | 'hard' | 'extreme';
+    numEnemies?: number;
+    environment?: string;
 }
 
 export { LoginStatus, AssistantMode };
-export type { User, UserInfo, Campaign, Player, Message, Monster, Encounter, Turn, Weapon };
+export type { User, UserInfo, Campaign, Player, Message, Monster, Encounter, Turn, Weapon, EncounterParameters };
 

@@ -18,12 +18,22 @@ interface SendMessageRequestBody {
     message: string;
 }
 
+interface SendCompletionRequestBody {
+    type: 'encounter' | 'general';
+    messages: Array<{ role: 'user' | 'assistant', content: string }>;
+    encounterData?: { players: unknown[], parameters: { difficulty: string, numEnemies?: number, environment?: string } };
+}
+
 interface CreateChatRequest extends Request {
     body: CreateChatRequestBody;
   }
 
 interface SendMessageRequest extends Request {
     body: SendMessageRequestBody;
+}
+
+interface SendCompletionRequest extends Request {
+    body: SendCompletionRequestBody;
 }
 
 const importCharacterSheet = async (req: Request, res: Response) => {
@@ -116,10 +126,10 @@ const deleteRulebook = async (req: Request, res: Response) => {
 
 const createChat = async (req: CreateChatRequest, res: Response) => {
     try {
-        const { assistantId, threadId, message } = req.body;
-        const newThreadId = await aiService.createThread(assistantId, threadId, message);
+        const { assistantId, threadId: existingThreadId, message } = req.body;
+        const newThreadId = await aiService.createThread(assistantId, existingThreadId, message);
         const messages = await aiService.runThread(newThreadId, assistantId);
-        res.json({ newThreadId, messages });
+        res.json({ threadId: newThreadId, messages });
     } catch (error) {
         console.error(error);
         res.status(500).send('Error creating chat');
@@ -139,7 +149,8 @@ const getChat = async (req: Request, res: Response) => {
 
 const sendMessage = async (req: SendMessageRequest, res: Response) => {
     try {
-        const { threadId, assistantId, message } = req.body;
+        const { assistantId, message } = req.body;
+        const threadId = req.params.threadId;
         await aiService.appendMessage(threadId, message);
         const messages = await aiService.runThread(threadId, assistantId);
         res.json({ threadId, messages });
@@ -149,4 +160,27 @@ const sendMessage = async (req: SendMessageRequest, res: Response) => {
     }
 }
 
-export { importCharacterSheet, importRulebook, getRulebook, deleteRulebook, createChat, getChat, sendMessage };
+const sendCompletion = async (req: SendCompletionRequest, res: Response) => {
+    try {
+        const { type, messages, encounterData } = req.body;
+        
+        if (type === 'encounter' && encounterData) {
+            const completion = await aiService.generateEncounter(
+                encounterData.players, 
+                encounterData.parameters, 
+                messages
+            );
+            res.json(completion);
+        } else if (type === 'general') {
+            const completion = await aiService.generateChatResponse(messages);
+            res.json(completion);
+        } else {
+            res.status(400).send('Invalid completion type or missing required data');
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error sending completion');
+    }
+}
+
+export { importCharacterSheet, importRulebook, getRulebook, deleteRulebook, createChat, getChat, sendMessage, sendCompletion };
