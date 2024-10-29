@@ -318,7 +318,36 @@ export default function Encounter() {
     });
   };
 
-  // Modified DeathSaveBox renderer
+  const renderCurrentCharacterNotes = () => (
+    <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
+      <Typography variant="subtitle2">Notes</Typography>
+      <TextField
+        fullWidth
+        multiline
+        rows={4}
+        placeholder="Add notes here..."
+        value={getCharacterNotes(currentCharacter?._id)}
+        onChange={(e) => currentCharacter && handleNotesChange(currentCharacter._id, e.target.value)}
+        disabled={!currentCharacter}
+      />
+    </Card>
+  );
+
+  const renderTargetNotes = () => (
+    <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
+      <Typography variant="subtitle2">Notes</Typography>
+      <TextField
+        fullWidth
+        multiline
+        rows={4}
+        placeholder="Add notes here..."
+        value={getCharacterNotes(selectedTarget?._id)}
+        onChange={(e) => selectedTarget && handleNotesChange(selectedTarget._id, e.target.value)}
+        disabled={!selectedTarget}
+      />
+    </Card>
+  );
+
   const renderDeathSaves = (characterId: string) => {
     const saves = deathSavesMap[characterId] || [0, 0, 0, 0, 0];
 
@@ -374,14 +403,11 @@ export default function Encounter() {
   }, [playerNotes]);
 
   // Function to update notes for current character
-  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    if (currentCharacter) {
-      const newNotes = {
-        ...playerNotes,
-        [currentCharacter._id]: e.target.value,
-      };
-      setPlayerNotes(newNotes);
-    }
+  const handleNotesChange = (characterId: string, newNotes: string) => {
+    setPlayerNotes(prev => ({
+      ...prev,
+      [characterId]: newNotes
+    }));
   };
 
   useEffect(() => {
@@ -965,6 +991,11 @@ export default function Encounter() {
     },
   };
 
+  const getCharacterNotes = (characterId: string | undefined) => {
+    if (!characterId) return "";
+    return playerNotes[characterId] || "";
+  };
+
   const getCurrentConditions = () => {
     return currentCharacter
       ? conditionsMap[currentCharacter._id]?.conditions || []
@@ -1122,15 +1153,7 @@ export default function Encounter() {
             </Box>
 
             {/* Notes */}
-            <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
-              <Typography variant="subtitle2">Notes</Typography>
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                placeholder="Add notes here..."
-              />
-            </Card>
+            {renderTargetNotes()}
           </Card>
         </Box>
 
@@ -1154,7 +1177,7 @@ export default function Encounter() {
               </IconButton>
             </Box>
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-              {getTargetConditions.map((condition, index) => (
+              {getTargetConditions().map((condition, index) => (
                 <Chip
                   key={index}
                   label={condition}
@@ -1163,7 +1186,7 @@ export default function Encounter() {
                   onDelete={() => handleDeleteCondition(condition, false)}
                 />
               ))}
-              {getTargetConditions.length === 0 && (
+              {getTargetConditions().length === 0 && (
                 <Typography>No conditions</Typography>
               )}
             </Box>
@@ -1521,20 +1544,7 @@ export default function Encounter() {
           </Card>
 
           {/* Notes */}
-          <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
-            <Typography variant="subtitle2">Notes</Typography>
-            <TextField
-              fullWidth
-              multiline
-              rows={4}
-              placeholder="Add notes here..."
-              value={
-                currentCharacter ? playerNotes[currentCharacter._id] || "" : ""
-              }
-              onChange={handleNotesChange}
-              disabled={!currentCharacter}
-            />
-          </Card>
+          {renderCurrentCharacterNotes()}
         </Box>
 
         <Box sx={{ display: "flex", gap: 1 }}>
