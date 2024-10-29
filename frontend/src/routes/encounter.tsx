@@ -247,6 +247,7 @@ export default function Encounter() {
     setCurrentHP(newHP);
     
     if (currentCharacter) {
+    // Update characterStats
       setCharacterStats(prev => ({
         ...prev,
         [currentCharacter._id]: {
@@ -254,6 +255,14 @@ export default function Encounter() {
           currentHP: newHP
         }
       }));
+
+      // Update target if it's the same character
+      if (selectedTarget && selectedTarget._id === currentCharacter._id) {
+        setSelectedTarget(prev => ({
+          ...prev,
+          currentHitpoints: newHP
+        }) as PlayerOrMonster);
+      }
     }
   };
 
@@ -270,6 +279,13 @@ export default function Encounter() {
           maxHP: newMaxHP
         }
       }));
+
+      if (selectedTarget && selectedTarget._id === currentCharacter._id) {
+        setSelectedTarget(prev => ({
+          ...prev,
+          maxHitpoints: newMaxHP
+        }) as PlayerOrMonster);
+      }
     }
   };
 
@@ -286,6 +302,13 @@ export default function Encounter() {
           tempHP: newTempHP
         }
       }));
+
+      if (selectedTarget && selectedTarget._id === currentCharacter._id) {
+        setSelectedTarget(prev => ({
+          ...prev,
+          tempHitpoints: newTempHP
+        }) as PlayerOrMonster);
+      }
     }
   };
 
@@ -302,6 +325,13 @@ export default function Encounter() {
           armorClass: newAC
         }
       }));
+
+      if (selectedTarget && selectedTarget._id === currentCharacter._id) {
+        setSelectedTarget(prev => ({
+          ...prev,
+          armorClass: newAC
+        }) as PlayerOrMonster);
+      }
     }
   };
 
@@ -822,14 +852,44 @@ export default function Encounter() {
     localStorage.setItem("characterConditions", JSON.stringify(conditionsMap));
   }, [conditionsMap]);
 
-  const handleTargetStatChange = (stat, value) => {
-    setSelectedTarget(
-      (prevTarget) =>
-        ({
-          ...prevTarget,
-          [stat]: parseInt(value, 10),
-        }) as PlayerOrMonster
-    );
+  const handleTargetStatChange = (stat: string, value: string) => {
+    if (!selectedTarget) return;
+    
+    const newValue = parseInt(value, 10);
+    if (isNaN(newValue)) return;
+
+    setSelectedTarget(prev => ({
+      ...prev,
+      [stat]: newValue
+    }) as PlayerOrMonster);
+
+    setCharacterStats(prev => ({
+      ...prev,
+      [selectedTarget._id]: {
+        ...prev[selectedTarget._id],
+        currentHP: stat === "currentHitpoints" ? newValue : prev[selectedTarget._id]?.currentHP,
+        maxHP: stat === "maxHitpoints" ? newValue : prev[selectedTarget._id]?.maxHP,
+        tempHP: stat === "tempHitpoints" ? newValue : prev[selectedTarget._id]?.tempHP,
+        armorClass: stat === "armorClass" ? newValue : prev[selectedTarget._id]?.armorClass
+      }
+    }));
+
+    if (selectedTarget._id === currentCharacter?._id) {
+      switch (stat) {
+        case "currentHitpoints":
+          setCurrentHP(newValue);
+          break;
+        case "maxHitpoints":
+          setMaxHP(newValue);
+          break;
+        case "tempHitpoints":
+          setTempHP(newValue);
+          break;
+        case "armorClass":
+          setArmorClass(newValue);
+          break;
+      }
+    }
   };
 
   const handleOpenPlayerList = async () => {
@@ -1052,7 +1112,19 @@ export default function Encounter() {
 
   const handleTargetSelection = (targetId: string) => {
     const target = characters.find((character) => character._id === targetId);
+    if (!target) return;
+
     setSelectedTarget(target);
+
+    initializeCharacterStats(target);
+
+    const stats = characterStats[target._id];
+    if (stats) {
+      target.currentHitpoints = stats.currentHP;
+      target.maxHitpoints = stats.maxHP;
+      target.tempHitpoints = stats.tempHP;
+      target.armorClass = stats.armorClass;
+    }
   };
 
   const renderActionSpecificDropdown = () => {
@@ -1086,61 +1158,56 @@ export default function Encounter() {
   const renderTargetStats = () => {
     if (!selectedTarget) return null;
 
+    const stats = characterStats[selectedTarget._id] || {
+        currentHP: selectedTarget.currentHitpoints,
+        maxHP: selectedTarget.maxHitpoints,
+        tempHP: selectedTarget.tempHitpoints,
+        armorClass: selectedTarget.armorClass
+      };
+
     return (
-      <Box sx={sxProps.targetSection}>
+        <Box sx={sxProps.targetSection}>
         <Typography variant="h6">{selectedTarget.name}</Typography>
         <Box sx={{ display: "flex", gap: 1 }}>
-          {/* Status */}
           <Card sx={{ ...sxProps.columnCard, flex: 1 }}>
             <Typography variant="subtitle2">Status</Typography>
 
-            {/* HP */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
               <Typography sx={{ flexGrow: 1 }}>HP</Typography>
               <TextField
                 type="number"
-                value={selectedTarget.currentHitpoints}
-                onChange={(e) =>
-                  handleTargetStatChange("currentHitpoints", e.target.value)
-                }
+                value={stats.currentHP}
+                onChange={(e) => handleTargetStatChange("currentHitpoints", e.target.value)}
                 size="small"
                 sx={{ width: 60, ml: "auto" }}
               />
               <Typography>/</Typography>
               <TextField
                 type="number"
-                value={selectedTarget.maxHitpoints}
-                onChange={(e) =>
-                  handleTargetStatChange("maxHitpoints", e.target.value)
-                }
+                value={stats.maxHP}
+                onChange={(e) => handleTargetStatChange("maxHitpoints", e.target.value)}
                 size="small"
                 sx={{ width: 60 }}
               />
             </Box>
 
-            {/* Temp HP */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
               <Typography sx={{ flexGrow: 1 }}>Temp HP</Typography>
               <TextField
                 type="number"
-                value={selectedTarget.tempHitpoints}
-                onChange={(e) =>
-                  handleTargetStatChange("tempHitpoints", e.target.value)
-                }
+                value={stats.tempHP}
+                onChange={(e) => handleTargetStatChange("tempHitpoints", e.target.value)}
                 size="small"
                 sx={{ width: 100, ml: "auto" }}
               />
             </Box>
 
-            {/* AC */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <Typography sx={{ flexGrow: 1 }}>AC</Typography>
               <TextField
                 type="number"
-                value={selectedTarget.armorClass}
-                onChange={(e) =>
-                  handleTargetStatChange("armorClass", e.target.value)
-                }
+                value={stats.armorClass}
+                onChange={(e) => handleTargetStatChange("armorClass", e.target.value)}
                 size="small"
                 sx={{ width: 100, ml: "auto" }}
               />
