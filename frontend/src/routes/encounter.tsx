@@ -1256,10 +1256,9 @@ export default function Encounter() {
               <Typography>Death Saves</Typography>
               {selectedTarget && renderDeathSaves(selectedTarget._id)}
             </Box>
-
-            {/* Notes */}
-            {renderTargetNotes()}
           </Card>
+          {/* Notes */}
+          {renderTargetNotes()}
         </Box>
 
         <Box sx={{ display: "flex", gap: 1 }}>
