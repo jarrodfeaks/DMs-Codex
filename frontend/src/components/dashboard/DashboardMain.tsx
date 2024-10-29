@@ -74,6 +74,7 @@ export default function DashboardMain(
             } catch (error) {
                 console.error('Failed to update notes:', error);
             }
+            await currentCampaign.refresh()
         }
     };
 
