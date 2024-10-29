@@ -1,16 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-  Send,
-  CheckBoxOutlineBlank,
-  CheckBox,
-  Cancel,
-} from "@mui/icons-material";
-import {
-  Action,
-  Dice,
-  Weapon,
-  WeaponCategories,
-} from "../../../shared/enums.ts";
+import { Send, CheckBoxOutlineBlank, CheckBox, Cancel, Casino } from '@mui/icons-material';
+import { Action, Dice, Weapon, WeaponCategories } from '../../../shared/enums.ts';
 import AddIcon from "@mui/icons-material/Add";
 import {
   Box,
@@ -110,6 +100,7 @@ export default function Encounter() {
   };
 
   const campaignId = useCurrentCampaign()?._id;
+    localStorage.setItem('campaignDetails', useCurrentCampaign()._id);
   const [encountersList, setEncountersList] = useState(
     useCurrentCampaign()?.encounters
   );
@@ -149,10 +140,10 @@ export default function Encounter() {
       setInitiativeStarted(true);
       setCurrentTurn(0);
       setCurrentCharacter(firstCharacter);
-      
+
       // Initialize stats for first character if needed
       initializeCharacterStats(firstCharacter);
-      
+
       // Use local stats if available, otherwise use character defaults
       const stats = characterStats[firstCharacter._id] || {
         currentHP: firstCharacter.currentHitpoints,
@@ -160,12 +151,12 @@ export default function Encounter() {
         tempHP: firstCharacter.tempHitpoints,
         armorClass: firstCharacter.armorClass
       };
-      
+
       setCurrentHP(stats.currentHP);
       setMaxHP(stats.maxHP);
       setTempHP(stats.tempHP);
       setArmorClass(stats.armorClass);
-      
+
       const response = await apiService.put(
         `/encounters/${encountersList[0]._id}/current-turn`,
         { currentTurnId: firstCharacter._id }
@@ -190,19 +181,19 @@ export default function Encounter() {
 
     const nextTurn = (currentTurn + 1) % characters.length;
     const nextCharacter = characters[nextTurn];
-    
+
     initializeCharacterStats(nextCharacter);
-    
+
     setCurrentTurn(nextTurn);
     setCurrentCharacter(nextCharacter);
-    
+
     const stats = characterStats[nextCharacter._id] || {
       currentHP: nextCharacter.currentHitpoints,
       maxHP: nextCharacter.maxHitpoints,
       tempHP: nextCharacter.tempHitpoints,
       armorClass: nextCharacter.armorClass
     };
-    
+
     setCurrentHP(stats.currentHP);
     setMaxHP(stats.maxHP);
     setTempHP(stats.tempHP);
@@ -211,7 +202,7 @@ export default function Encounter() {
     if (nextTurn === 0) {
       addCombatLogEntry(nextRoundCombatLogString());
     }
-    
+
     try {
       const response = await apiService.put(
         `/encounters/${encountersList[0]._id}/current-turn`,
@@ -245,7 +236,7 @@ export default function Encounter() {
     const value = parseInt(e.target.value);
     const newHP = isNaN(value) ? 0 : value;
     setCurrentHP(newHP);
-    
+
     if (currentCharacter) {
     // Update characterStats
       setCharacterStats(prev => ({
@@ -270,7 +261,7 @@ export default function Encounter() {
     const value = parseInt(e.target.value);
     const newMaxHP = isNaN(value) ? 0 : value;
     setMaxHP(newMaxHP);
-    
+
     if (currentCharacter) {
       setCharacterStats(prev => ({
         ...prev,
@@ -293,7 +284,7 @@ export default function Encounter() {
     const value = parseInt(e.target.value);
     const newTempHP = isNaN(value) ? 0 : value;
     setTempHP(newTempHP);
-    
+
     if (currentCharacter) {
       setCharacterStats(prev => ({
         ...prev,
@@ -316,7 +307,7 @@ export default function Encounter() {
     const value = parseInt(e.target.value);
     const newAC = isNaN(value) ? 0 : value;
     setArmorClass(newAC);
-    
+
     if (currentCharacter) {
       setCharacterStats(prev => ({
         ...prev,
@@ -706,27 +697,27 @@ export default function Encounter() {
     }
   };
 
-  const handleExecute = () => {
-    if (!currentCharacter) {
-      console.error("Current Character is null in 'HandleExecute'");
-      return;
-    }
-    if (Action.Attack === selectedAction) {
-      console.log("Current Character: " + currentCharacter.name);
-      const accuracyDiceValue = accuracyDice ?? 0;
-      // update to armour class
-      // if (accuracyDiceValue + bonusModifier >= selectedTarget.armorClass && selectedWeapon && selectedTarget) {
-      if (selectedWeapon && selectedTarget) {
-        handleAttackOpen();
-      } else {
-        handleMissedAttack();
-      }
-    } else {
-      addCombatLogEntry(
-        customCombatLogString(currentCharacter.name + " " + selectedAction)
-      );
-    }
-  };
+    const handleExecute = () => {
+        if (!currentCharacter) {
+            console.error("Current Character is null in 'HandleExecute'");
+            return;
+        }
+        if (Action.Attack === selectedAction) {
+            console.log("Current Character: " + currentCharacter.name);
+            const accuracyDiceValue = accuracyDice ?? 0;
+            // update to armour class
+            // if (accuracyDiceValue + bonusModifier >= selectedTarget.armorClass && selectedWeapon && selectedTarget) {
+            if (Number(attackRoll) + attackModifier >= selectedTarget.armorClass) {
+                handleAttackOpen();
+            }
+            else {
+                handleMissedAttack();
+            }
+        }
+        else {
+            addCombatLogEntry(customCombatLogString(currentCharacter.name + " " + selectedAction));
+        }
+    };
 
   const handleMissedAttack = () => {
     if (!selectedTarget) {
@@ -854,7 +845,7 @@ export default function Encounter() {
 
   const handleTargetStatChange = (stat: string, value: string) => {
     if (!selectedTarget) return;
-    
+
     const newValue = parseInt(value, 10);
     if (isNaN(newValue)) return;
 
@@ -1127,33 +1118,80 @@ export default function Encounter() {
     }
   };
 
-  const renderActionSpecificDropdown = () => {
-    switch (selectedAction) {
-      case Action.Attack:
+    const renderActionSpecificDropdown = () => {
+        switch (selectedAction) {
+            case Action.Attack:
+                return (
+                    <Box sx={sxProps.actionItem}>
+                        <Typography>Weapon</Typography>
+                        <Select
+                            value={selectedWeapon}
+                            onChange={(e) => setSelectedWeapon(e.target.value as Weapon)}
+                            size="small"
+                            fullWidth
+                        >
+                            {Object.entries(WeaponCategories).map(([category, weapons]) => [
+                                <ListSubheader key={category}>{category}</ListSubheader>,
+                                ...weapons.map((weapon) => (
+                                    <MenuItem key={weapon} value={weapon}>
+                                        <Typography>{weapon}</Typography>
+                                    </MenuItem>
+                                ))
+                            ])}
+                        </Select>
+                    </Box>
+                );
+            default:
+                return null;
+        }
+    };
+
+    const [attackRoll, setAttackRoll] = useState<number | "">("");
+    const [attackModifier, setAttackModifier] = useState<number>(0);
+
+    const handleRandomizeRoll = () => {
+        setAttackRoll(Math.floor(Math.random() * 20) + 1);
+    };
+
+    const handleAttackRollChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseInt(event.target.value, 10);
+        if (!isNaN(value)) setAttackRoll(value);
+    };
+
+    const handleAttackModifierChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseInt(event.target.value, 10);
+        if (!isNaN(value)) setAttackModifier(value);
+    };
+
+    const renderRollToHit = () => {
+        if (selectedAction != Action.Attack)
+            return null;
+
         return (
-          <Box sx={sxProps.actionItem}>
-            <Typography>Weapon</Typography>
-            <Select
-              value={selectedWeapon}
-              onChange={(e) => setSelectedWeapon(e.target.value as Weapon)}
-              size="small"
-              fullWidth
-            >
-              {Object.entries(WeaponCategories).map(([category, weapons]) => [
-                <ListSubheader key={category}>{category}</ListSubheader>,
-                ...weapons.map((weapon) => (
-                  <MenuItem key={weapon} value={weapon}>
-                    <Typography>{weapon}</Typography>
-                  </MenuItem>
-                )),
-              ])}
-            </Select>
-          </Box>
-        );
-      default:
-        return null;
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Typography>Attack Roll</Typography>
+            <TextField
+                type="number"
+                value={attackRoll}
+                onChange={handleAttackRollChange}
+                size="small"
+                inputProps={{ min: 1, max: 20 }}
+                sx={{ width: 80 }}
+            />
+            <Typography>+</Typography>
+            <TextField
+                type="number"
+                value={attackModifier}
+                onChange={handleAttackModifierChange}
+                size="small"
+                sx={{ width: 80 }}
+            />
+            <IconButton onClick={handleRandomizeRoll} color="primary">
+                <Casino />
+            </IconButton>
+        </Box>
+    );
     }
-  };
 
   const renderTargetStats = () => {
     if (!selectedTarget) return null;
@@ -1723,53 +1761,35 @@ export default function Encounter() {
           </Card>
         </Box>
 
-        <Card sx={sxProps.columnCard}>
-          <Box sx={sxProps.actionGroup}>
-            <Box sx={sxProps.actionItem}>
-              <Typography>Action</Typography>
-              <Select
-                value={selectedAction}
-                onChange={(e) => setSelectedAction(e.target.value as Action)}
-                size="small"
-                fullWidth
-              >
-                {actionOptions.map((action) => (
-                  <MenuItem key={action} value={action}>
-                    {action}
-                  </MenuItem>
-                ))}
-              </Select>
+                <Card sx={sxProps.columnCard}>
+                    <Box sx={sxProps.actionGroup}>
+                        <Box sx={sxProps.actionItem}>
+                            <Typography>Action</Typography>
+                            <Select value={selectedAction} onChange={(e) => setSelectedAction(e.target.value as Action)} size="small" fullWidth>
+                                {actionOptions.map((action) => (
+                                    <MenuItem key={action} value={action}>{action}</MenuItem>
+                                ))}
+                            </Select>
+                        </Box>
+                        {renderActionSpecificDropdown()}
+                        <Box sx={sxProps.actionItem}>
+                            <Typography>Target</Typography>
+                            <Select
+                                value={selectedTarget ? selectedTarget._id : ""}
+                                onChange={(e) => handleTargetSelection(e.target.value)}
+                                size="small"
+                                fullWidth
+                            >
+                                {characters.map((player) => (
+                                    <MenuItem key={player._id} value={player._id}>{player.name}</MenuItem>
+                                ))}
+                            </Select>
+                        </Box>
+                        {renderRollToHit()}
+                        <Button variant="contained" color="primary" onClick={handleExecute} disabled={!selectedTarget || (selectedAction === Action.Attack && !selectedWeapon)}>EXECUTE</Button>
+                    </Box>
+                </Card>
             </Box>
-            {renderActionSpecificDropdown()}
-            <Box sx={sxProps.actionItem}>
-              <Typography>Target</Typography>
-              <Select
-                value={selectedTarget ? selectedTarget._id : ""}
-                onChange={(e) => handleTargetSelection(e.target.value)}
-                size="small"
-                fullWidth
-              >
-                {characters.map((player) => (
-                  <MenuItem key={player._id} value={player._id}>
-                    {player.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </Box>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleExecute}
-              disabled={
-                !selectedTarget ||
-                (selectedAction === Action.Attack && !selectedWeapon)
-              }
-            >
-              EXECUTE
-            </Button>
-          </Box>
-        </Card>
-      </Box>
 
       {/* COMBAT LOG COLUMN */}
       <Box sx={sxProps.encounterColumn}>
