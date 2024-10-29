@@ -270,6 +270,29 @@ const updateInitiativeOrder = async (req: Request, res: Response) => {
     }
 };
 
+// @desc Add to initiative order in an encounter
+// @route PUT /encounters/:id/initiative-order/add
+// @access Public
+const addInitiativeOrder = async (req: Request, res: Response) => {
+    try {
+        const encounterId = req.params.id;
+        const { initiative_order } = req.body;
+        if (!initiative_order) {
+            return res.status(400).send({ message: 'initiative_order missing' });
+        }
+        const encounter = await Encounter.findById(encounterId);
+        if (!encounter) {
+            return res.status(404).send({ message: 'Encounter not found' });
+        }
+        // Add to the existing initiative order
+        encounter.initiative_order.push(...initiative_order);
+        await encounter.save();
+        res.status(200).json(encounter);
+    } catch (error: any) {
+        res.status(500).send(error.message);
+    }
+};
+
 // @desc Delete an encounter
 // @route DELETE /encounters/:id
 // @access Public
@@ -288,4 +311,4 @@ const deleteEncounter = async (req: Request, res: Response) => {
     }
 };
 
-export {addToCombatLog, addCharacterToEncounter, getEncounterInformation, getCombatLog, getCurrentTurnInfo, createEncounter, resetTurnsInEncounter, updateEncounter, deleteEncounter, updateCurrentTurn, updateInitiativeOrder };
+export {addToCombatLog, addCharacterToEncounter, addInitiativeOrder, getEncounterInformation, getCombatLog, getCurrentTurnInfo, createEncounter, resetTurnsInEncounter, updateEncounter, deleteEncounter, updateCurrentTurn, updateInitiativeOrder };

@@ -1,5 +1,5 @@
 import express from 'express';
-import { addToCombatLog, addCharacterToEncounter, createEncounter, getEncounterInformation, resetTurnsInEncounter, updateEncounter, deleteEncounter, updateCurrentTurn, getCombatLog, getCurrentTurnInfo, updateInitiativeOrder } from '../controllers/encounterController';
+import { addToCombatLog, addCharacterToEncounter, addInitiativeOrder, createEncounter, getEncounterInformation, resetTurnsInEncounter, updateEncounter, deleteEncounter, updateCurrentTurn, getCombatLog, getCurrentTurnInfo, updateInitiativeOrder } from '../controllers/encounterController';
 const router = express.Router();
 
 router.route('/')
@@ -14,6 +14,8 @@ router.route('/:id/character')
 router.route('/:id/current-turn')
     .get(getCurrentTurnInfo)
     .put(updateCurrentTurn);
+router.route('/:id/initiative-order/add')
+    .put(addInitiativeOrder);
 router.route('/:id/initiative-order')
     .put(updateInitiativeOrder);
 router.route('/:id')
