@@ -1,5 +1,5 @@
 import { Box, Button, MenuItem, Select, Slider, Stack, TextField, Typography, Alert, Backdrop, CircularProgress, Paper, IconButton } from "@mui/material";
-import { AssistantMode, UserInfo } from "../../types";
+import { AssistantMode, EncounterParameters, UserInfo } from "../../types";
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -131,7 +131,7 @@ function RulesControls({ userInfo, setUserInfo, onHasRulebookChange }: { userInf
                         size="small"
                         onClick={handleDeleteRulebook}
                     >
-                        <DeleteIcon sx={{ 
+                        <DeleteIcon sx={{
                             color: 'text.secondary',
                             transition: 'color 0.3s ease',
                             '&:hover': {
@@ -165,7 +165,26 @@ function RulesControls({ userInfo, setUserInfo, onHasRulebookChange }: { userInf
     )
 }
 
-function EncounterControls() {
+function EncounterControls({ onParametersChange }: { onParametersChange: (parameters: EncounterParameters) => void }) {
+    const [difficulty, setDifficulty] = useState<number>(1);
+    const [numEnemies, setNumEnemies] = useState<string>('');
+    const [environment, setEnvironment] = useState<string>('');
+
+    useEffect(() => {
+        const difficultyMap = {
+            0: 'easy',
+            1: 'normal',
+            2: 'hard',
+            3: 'extreme'
+        } as const;
+
+        onParametersChange({
+            difficulty: difficultyMap[difficulty],
+            numEnemies: numEnemies ? parseInt(numEnemies) : undefined,
+            environment: environment || undefined
+        });
+    }, [difficulty, numEnemies, environment, onParametersChange]);
+
     return (
         <>
             <Typography variant="body2" sx={{ mb: 2 }}>
@@ -176,7 +195,8 @@ function EncounterControls() {
                 <Box sx={{ px: 2 }}>
                     <Slider
                         size="small"
-                        defaultValue={1}
+                        value={difficulty}
+                        onChange={(_, value) => setDifficulty(value as number)}
                         step={1}
                         marks={[
                             { value: 0, label: 'Easy' },
@@ -195,12 +215,16 @@ function EncounterControls() {
                     fullWidth
                     size="small"
                     variant="outlined"
+                    value={numEnemies}
+                    onChange={(e) => setNumEnemies(e.target.value)}
+                    type="number"
                 />
                 <Typography variant="subtitle2">Environment</Typography>
                 <Select
                     fullWidth
                     size="small"
-                    defaultValue=""
+                    value={environment}
+                    onChange={(e) => setEnvironment(e.target.value)}
                     displayEmpty
                 >
                     <MenuItem value="">Any</MenuItem>
@@ -211,7 +235,7 @@ function EncounterControls() {
                 </Select>
             </Stack>
         </>
-    )
+    );
 }
 
 function ChatControls() {
@@ -220,10 +244,9 @@ function ChatControls() {
     )
 }
 
-export default function AssistantChatControls({ mode, userInfo, setUserInfo, onAllowInputChange }: { mode: AssistantMode, userInfo: UserInfo | null, setUserInfo: (userInfo: UserInfo) => void, onAllowInputChange: (allow: boolean) => void }) {
+export default function AssistantChatControls({ mode, userInfo, setUserInfo, onAllowInputChange, onEncounterParametersChange }: { mode: AssistantMode, userInfo: UserInfo | null, setUserInfo: (userInfo: UserInfo) => void, onAllowInputChange: (allow: boolean) => void, onEncounterParametersChange: (parameters: { difficulty: 'easy' | 'normal' | 'hard' | 'extreme', numEnemies?: number, environment?: string }) => void }) {
     useEffect(() => {
         if (mode === AssistantMode.Encounter || mode === AssistantMode.Chat) {
-            console.log('allowing input');
             onAllowInputChange(true);
         }
       }, [mode, onAllowInputChange]);
@@ -231,7 +254,7 @@ export default function AssistantChatControls({ mode, userInfo, setUserInfo, onA
     return (
         <Stack>
             {mode === AssistantMode.Rules && <RulesControls userInfo={userInfo} setUserInfo={setUserInfo} onHasRulebookChange={onAllowInputChange} />}
-            {mode === AssistantMode.Encounter && <EncounterControls />}
+            {mode === AssistantMode.Encounter && <EncounterControls onParametersChange={onEncounterParametersChange} />}
             {mode === AssistantMode.Chat && <ChatControls />}
         </Stack>
     )

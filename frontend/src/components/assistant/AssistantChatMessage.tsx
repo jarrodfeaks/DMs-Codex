@@ -1,10 +1,13 @@
-import { Paper, Typography, Box, Popover } from "@mui/material";
-import { Message } from "../../types";
+import { Paper, Typography, Box, Popover, Snackbar, Alert } from "@mui/material";
+import { Message, Monster } from "../../types";
 import { useTheme } from "@mui/material/styles";
 import './loadingDotAnimation.css';
 import Markdown, {Components} from "react-markdown";
 import remarkCitations from "../../misc/remarkCitations.ts";
 import { useState } from "react";
+import AssistantChatMonsters from "./AssistantChatMonsters.tsx";
+import { apiService } from "../../services/apiService.ts";
+import { useCurrentCampaign } from "../../routes/app.context.ts";
 
 function MessageCitation({ value, citations, fileName }: { 
     value: string, 
@@ -139,6 +142,30 @@ function MessageCitation({ value, citations, fileName }: {
 
 export default function AssistantChatMessage({ message, loading }: { message: Message, loading: boolean }) {
     const theme = useTheme();
+    const currentCampaign = useCurrentCampaign();
+    const [snackbar, setSnackbar] = useState<{ open: boolean, message: string, severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
+
+    const handleAddMonsters = async (monsters: Monster[]) => {
+        try {
+            for (const monster of monsters) {
+                const { temporaryModifiers, customModifiers, weapons, ...monsterData } = monster;
+                const { _id } = await apiService.post('/monsters', monsterData);
+                await apiService.put(`/encounters/${currentCampaign?.encounters[0]._id}/character`, {
+                    characterId: _id
+                });
+            }
+            const successMessage = monsters.length === 1 
+                ? `Monster "${monsters[0].name}" added successfully!` 
+                : `${monsters.length} monsters added successfully!`;
+            setSnackbar({ open: true, message: successMessage, severity: 'success' });
+        } catch (error) {
+            setSnackbar({ open: true, message: 'Failed to add monsters.', severity: 'error' });
+        }
+    };
+
+    const handleCloseSnackbar = () => {
+        setSnackbar({ ...snackbar, open: false });
+    };
 
     const sxProps = {
         messageContainer: {
@@ -172,43 +199,67 @@ export default function AssistantChatMessage({ message, loading }: { message: Me
     };
 
     return (
-        <Box sx={sxProps.messageContainer}>
-            <Paper elevation={4} sx={sxProps.messagePaper}>
-                <Typography variant="subtitle2" sx={sxProps.roleTypography}>
-                    {message.role === 'user' ? 'You' : 'Assistant'}
-                </Typography>
-                {loading ? (
-                    <Box sx={{ pl: 2, pt: 1 }}>
-                        <div className="dot-typing"></div>
-                    </Box>
-                ) : (
-                    // <Typography variant="body1" sx={sxProps.contentTypography}>
-                    //     {message.content}
-                    // </Typography>
-                    <Markdown remarkPlugins={[remarkCitations]} components={{
-                        citation({ node, ...rest }) {
-                            return (
-                                <MessageCitation 
-                                    value={node.children[0].value || ""} 
-                                    citations={message.citations}
-                                    fileName={message.fileName}
-                                    {...rest} 
+        <>
+            <Box sx={sxProps.messageContainer}>
+                <Paper elevation={4} sx={sxProps.messagePaper}>
+                    <Typography variant="subtitle2" sx={sxProps.roleTypography}>
+                        {message.role === 'user' ? 'You' : 'Assistant'}
+                    </Typography>
+                    {loading ? (
+                        <Box sx={{ pl: 2, pt: 1 }}>
+                            <div className="dot-typing"></div>
+                        </Box>
+                    ) : (
+                        <>
+                            <Markdown remarkPlugins={[remarkCitations]} components={{
+                                citation({ node, ...rest }) {
+                                    return (
+                                        <MessageCitation 
+                                            value={node.children[0].value || ""} 
+                                            citations={message.citations}
+                                            fileName={message.fileName}
+                                            {...rest} 
+                                        />
+                                    )
+                                },
+                                p({ node, ...rest }) {
+                                    // remove unnecessary margins from start and end of message
+                                    const isFirst = node.position?.start.line === 1;
+                                    const isLast = !node.next;
+
+                                    return (
+                                        <p 
+                                            style={{ 
+                                                marginTop: isFirst ? 0 : undefined,
+                                                marginBottom: isLast ? 0 : undefined,
+                                            }} 
+                                            {...rest} 
+                                        />
+                                    )
+                                },
+                                strong({ node, ...rest }) {
+                                    return node?.children?.[0].tagName === "p" 
+                                        ? <span style={{ fontWeight: 500 }}>{node.children[0].children[0].value}</span> 
+                                        : <strong { ...rest } />
+                                }
+                            } as Components}>
+                                {message.content}
+                            </Markdown>
+                            {message.monsters && message.monsters.length > 0 && (
+                                <AssistantChatMonsters 
+                                    monsters={message.monsters} 
+                                    onAddMonsters={handleAddMonsters}
                                 />
-                            )
-                        },
-                        p({ node, ...rest }) {
-                            return <p style={{ margin: 0 }} { ...rest } />
-                        },
-                        strong({ node, ...rest }) {
-                            return node?.children?.[0].tagName === "p" 
-                                ? <span style={{ fontWeight: 500 }}>{node.children[0].children[0].value}</span> 
-                                : <strong { ...rest } />
-                        }
-                    } as Components}>
-                        {message.content}
-                    </Markdown>
-                )}
-            </Paper>
-        </Box>
+                            )}
+                        </>
+                    )}
+                </Paper>
+            </Box>
+            <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+                <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
+        </>
     );
 }
